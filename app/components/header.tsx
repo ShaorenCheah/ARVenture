@@ -1,5 +1,3 @@
-'use client';
-
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Image from 'next/image';
@@ -14,6 +12,7 @@ export default function Header() {
             borderRadius: '50px',
             minHeight: '40px',
             backgroundColor: 'white',
+            boxShadow: 2,
           }}
           display="flex"
           justifyContent="center"

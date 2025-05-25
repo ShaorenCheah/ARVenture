@@ -22,9 +22,9 @@ export default function RootLayout({
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              backgroundAttachment: 'fixed',
-              pb: '76px', // room for fixed footer
-              px: '16px', // horizontal padding
+              backgroundAttachment: 'scroll',
+              px: { xs: 2, sm: 3, md: 4, lg: 4 },
+              pb: { xs: '72px', md: '64px' },
             }}
           >
             <Header />

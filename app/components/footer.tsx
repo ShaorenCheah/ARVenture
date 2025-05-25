@@ -1,4 +1,3 @@
-'use client';
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -19,7 +18,11 @@ const buttonList = [
 
 export default function BottomAppBar() {
   return (
-    <AppBar position="fixed" color="default" sx={{ top: 'auto', bottom: 0 }}>
+    <AppBar
+      position="fixed"
+      color="default"
+      sx={{ top: 'auto', bottom: 0, height: { xs: '56px', md: '64px' } }}
+    >
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-around' }}>
         {buttonList.map((item, index) => (
           <Stack key={index} sx={{ flexGrow: 1 }}>
