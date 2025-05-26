@@ -95,6 +95,19 @@ let theme = createTheme(baseTheme, {
         fontSize: '1.125rem',
       },
     },
+    body2: {
+      fontWeight: 400,
+      fontSize: '0.625rem',
+      [baseTheme.breakpoints.up('sm')]: {
+        fontSize: '0.75rem',
+      },
+      [baseTheme.breakpoints.up('md')]: {
+        fontSize: '0.875rem',
+      },
+      [baseTheme.breakpoints.up('lg')]: {
+        fontSize: '1rem',
+      },
+    },
   },
 });
 

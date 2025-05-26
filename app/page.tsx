@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Tabs from './components/Index/infoTabs';
+import Tabs from './components/index/infoTabs';
 import { Card } from '@mui/material';
 
 export default function Home() {
