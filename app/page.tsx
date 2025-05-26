@@ -1,83 +1,106 @@
-import Image from 'next/image';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Tabs from './components/Index/infoTabs';
+import { Card } from '@mui/material';
 
 export default function Home() {
   return (
-    <div className="grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20">
-      <main className="row-start-2 flex flex-col items-center gap-[32px] sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-center font-[family-name:var(--font-geist-mono)] text-sm/6 sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{' '}
-            <code className="rounded bg-black/[.05] px-1 py-0.5 font-[family-name:var(--font-geist-mono)] font-semibold dark:bg-white/[.06]">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex flex-col items-center gap-4 sm:flex-row">
-          <a
-            className="bg-foreground text-background flex h-10 items-center justify-center gap-2 rounded-full border border-solid border-transparent px-4 text-sm font-medium transition-colors hover:bg-[#383838] sm:h-12 sm:w-auto sm:px-5 sm:text-base dark:hover:bg-[#ccc]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <Box
+      component="main"
+      sx={{
+        width: '100%',
+        // calc(100vh - header height - padding (top + btm) - footer height)
+        height: {
+          xs: 'calc(100vh - 40px - 40px - 56px)',
+          sm: 'calc(100vh - 40px - 48px - 56px)',
+          md: 'calc(100vh - 40px - 64px - 56px)',
+          lg: 'calc(100vh - 48px - 64px - 64px)',
+          xl: 'calc(100vh - 56px - 64px - 64px)',
+        },
+        display: 'flex',
+        flexDirection: 'column',
+        pb: { xs: 2.5, sm: 3, md: 4 },
+      }}
+    >
+      <Grid
+        container
+        flexWrap="nowrap"
+        flexDirection={{ xs: 'column', lg: 'row' }}
+        spacing={{ xs: 2, md: 2.5 }}
+        sx={{
+          alignItems: 'start',
+          height: '100%',
+          flex: 1,
+        }}
+      >
+        {/* Map Section */}
+        <Grid
+          size={{ xs: 12, lg: 6 }}
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: {
+              xs: 'auto',
+              sm: '50%',
+              lg: '100%',
+            },
+            aspectRatio: '1/1',
+            flexShrink: { xs: 0, md: 1 },
+          }}
+        >
+          <Card
+            variant="outlined"
+            sx={{
+              width: { xs: '100%', sm: '40%', lg: '100%' },
+              height: '100%',
+              aspectRatio: '1/1',
+              overflow: 'hidden',
+              borderRadius: 2,
+              boxShadow: 3,
+              position: 'relative',
+              backgroundColor: 'white',
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <Box
+              component="img"
+              src="/map.png"
+              alt="ARVenture Map"
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+              }}
             />
-            Deploy now
-          </a>
-          <a
-            className="flex h-10 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-4 text-sm font-medium transition-colors hover:border-transparent hover:bg-[#f2f2f2] sm:h-12 sm:w-auto sm:px-5 sm:text-base md:w-[158px] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </Card>
+        </Grid>
+
+        {/* Info Section */}
+        <Grid
+          size={{ xs: 12, lg: 6 }}
+          sx={{
+            height: '100%',
+            flex: { xs: 1, lg: 'unset' },
+            minHeight: { xs: 0, lg: 'unset' },
+          }}
+        >
+          <Box
+            sx={{
+              width: '100%',
+              height: '100%',
+              borderRadius: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: { xs: 0, lg: 'unset' },
+            }}
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex flex-wrap items-center justify-center gap-[24px]">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            <Tabs />
+          </Box>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
