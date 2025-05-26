@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Tabs from './components/Index/infoTabs';
+import { Card } from '@mui/material';
 
 export default function Home() {
   return (
@@ -8,28 +9,52 @@ export default function Home() {
       component="main"
       sx={{
         width: '100%',
-        height: '100%',
+        // calc(100vh - header height - padding (top + btm) - footer height)
+        height: {
+          xs: 'calc(100vh - 40px - 40px - 56px)',
+          sm: 'calc(100vh - 40px - 48px - 56px)',
+          md: 'calc(100vh - 40px - 64px - 56px)',
+          lg: 'calc(100vh - 48px - 64px - 64px)',
+          xl: 'calc(100vh - 56px - 64px - 64px)',
+        },
+        display: 'flex',
+        flexDirection: 'column',
+        pb: { xs: 2.5, sm: 3, md: 4 },
       }}
     >
       <Grid
         container
-        spacing={2}
+        flexWrap="nowrap"
+        flexDirection={{ xs: 'column', lg: 'row' }}
+        spacing={{ xs: 2, md: 2.5 }}
         sx={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: {
-            xs: 'calc(100vh - 72px - 56px)',
-            md: 'calc(100vh - 72px - 64px)',
-          },
-          pb: 2.5,
+          alignItems: 'start',
+          height: '100%',
+          flex: 1,
         }}
       >
         {/* Map Section */}
-        <Grid size={{ xs: 12, md: 5, lg: 5 }}>
-          <Box
+        <Grid
+          size={{ xs: 12, lg: 6 }}
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: {
+              xs: 'auto',
+              sm: '50%',
+              lg: '100%',
+            },
+            aspectRatio: '1/1',
+            flexShrink: { xs: 0, md: 1 },
+          }}
+        >
+          <Card
+            variant="outlined"
             sx={{
-              width: '100%',
-              aspectRatio: '1 / 1', // Keep the square aspect ratio
+              width: { xs: '100%', sm: '40%', lg: '100%' },
+              height: '100%',
+              aspectRatio: '1/1',
               overflow: 'hidden',
               borderRadius: 2,
               boxShadow: 3,
@@ -50,18 +75,26 @@ export default function Home() {
                 left: 0,
               }}
             />
-          </Box>
+          </Card>
         </Grid>
 
         {/* Info Section */}
-        <Grid size={{ xs: 12, md: 7, lg: 7 }}>
+        <Grid
+          size={{ xs: 12, lg: 6 }}
+          sx={{
+            height: '100%',
+            flex: { xs: 1, lg: 'unset' },
+            minHeight: { xs: 0, lg: 'unset' },
+          }}
+        >
           <Box
             sx={{
               width: '100%',
-              height: '100%', // Take full height of grid item
+              height: '100%',
               borderRadius: 2,
               display: 'flex',
               flexDirection: 'column',
+              minHeight: { xs: 0, lg: 'unset' },
             }}
           >
             <Tabs />

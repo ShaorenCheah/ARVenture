@@ -10,10 +10,10 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import { Stack } from '@mui/material';
 
 const buttonList = [
-  { title: 'Home', icon: <HomeOutlinedIcon />, path: '/' },
-  { title: 'Collectibles', icon: <EmojiEventsOutlinedIcon />, path: '/' },
-  { title: 'Redeem', icon: <RedeemOutlinedIcon />, path: '/' },
-  { title: 'Login', icon: <PersonOutlineOutlinedIcon />, path: '/' },
+  { title: 'Home', icon: <HomeOutlinedIcon fontSize="small" />, path: '/' },
+  { title: 'Collectibles', icon: <EmojiEventsOutlinedIcon fontSize="small" />, path: '/' },
+  { title: 'Redeem', icon: <RedeemOutlinedIcon fontSize="small" />, path: '/' },
+  { title: 'Login', icon: <PersonOutlineOutlinedIcon fontSize="small" />, path: '/' },
 ];
 
 export default function BottomAppBar() {
@@ -21,15 +21,21 @@ export default function BottomAppBar() {
     <AppBar
       position="fixed"
       color="default"
-      sx={{ top: 'auto', bottom: 0, height: { xs: '56px', md: '64px' } }}
+      sx={{
+        top: 'auto',
+        bottom: 0,
+        height: { xs: '56px', lg: '64px' },
+        backgroundColor: 'white',
+        boxShadow: 3,
+      }}
     >
-      <Toolbar sx={{ display: 'flex', justifyContent: 'space-around' }}>
+      <Toolbar sx={{ display: 'flex', justifyContent: 'space-around', mx: { xl: 50 } }}>
         {buttonList.map((item, index) => (
           <Stack key={index} sx={{ flexGrow: 1 }}>
-            <IconButton key={index} color="primary" sx={{ flexGrow: 1 }}>
+            <IconButton key={index} color="primary" sx={{ flexGrow: 1 }} size="large" disableRipple>
               {item.icon}
             </IconButton>
-            <Typography variant="caption" sx={{ flexGrow: 1, textAlign: 'center' }}>
+            <Typography sx={{ flexGrow: 1, textAlign: 'center' }} color="textSecondary">
               {item.title}
             </Typography>
           </Stack>

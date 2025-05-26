@@ -16,15 +16,15 @@ export default function RootLayout({
           <Box
             minHeight="100vh"
             height="100%"
-            overflow="hidden"
             sx={{
               backgroundImage: 'url(/background.png)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
               backgroundAttachment: 'scroll',
-              px: { xs: 2, sm: 3, md: 4, lg: 4 },
-              pb: { xs: '72px', md: '64px' },
+              px: { xs: 2.5, sm: 3, md: 4, xl: 25 },
+              pt: { xs: 2.5, sm: 3, md: 4 },
+              pb: { xs: '56px', lg: '64px' },
             }}
           >
             <Header />

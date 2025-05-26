@@ -39,14 +39,60 @@ let theme = createTheme(baseTheme, {
         fontSize: '2.25rem',
       },
     },
-    body1: {
+    h3: {
+      fontWeight: 500,
+      fontSize: '1.25rem',
+      [baseTheme.breakpoints.up('sm')]: {
+        fontSize: '1.5rem',
+      },
+      [baseTheme.breakpoints.up('md')]: {
+        fontSize: '1.75rem',
+      },
+    },
+    h4: {
+      fontWeight: 500,
+      fontSize: '1rem',
+      [baseTheme.breakpoints.up('sm')]: {
+        fontSize: '1.25rem',
+      },
+      [baseTheme.breakpoints.up('md')]: {
+        fontSize: '1.5rem',
+      },
+    },
+    h5: {
       fontWeight: 400,
-      fontSize: '0.9rem',
+      fontSize: '0.875rem',
       [baseTheme.breakpoints.up('sm')]: {
         fontSize: '1rem',
       },
       [baseTheme.breakpoints.up('md')]: {
-        fontSize: '1.1rem',
+        fontSize: '1.125rem',
+      },
+      [baseTheme.breakpoints.up('lg')]: {
+        fontSize: '1.25rem',
+      },
+    },
+    h6: {
+      fontWeight: 400,
+      fontSize: '0.75rem',
+      [baseTheme.breakpoints.up('sm')]: {
+        fontSize: '0.875rem',
+      },
+      [baseTheme.breakpoints.up('md')]: {
+        fontSize: '1rem',
+      },
+    },
+    body1: {
+      fontWeight: 400,
+      fontSize: '0.688rem',
+      [baseTheme.breakpoints.up('sm')]: {
+        fontSize: '0.875rem',
+      },
+      [baseTheme.breakpoints.up('md')]: {
+        fontSize: '1rem',
+      },
+      [baseTheme.breakpoints.up('lg')]: {
+        fontSize: '1.125rem',
       },
     },
   },

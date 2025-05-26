@@ -27,20 +27,21 @@ function TabPanel(props: TabPanelProps) {
         flex: 1,
         display: value === index ? 'flex' : 'none',
         flexDirection: 'column',
-        overflow: 'hidden', // Prevent overflow from this container
+        overflow: 'hidden',
+        minHeight: 0, // Allow flex child to shrink
       }}
     >
       {value === index && (
         <Box
           sx={{
             flex: 1,
-            borderRadius: '0px 8px 8px 8px',
+            borderRadius: '0px 6px 6px 6px',
             backgroundColor: 'white',
             boxShadow: 3,
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden', // Important: contain the overflow
-            maxHeight: '100%', // Ensure it doesn't exceed parent
+            overflow: 'hidden',
+            minHeight: 0, // Allow flex child to shrink
           }}
         >
           <Box
@@ -48,16 +49,15 @@ function TabPanel(props: TabPanelProps) {
               flex: 1,
               overflowY: 'auto',
               p: 2,
-              maxHeight: '100%', // Constraint for scrolling
             }}
           >
             <Stack spacing={2}>
               {children}
               <Box>
-                <Typography sx={{ fontWeight: 'bold', m: 0, mb: 1 }} fontSize="18px">
+                <Typography sx={{ fontWeight: 'bold', m: 0, mb: 1 }} variant="h5">
                   Sunway University
                 </Typography>
-                <Typography fontSize="14px" justifySelf={'center'} sx={{ color: 'text.secondary' }}>
+                <Typography justifySelf={'center'} sx={{ color: 'text.secondary' }}>
                   Renowned for its cutting-edge architecture and vibrant campus life, Sunway
                   University is a hub of innovation and academic excellence, offering visitors a
                   glimpse into the heart of education and creativity.
@@ -65,10 +65,10 @@ function TabPanel(props: TabPanelProps) {
               </Box>
               <Divider sx={{ my: 2 }} />
               <Box>
-                <Typography sx={{ fontWeight: 'bold', m: 0, mb: 1 }} fontSize="18px">
+                <Typography sx={{ fontWeight: 'bold', m: 0, mb: 1 }} variant="h5">
                   Sunway Lagoon
                 </Typography>
-                <Typography fontSize="14px" justifySelf={'center'} sx={{ color: 'text.secondary' }}>
+                <Typography justifySelf={'center'} sx={{ color: 'text.secondary' }}>
                   A world-class theme park featuring thrilling water slides, wildlife encounters,
                   and exhilarating rides, Sunway Lagoon is a paradise for adventure seekers and
                   families alike.
@@ -76,10 +76,10 @@ function TabPanel(props: TabPanelProps) {
               </Box>
               <Divider sx={{ my: 2 }} />
               <Box>
-                <Typography sx={{ fontWeight: 'bold', m: 0, mb: 1 }} fontSize="18px">
+                <Typography sx={{ fontWeight: 'bold', m: 0, mb: 1 }} variant="h5">
                   Sunway Pyramid
                 </Typography>
-                <Typography fontSize="14px" justifySelf={'center'} sx={{ color: 'text.secondary' }}>
+                <Typography justifySelf={'center'} sx={{ color: 'text.secondary' }}>
                   With its iconic pyramid-shaped architecture and sphinx, Sunway Pyramid is a
                   premier shopping and entertainment destination, offering a blend of retail
                   therapy, international cuisines, and ice-skating fun.
@@ -87,10 +87,10 @@ function TabPanel(props: TabPanelProps) {
               </Box>
               <Divider sx={{ my: 2 }} />
               <Box>
-                <Typography sx={{ fontWeight: 'bold', m: 0, mb: 1 }} fontSize="18px">
+                <Typography sx={{ fontWeight: 'bold', m: 0, mb: 1 }} variant="h5">
                   Sunway Resort
                 </Typography>
-                <Typography fontSize="14px" justifySelf={'center'} sx={{ color: 'text.secondary' }}>
+                <Typography justifySelf={'center'} sx={{ color: 'text.secondary' }}>
                   A luxury resort offering world-class amenities, spa services, and fine dining
                   experiences in the heart of Sunway City, perfect for relaxation and business
                   travelers.
@@ -98,25 +98,15 @@ function TabPanel(props: TabPanelProps) {
               </Box>
               <Divider sx={{ my: 2 }} />
               <Box>
-                <Typography sx={{ fontWeight: 'bold', m: 0, mb: 1 }} fontSize="18px">
+                <Typography sx={{ fontWeight: 'bold', m: 0, mb: 1 }} variant="h5">
                   Sunway Medical Centre
                 </Typography>
-                <Typography fontSize="14px" justifySelf={'center'} sx={{ color: 'text.secondary' }}>
+                <Typography sx={{ color: 'text.secondary' }}>
                   A leading healthcare facility providing comprehensive medical services with
                   state-of-the-art technology and expert medical professionals.
                 </Typography>
               </Box>
               <Divider sx={{ my: 2 }} />
-              <Box>
-                <Typography sx={{ fontWeight: 'bold', m: 0, mb: 1 }} fontSize="18px">
-                  Additional Content
-                </Typography>
-                <Typography fontSize="14px" justifySelf={'center'} sx={{ color: 'text.secondary' }}>
-                  This is additional content to demonstrate the scrolling behavior when content
-                  exceeds the container height. The TabPanel should maintain the same height as the
-                  image while allowing this content to scroll vertically.
-                </Typography>
-              </Box>
             </Stack>
           </Box>
         </Box>
@@ -143,43 +133,62 @@ export default function ColorTabs() {
     <Box
       sx={{
         width: '100%',
-        aspectRatio: {
-          xs: '1 / 1', // Square on mobile
-          md: '1 / 1', // Square on medium screens (6/6 split)
-          lg: '7 / 5', // Adjust ratio for lg screens (7/5 split)
-        },
+        height: '100%', // Take full height of parent
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden', // Prevent the container from growing
+        overflow: 'hidden',
+        minHeight: 0, // Allow flex child to shrink below content size
       }}
     >
       <Tabs
         value={value}
         onChange={handleChange}
-        textColor="secondary"
-        indicatorColor="secondary"
+        indicatorColor="primary"
         sx={{
-          flexShrink: 0, // Prevent tabs from shrinking
-          zIndex: 1, // Ensure tabs stay on top
+          flexShrink: 0,
+          zIndex: 1,
+          '& .MuiTabs-root, .MuiButtonBase-root, .MuiTabs-scroller,': {
+            minHeight: { xs: '40px', md: '48px' },
+            maxHeight: { xs: '40px', md: '48px' },
+          },
+          '& .MuiTab-root': {
+            width: '110px',
+            fontWeight: 'bold',
+            borderRadius: '6px 6px 0 0',
+            backgroundColor: 'white',
+            zIndex: 1,
+            position: 'relative',
+            transition: 'all 0.2s ease',
+          },
+          '& .Mui-selected': {
+            zIndex: 2,
+            boxShadow: 3,
+            backgroundColor: 'white',
+            color: '#2A3547',
+          },
+          '& .MuiTabs-indicator': {
+            zIndex: 3,
+          },
         }}
       >
         <Tab
           label="AR SPOTS"
-          sx={{ backgroundColor: 'white', borderRadius: '8px 8px 0px 0px', boxShadow: 3 }}
+          sx={{
+            backgroundColor: 'white',
+            borderRadius: '8px 8px 0px 0px',
+            boxShadow: 3,
+            fontWeight: 'bold',
+          }}
           {...a11yProps(0)}
         />
         <Tab
           label="EVENTS"
-          sx={{ backgroundColor: 'white', borderRadius: '8px 8px 0px 0px', minWidth: '100px' }}
+          sx={{ backgroundColor: 'white', borderRadius: '8px 8px 0px 0px', fontWeight: 'bold' }}
           {...a11yProps(1)}
         />
       </Tabs>
-      <TabPanel value={value} index={0}>
-        Lorem Ipsum 1
-      </TabPanel>
-      <TabPanel value={value} index={1}>
-        Lorem Ipsum 2
-      </TabPanel>
+      <TabPanel value={value} index={0}></TabPanel>
+      <TabPanel value={value} index={1}></TabPanel>
     </Box>
   );
 }
