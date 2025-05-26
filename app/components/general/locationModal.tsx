@@ -20,7 +20,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 
-interface CustomModalProps {
+interface LocationModalProps {
   open: boolean;
   onClose: () => void;
   title?: string;
@@ -33,7 +33,7 @@ interface CustomModalProps {
   sx?: SxProps<Theme>;
 }
 
-const CustomModal: React.FC<CustomModalProps> = ({
+const LocationModal: React.FC<LocationModalProps> = ({
   open,
   onClose,
   title = 'Sunway University',
@@ -267,4 +267,4 @@ const CustomModal: React.FC<CustomModalProps> = ({
   );
 };
 
-export default CustomModal;
+export default LocationModal;

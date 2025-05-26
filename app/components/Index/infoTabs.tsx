@@ -4,7 +4,7 @@ import * as React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import LocationModal from '../general/locationModal'; // Adjust path as needed
+import LocationModal from '../general/locationModal';
 import { Divider, Stack, Typography } from '@mui/material';
 
 interface TabPanelProps {

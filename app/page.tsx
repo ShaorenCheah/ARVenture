@@ -1,15 +1,28 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Tabs from './components/index/infoTabs';
+import StepsModal from './components/index/stepsModal';
 import { Card } from '@mui/material';
 
 export default function Home() {
+  const [openStepsModal, setOpenStepsModal] = useState(false);
+
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setOpenStepsModal(true);
+  }, 10);
+
+  return () => clearTimeout(timer);
+}, []);
+
   return (
     <Box
       component="main"
       sx={{
         width: '100%',
-        // calc(100vh - header height - padding (top + btm) - footer height)
         height: {
           xs: 'calc(100vh - 40px - 40px - 56px)',
           sm: 'calc(100vh - 40px - 48px - 56px)',
@@ -101,6 +114,9 @@ export default function Home() {
           </Box>
         </Grid>
       </Grid>
+
+      {/* Steps Modal */}
+      <StepsModal open={openStepsModal} onClose={() => setOpenStepsModal(false)} />
     </Box>
   );
 }
