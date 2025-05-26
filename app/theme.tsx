@@ -93,7 +93,7 @@ let theme = createTheme(baseTheme, {
       },
       [baseTheme.breakpoints.up('lg')]: {
         fontSize: '1.125rem',
-      }
+      },
     },
     body2: {
       fontWeight: 400,

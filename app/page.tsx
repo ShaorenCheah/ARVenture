@@ -10,13 +10,13 @@ import { Card } from '@mui/material';
 export default function Home() {
   const [openStepsModal, setOpenStepsModal] = useState(false);
 
-useEffect(() => {
-  const timer = setTimeout(() => {
-    setOpenStepsModal(true);
-  }, 10);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setOpenStepsModal(true);
+    }, 1000);
 
-  return () => clearTimeout(timer);
-}, []);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <Box

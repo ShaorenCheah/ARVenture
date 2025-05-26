@@ -1,16 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  Box,
-  Modal,
-  Typography,
-  SxProps,
-  Theme,
-  Button,
-  Fade,
-  Stack,
-} from '@mui/material';
+import { Box, Modal, Typography, SxProps, Theme, Button, Fade, Stack } from '@mui/material';
 
 interface StepsModalProps {
   open: boolean;
@@ -103,13 +94,7 @@ const StepsModal: React.FC<StepsModalProps> = ({ open, onClose, sx = {} }) => {
         >
           {/* Step content with Fade */}
           {steps.map((step, index) => (
-            <Fade
-              key={index}
-              in={currentStep === index}
-              timeout={500}
-              unmountOnExit
-              mountOnEnter
-            >
+            <Fade key={index} in={currentStep === index} timeout={500} unmountOnExit mountOnEnter>
               <Stack
                 alignItems="center"
                 sx={{
@@ -137,8 +122,8 @@ const StepsModal: React.FC<StepsModalProps> = ({ open, onClose, sx = {} }) => {
                     aspectRatio: '3/2',
                     maxHeight: 240,
                     position: 'relative',
-                    mt:1.5,
-                    mb: 2.5
+                    mt: 1.5,
+                    mb: 2.5,
                   }}
                 >
                   <Box
@@ -190,8 +175,7 @@ const StepsModal: React.FC<StepsModalProps> = ({ open, onClose, sx = {} }) => {
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    backgroundColor:
-                      index === currentStep ? 'primary.main' : 'grey.300',
+                    backgroundColor: index === currentStep ? 'primary.main' : 'grey.300',
                   }}
                 />
               ))}
