@@ -50,8 +50,8 @@ const StepsModal: React.FC<StepsModalProps> = ({ open, onClose, sx = {} }) => {
       xs: 'translateX(-50%)',
       sm: 'translate(-50%, -50%)',
     },
-    width: { xs: '100%', sm: '60%', md: '50%', lg: '50%', xl: '25%' },
-    height: { xs: '50vh', sm: '50vh', md: '52vh', lg: '40vh', xl: '50vh' },
+    width: { xs: '100%', sm: '425px', md: '475px', lg: '525px', xl: '575px' },
+    height: { xs: '400px', sm: '525px', md: '550px', lg: '575px', xl: '600px' },
     maxHeight: '100vh',
     bgcolor: 'background.paper',
     borderRadius: { xs: '8px 8px 0 0', sm: 3 },
@@ -60,8 +60,8 @@ const StepsModal: React.FC<StepsModalProps> = ({ open, onClose, sx = {} }) => {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    p: { xs: 3, sm: 4, md: 5 },
-    pb: { xs: 2, sm: 3, md: 4 },
+    p: { xs: 4, sm: 4, md: 5 },
+    px: { xs: 6, sm: 8, md: 10 },
     ...sx,
   };
 
@@ -81,90 +81,70 @@ const StepsModal: React.FC<StepsModalProps> = ({ open, onClose, sx = {} }) => {
       }}
     >
       <Box sx={modalStyle}>
-        <Box
+        <Stack
           sx={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
-            position: 'relative',
+            justifyContent: 'space-between',
             overflow: 'hidden',
             minHeight: { xs: 350, sm: 420 },
           }}
         >
-          {/* Step content with Fade */}
-          {steps.map((step, index) => (
-            <Fade key={index} in={currentStep === index} timeout={500} unmountOnExit mountOnEnter>
-              <Stack
-                alignItems="center"
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                }}
-              >
-                <Typography
-                  variant="h5"
-                  component="h2"
-                  sx={{
-                    fontWeight: 'bold',
-                    color: 'text.primary',
-                    textAlign: 'center',
-                  }}
-                >
-                  {step.title}
-                </Typography>
+          {/* Step content */}
 
-                <Box
-                  sx={{
-                    height: { xs: '150px', sm: '240px', md: '300px', lg: '360px' },
-                    aspectRatio: '3/2',
-                    maxHeight: 240,
-                    position: 'relative',
-                    mt: 1.5,
-                    mb: 2.5,
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src={`/steps/step${index + 1}.png`}
-                    alt={`Step ${index + 1}`}
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                    }}
-                  />
-                </Box>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: 'text.secondary',
-                    lineHeight: 1.6,
-                    textAlign: 'center',
-                  }}
-                >
-                  {step.description}
-                </Typography>
-              </Stack>
-            </Fade>
-          ))}
+          <Typography
+            variant="h5"
+            component="h2"
+            sx={{
+              fontWeight: 'bold',
+              color: 'text.primary',
+              textAlign: 'center',
+            }}
+          >
+            {steps[currentStep].title}
+          </Typography>
 
+          <Box
+            sx={{
+              height: { xs: '125px', sm: '200px', md: '275px', lg: '350px' },
+              aspectRatio: '3/2',
+              maxHeight: 240,
+              position: 'relative',
+            }}
+          >
+            <Box
+              component="img"
+              src={`/steps/step${currentStep + 1}.png`}
+              alt={`Step ${currentStep + 1}`}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+              }}
+            />
+          </Box>
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'text.secondary',
+              lineHeight: 1.6,
+              textAlign: 'center',
+            }}
+          >
+            {steps[currentStep].description}
+          </Typography>
           {/* Pagination Dots */}
-          <Stack>
+          <Stack
+            sx={{
+              gap: 2,
+            }}
+          >
             <Box
               sx={{
                 display: 'flex',
                 justifyContent: 'center',
                 gap: 1,
-                position: 'absolute',
-                bottom: 72,
-                left: 0,
-                right: 0,
                 zIndex: 1,
               }}
             >
@@ -182,14 +162,7 @@ const StepsModal: React.FC<StepsModalProps> = ({ open, onClose, sx = {} }) => {
             </Box>
 
             {/* Action Button */}
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: 16,
-                left: 24,
-                right: 24,
-              }}
-            >
+            <Box sx={{}}>
               <Button
                 variant="contained"
                 fullWidth
@@ -207,7 +180,7 @@ const StepsModal: React.FC<StepsModalProps> = ({ open, onClose, sx = {} }) => {
               </Button>
             </Box>
           </Stack>
-        </Box>
+        </Stack>
       </Box>
     </Modal>
   );

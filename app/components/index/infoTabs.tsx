@@ -141,7 +141,7 @@ export default function InfoTabs() {
       <Box
         sx={{
           width: '100%',
-          height: '100%', // Take full height of parent
+          height: { xs: '375px', md: '475px', lg: '100vh' },
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -196,7 +196,14 @@ export default function InfoTabs() {
           />
         </Tabs>
         <TabPanel value={value} index={0} handleOpen={handleOpen}></TabPanel>
-        <TabPanel value={value} index={1}></TabPanel>
+        <TabPanel value={value} index={1}>
+          <>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+              Why did you click this tab?
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+          </>
+        </TabPanel>
       </Box>
 
       <LocationModal open={open} onClose={handleClose} />

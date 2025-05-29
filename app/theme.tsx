@@ -109,6 +109,26 @@ let theme = createTheme(baseTheme, {
       },
     },
   },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#ccc transparent',
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: '#ccc',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'transparent',
+          },
+        },
+      },
+    },
+  },
 });
 
 theme = responsiveFontSizes(theme);

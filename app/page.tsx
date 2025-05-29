@@ -24,9 +24,7 @@ export default function Home() {
       sx={{
         width: '100%',
         height: {
-          xs: 'calc(100vh - 40px - 40px - 56px)',
-          sm: 'calc(100vh - 40px - 48px - 56px)',
-          md: 'calc(100vh - 40px - 64px - 56px)',
+          xs: 'unset',
           lg: 'calc(100vh - 48px - 64px - 64px)',
           xl: 'calc(100vh - 56px - 64px - 64px)',
         },
@@ -58,6 +56,7 @@ export default function Home() {
               sm: '50%',
               lg: '100%',
             },
+            maxHeight: { xs: '325px', sm: '400px', md: '425px', lg: '100%' },
             aspectRatio: '1/1',
             flexShrink: { xs: 0, md: 1 },
           }}
@@ -65,7 +64,7 @@ export default function Home() {
           <Card
             variant="outlined"
             sx={{
-              width: { xs: '100%', sm: '40%', lg: '100%' },
+              // width: { xs: '100%', sm: '40%', lg: '100%' },
               height: '100%',
               aspectRatio: '1/1',
               overflow: 'hidden',

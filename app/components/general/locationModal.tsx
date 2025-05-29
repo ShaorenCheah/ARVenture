@@ -84,7 +84,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
           sx={{
             position: 'absolute',
             top: 16,
-            right: 16,
+            right: 25,
             zIndex: 10,
             bgcolor: 'rgba(255, 255, 255, 0.9)',
             '&:hover': {
@@ -125,7 +125,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
               sx={{
                 position: 'absolute',
                 bottom: 16,
-                right: 16,
+                right: 25,
                 bgcolor: 'primary.main',
                 color: 'white',
                 fontWeight: 'medium',
@@ -242,19 +242,20 @@ const LocationModal: React.FC<LocationModalProps> = ({
                     'https://www.kivicube.com/scenes/v148t6VXU9enIyHML79pUr53JqY01ozI')
                 }
                 variant="contained"
-                size="large"
+                size="medium"
                 startIcon={<CameraAltIcon />}
                 sx={{
                   bgcolor: 'error.main',
                   '&:hover': {
                     bgcolor: 'error.dark',
                   },
-                  py: 2,
+                  py: 1,
                   borderRadius: 8,
                   fontWeight: 'bold',
                   fontSize: '1rem',
                   boxShadow: 3,
-                  width: { xs: '100%', sm: '50%' },
+                  width: '100%',
+                  maxWidth: { xs: '100%', sm: '300px', md: '350px', lg: '400px' },
                 }}
               >
                 SCAN AR MARKER
