@@ -30,7 +30,7 @@ export default function Home() {
         },
         display: 'flex',
         flexDirection: 'column',
-        pb: { xs: 2.5, sm: 3, md: 4 },
+        mb: { xs: 2.5, sm: 3, md: 4 },
       }}
     >
       <Grid

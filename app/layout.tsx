@@ -22,9 +22,9 @@ export default function RootLayout({
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
               backgroundAttachment: 'scroll',
-              px: { xs: 2.5, sm: 3, md: 4, xl: 25 },
-              pt: { xs: 2.5, sm: 3, md: 4 },
-              pb: { xs: '56px', lg: '64px' },
+              mx: { xs: 2.5, sm: 3, md: 4, xl: 25 },
+              mt: { xs: 2.5, sm: 3, md: 4 },
+              mb: { xs: '56px', lg: '64px' },
             }}
           >
             <Header />
