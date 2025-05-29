@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 
 export default function Header() {
   return (
-    <Box component="header" sx={{ pb: { xs: 2.5, sm: 3, md: 4 } }}>
+    <Box component="header" sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
       <Box>
         <Box
           position="static"
