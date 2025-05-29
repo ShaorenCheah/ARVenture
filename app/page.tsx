@@ -1,19 +1,30 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Tabs from './components/Index/infoTabs';
+import Tabs from './components/index/infoTabs';
+import StepsModal from './components/index/stepsModal';
 import { Card } from '@mui/material';
 
 export default function Home() {
+  const [openStepsModal, setOpenStepsModal] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setOpenStepsModal(true);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <Box
       component="main"
       sx={{
         width: '100%',
-        // calc(100vh - header height - padding (top + btm) - footer height)
         height: {
-          xs: 'calc(100vh - 40px - 40px - 56px)',
-          sm: 'calc(100vh - 40px - 48px - 56px)',
-          md: 'calc(100vh - 40px - 64px - 56px)',
+          xs: 'unset',
           lg: 'calc(100vh - 48px - 64px - 64px)',
           xl: 'calc(100vh - 56px - 64px - 64px)',
         },
@@ -45,6 +56,7 @@ export default function Home() {
               sm: '50%',
               lg: '100%',
             },
+            maxHeight: { xs: '325px', sm: '400px', md: '425px', lg: '100%' },
             aspectRatio: '1/1',
             flexShrink: { xs: 0, md: 1 },
           }}
@@ -52,7 +64,7 @@ export default function Home() {
           <Card
             variant="outlined"
             sx={{
-              width: { xs: '100%', sm: '40%', lg: '100%' },
+              // width: { xs: '100%', sm: '40%', lg: '100%' },
               height: '100%',
               aspectRatio: '1/1',
               overflow: 'hidden',
@@ -101,6 +113,9 @@ export default function Home() {
           </Box>
         </Grid>
       </Grid>
+
+      {/* Steps Modal */}
+      <StepsModal open={openStepsModal} onClose={() => setOpenStepsModal(false)} />
     </Box>
   );
 }
