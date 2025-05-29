@@ -24,13 +24,13 @@ export default function Home() {
       sx={{
         width: '100%',
         height: {
-          xs: 'unset',
+          xs: '100%',
           lg: 'calc(100vh - 48px - 64px - 64px)',
           xl: 'calc(100vh - 56px - 64px - 64px)',
         },
         display: 'flex',
         flexDirection: 'column',
-        mb: { xs: 2.5, sm: 3, md: 4 },
+        pb: { xs: 2.5, sm: 3, md: 4 },
       }}
     >
       <Grid
@@ -56,7 +56,7 @@ export default function Home() {
               sm: '50%',
               lg: '100%',
             },
-            maxHeight: { xs: '325px', sm: '400px', md: '425px', lg: '100%' },
+            maxHeight: { xs: 'unset', sm: '400px', md: '425px', lg: '100%' },
             aspectRatio: '1/1',
             flexShrink: { xs: 0, md: 1 },
           }}
