@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import Providers from './components/themeRegistry';
 import Footer from './components/footer';
 import Header from './components/header';
+import UserModal from './components/general/user/userModal';
 
 export default function RootLayout({
   children,
@@ -22,9 +23,9 @@ export default function RootLayout({
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
               backgroundAttachment: 'scroll',
-              px: { xs: 2.5, sm: 3, md: 4, xl: 25 },
+              px: { xs: 2.5, sm: 3, md: 4, lg: 20, xl: 25 },
               pt: { xs: 2.5, sm: 3, md: 4 },
-              pb: { xs: '56px', lg: '64px' },
+              pb: { xs: '56px', lg: '80px' },
             }}
           >
             <Header />

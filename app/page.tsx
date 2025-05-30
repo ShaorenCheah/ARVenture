@@ -23,10 +23,11 @@ export default function Home() {
       component="main"
       sx={{
         width: '100%',
+        // 100vh - header - footer - total padding
         height: {
           xs: '100%',
-          lg: 'calc(100vh - 48px - 64px - 64px)',
-          xl: 'calc(100vh - 56px - 64px - 64px)',
+          lg: 'calc(100vh - 72px - 80px - 32px)',
+          xl: 'calc(100vh - 88px - 80px - 32px)',
         },
         display: 'flex',
         flexDirection: 'column',
