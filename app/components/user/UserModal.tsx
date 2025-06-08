@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Box, Modal, SxProps, Theme } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Modal, SxProps, Theme, Fade } from '@mui/material';
 import LoginForm from './login/LoginForm';
 import RegisterForm from './register/RegisterForm';
 import { useAuth } from '../../auth/AuthContext';
 import ProfileModal from './profile/ProfileModal';
+import ForgotPasswordForm from './forgotPassword/ForgotPasswordForm';
 
 interface UserModalProps {
   open: boolean;
@@ -14,8 +15,19 @@ interface UserModalProps {
 }
 
 const UserModal: React.FC<UserModalProps> = ({ open, onClose, sx = {} }) => {
-  const { user, loading } = useAuth();
-  const [view, setView] = useState<'login' | 'register'>('login');
+  const { user } = useAuth();
+  const [view, setView] = useState<'login' | 'register' | 'forgot'>('login');
+  const [localUser, setLocalUser] = useState(user); // <- local copy
+
+  // Delay update of localUser until modal fully closes
+  useEffect(() => {
+    if (!open) {
+      const timeout = setTimeout(() => {
+        setLocalUser(user);
+      }, 300); // allow modal to fade out before setting
+      return () => clearTimeout(timeout);
+    }
+  }, [open, user]);
 
   const modalStyle: SxProps<Theme> = {
     position: 'absolute',
@@ -39,6 +51,27 @@ const UserModal: React.FC<UserModalProps> = ({ open, onClose, sx = {} }) => {
     ...sx,
   };
 
+  const renderContent = () => {
+    if (localUser) {
+      return <ProfileModal user={localUser} onLogout={onClose} />;
+    }
+
+    switch (view) {
+      case 'login':
+        return (
+          <LoginForm
+            onSwitch={() => setView('register')}
+            onForgot={() => setView('forgot')}
+            onSuccess={onClose}
+          />
+        );
+      case 'register':
+        return <RegisterForm onSwitch={() => setView('login')} />;
+      case 'forgot':
+        return <ForgotPasswordForm onSwitch={() => setView('login')} />;
+    }
+  };
+
   return (
     <Modal
       open={open}
@@ -49,15 +82,13 @@ const UserModal: React.FC<UserModalProps> = ({ open, onClose, sx = {} }) => {
         },
       }}
     >
-      <Box sx={modalStyle}>
-        {user ? (
-          <ProfileModal user={user} onLogout={onClose} />
-        ) : view === 'login' ? (
-          <LoginForm onSwitch={() => setView('register')} />
-        ) : (
-          <RegisterForm onSwitch={() => setView('login')} />
-        )}
-      </Box>
+      <Fade in={open} timeout={400}>
+        <Box sx={modalStyle} key={view}>
+          <Fade in key={view} timeout={400}>
+            <Box>{renderContent()}</Box>
+          </Fade>
+        </Box>
+      </Fade>
     </Modal>
   );
 };

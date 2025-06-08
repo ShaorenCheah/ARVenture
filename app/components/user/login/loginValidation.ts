@@ -1,5 +1,10 @@
 import * as yup from 'yup';
 
+export interface LoginFormInputs {
+  email: string;
+  password: string;
+}
+
 const loginSchema = yup.object().shape({
   email: yup.string().email('Enter a valid email').required('Email is required'),
   password: yup.string().min(6, 'Minimum 6 characters').required('Password is required'),
