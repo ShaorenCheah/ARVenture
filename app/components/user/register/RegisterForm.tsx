@@ -27,9 +27,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
     try {
       setLoading(true);
       await registerWithEmail(data.name, data.email, data.password);
-      toast.success('Account created successfully! Please check your email for verification.');
+      toast.success('Account created successfully! Please check your email for verification.', {
+        duration: 8000,
+      });
     } catch (error: any) {
-      toast.error(error.message || 'Registration failed');
+      toast.error(error.message || 'Registration failed', { duration: 6000 });
     } finally {
       setLoading(false);
     }
