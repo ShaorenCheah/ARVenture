@@ -3,13 +3,13 @@
 import React, { useState } from 'react';
 import { Box, Modal, Typography, SxProps, Theme, Button, Fade, Stack } from '@mui/material';
 
-interface StepsModalProps {
+interface GuideModalProps {
   open: boolean;
   onClose: () => void;
   sx?: SxProps<Theme>;
 }
 
-const StepsModal: React.FC<StepsModalProps> = ({ open, onClose, sx = {} }) => {
+const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
   const [currentStep, setCurrentStep] = useState(0);
 
   const steps = [
@@ -186,4 +186,4 @@ const StepsModal: React.FC<StepsModalProps> = ({ open, onClose, sx = {} }) => {
   );
 };
 
-export default StepsModal;
+export default GuideModal;

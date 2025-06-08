@@ -10,7 +10,7 @@ import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import RedeemOutlinedIcon from '@mui/icons-material/RedeemOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
-import UserModal from './general/user/userModal';
+import UserModal from './user/UserModal';
 import { Stack, Box } from '@mui/material';
 
 export default function BottomAppBar() {

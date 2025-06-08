@@ -3,16 +3,16 @@
 import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Tabs from './components/index/infoTabs';
-import StepsModal from './components/index/stepsModal';
+import Tabs from './components/index/InfoTabs';
+import GuideModal from './components/index/GuideModal';
 import { Card } from '@mui/material';
 
 export default function Home() {
-  const [openStepsModal, setOpenStepsModal] = useState(false);
+  const [openGuideModal, setOpenGuideModal] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setOpenStepsModal(true);
+      setOpenGuideModal(true);
     }, 1000);
 
     return () => clearTimeout(timer);
@@ -116,7 +116,7 @@ export default function Home() {
       </Grid>
 
       {/* Steps Modal */}
-      <StepsModal open={openStepsModal} onClose={() => setOpenStepsModal(false)} />
+      <GuideModal open={openGuideModal} onClose={() => setOpenGuideModal(false)} />
     </Box>
   );
 }
