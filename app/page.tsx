@@ -3,20 +3,27 @@
 import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Tabs from './components/index/infoTabs';
-import StepsModal from './components/index/stepsModal';
+import Tabs from './components/index/InfoTabs';
+import GuideModal from './components/index/GuideModal';
 import { Card } from '@mui/material';
+import { useAuth } from './auth/AuthContext';
 
 export default function Home() {
-  const [openStepsModal, setOpenStepsModal] = useState(false);
+  const [openGuideModal, setOpenGuideModal] = useState(false);
+  const { user } = useAuth(); // Access user auth state
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setOpenStepsModal(true);
-    }, 1000);
+    const hasShownGuide = sessionStorage.getItem('guideShown');
 
-    return () => clearTimeout(timer);
-  }, []);
+    if (!user && !hasShownGuide) {
+      const timer = setTimeout(() => {
+        setOpenGuideModal(true);
+        sessionStorage.setItem('guideShown', 'true');
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
 
   return (
     <Box
@@ -25,8 +32,8 @@ export default function Home() {
         width: '100%',
         height: {
           xs: '100%',
-          lg: 'calc(100vh - 48px - 64px - 64px)',
-          xl: 'calc(100vh - 56px - 64px - 64px)',
+          lg: 'calc(100vh - 72px - 80px - 32px)',
+          xl: 'calc(100vh - 88px - 80px - 32px)',
         },
         display: 'flex',
         flexDirection: 'column',
@@ -38,11 +45,7 @@ export default function Home() {
         flexWrap="nowrap"
         flexDirection={{ xs: 'column', lg: 'row' }}
         spacing={{ xs: 2, md: 2.5 }}
-        sx={{
-          alignItems: 'start',
-          height: '100%',
-          flex: 1,
-        }}
+        sx={{ alignItems: 'start', height: '100%', flex: 1 }}
       >
         {/* Map Section */}
         <Grid
@@ -64,7 +67,6 @@ export default function Home() {
           <Card
             variant="outlined"
             sx={{
-              // width: { xs: '100%', sm: '40%', lg: '100%' },
               height: '100%',
               aspectRatio: '1/1',
               overflow: 'hidden',
@@ -91,14 +93,7 @@ export default function Home() {
         </Grid>
 
         {/* Info Section */}
-        <Grid
-          size={{ xs: 12, lg: 6 }}
-          sx={{
-            height: '100%',
-            flex: { xs: 1, lg: 'unset' },
-            minHeight: { xs: 0, lg: 'unset' },
-          }}
-        >
+        <Grid size={{ xs: 12, lg: 6 }} sx={{ height: '100%', flex: { xs: 1, lg: 'unset' } }}>
           <Box
             sx={{
               width: '100%',
@@ -114,8 +109,8 @@ export default function Home() {
         </Grid>
       </Grid>
 
-      {/* Steps Modal */}
-      <StepsModal open={openStepsModal} onClose={() => setOpenStepsModal(false)} />
+      {/* Guide Modal */}
+      <GuideModal open={openGuideModal} onClose={() => setOpenGuideModal(false)} />
     </Box>
   );
 }
