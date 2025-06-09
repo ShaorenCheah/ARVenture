@@ -1,7 +1,9 @@
 'use client';
 
 import { Box } from '@mui/material';
+import { usePathname } from 'next/navigation';
 import Header from './header';
+import SearchBar from '../index/search/SearchBar';
 import Footer from './footer';
 
 interface MainLayoutProps {
@@ -17,6 +19,9 @@ export default function MainLayout({
   showFooter = true,
   backgroundImage = '/background.png',
 }: MainLayoutProps) {
+  const pathname = usePathname();
+  const isLanding = pathname === '/';
+
   return (
     <Box
       minHeight="100vh"
@@ -32,10 +37,12 @@ export default function MainLayout({
         pb: { xs: '56px', lg: '80px' },
       }}
     >
-      {showHeader && <Header />}
+      {showHeader && (isLanding ? <SearchBar /> : <Header />)}
+
       <Box component="main" sx={{ flex: 1 }}>
         {children}
       </Box>
+
       {showFooter && <Footer />}
     </Box>
   );

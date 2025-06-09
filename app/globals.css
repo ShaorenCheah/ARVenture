@@ -20,6 +20,13 @@ body {
   height: auto;
   min-height: 100%;
   overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Hide scrollbar in WebKit browsers */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
 }
 
 /* Reset all elements */

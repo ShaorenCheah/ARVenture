@@ -76,6 +76,8 @@ export default function InfoTabs() {
             backgroundColor: 'white',
             borderRadius: '0 6px 6px 6px',
             boxShadow: 3,
+            scrollbarWidth: 'none', // Firefox
+            '&::-webkit-scrollbar': { display: 'none' }, // Chrome, Safari
           }}
         >
           {tabIndex === 0 ? (

@@ -103,6 +103,8 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) =>
             maxHeight: { xs: 'calc(75vh - 56px)', sm: 'calc(85vh - 56px)' },
             display: 'flex',
             flexDirection: 'column',
+            scrollbarWidth: 'none', // Firefox
+            '&::-webkit-scrollbar': { display: 'none' }, // Chrome, Safari
           }}
         >
           {/* Header Image */}
