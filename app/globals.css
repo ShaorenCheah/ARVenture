@@ -43,6 +43,12 @@ body::-webkit-scrollbar {
   border: 2px solid red;
 } */
 
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
 /* Reset Next.js wrapper if using App Router */
 #__next,
 #root {
@@ -51,3 +57,4 @@ body::-webkit-scrollbar {
   margin: 0 !important;
   padding: 0 !important;
 }
+
