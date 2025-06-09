@@ -127,6 +127,20 @@ let theme = createTheme(baseTheme, {
         },
       },
     },
+     MuiInputBase: {
+      styleOverrides: {
+        input: {
+          fontSize: '16px',
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          fontSize: '16px',
+        },
+      },
+    },
   },
 });
 
