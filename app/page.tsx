@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Tabs from './components/index/InfoTabs';
+import Tabs from './components/index/contentTabs/InfoTabs';
 import GuideModal from './components/index/GuideModal';
 import { Card } from '@mui/material';
 import { useAuth } from './auth/AuthContext';

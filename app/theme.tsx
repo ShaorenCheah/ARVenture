@@ -1,7 +1,6 @@
 // theme.ts
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
-// Step 1: Create a base theme to access breakpoints
 let baseTheme = createTheme({
   palette: {
     primary: { main: '#ED1D24' },
