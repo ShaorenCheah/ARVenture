@@ -14,7 +14,8 @@ export default function Header() {
           minHeight: { xs: '40px', lg: '48px', xl: '56px' },
           backgroundColor: 'white',
           boxShadow: 2,
-          px: 2,
+          pl: 2,
+          pr: 1.5,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -31,9 +32,20 @@ export default function Header() {
             objectFit: 'contain',
           }}
         />
-        <IconButton onClick={() => setOpenSearch(true)}>
-          <SearchIcon />
-        </IconButton>
+        <Box
+          sx={{
+            bgcolor: 'white',
+            borderRadius: '50%',
+            boxShadow: 3,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <IconButton onClick={() => setOpenSearch(true)} sx={{ p: 0.5 }}>
+            <SearchIcon sx={{ fontSize: '16px' }} />
+          </IconButton>
+        </Box>
       </Box>
 
       <SearchDrawer open={openSearch} onClose={() => setOpenSearch(false)} />

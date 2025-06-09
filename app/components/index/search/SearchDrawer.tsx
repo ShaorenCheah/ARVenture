@@ -9,7 +9,6 @@ import {
   Chip,
   IconButton,
   Card,
-  Divider,
   useMediaQuery,
   useTheme,
   InputAdornment,
@@ -137,7 +136,9 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
             {/* Sticky Search Header */}
             <Box sx={{ position: 'sticky', top: 0, bgcolor: 'background.paper', zIndex: 1 }}>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                <Typography variant="h6">Search Nearby</Typography>
+                <Typography variant="h4" fontWeight="bold">
+                  Search Nearby
+                </Typography>
                 <IconButton onClick={onClose}>
                   <CloseIcon />
                 </IconButton>
@@ -209,7 +210,15 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                     </InputAdornment>
                   ),
                 }}
-                sx={{ mb: 2 }}
+                sx={{
+                  mb: 2,
+                  '& .MuiOutlinedInput-root': {
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'primary.main',
+                      borderWidth: '1.5px',
+                    },
+                  },
+                }}
               />
 
               {/* Suggestions Dropdown */}
@@ -259,8 +268,8 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                           {sug.rating && (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <Rating
-                                value={sug.rating}
-                                max={10}
+                                value={sug.rating / 2}
+                                max={5}
                                 precision={0.1}
                                 readOnly
                                 size="small"
@@ -276,15 +285,35 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                   ))}
                 </Box>
               )}
-              <Divider />
             </Box>
 
             {/* Search Results */}
-            <Box sx={{ overflowY: 'auto', flex: 1, pt: 2 }}>
+            <Box
+              sx={{
+                overflowY: 'auto',
+                flex: 1,
+                borderRadius: 2,
+                border: '1px solid #e0e0e0',
+                pt: 1,
+                pl: 1,
+                pr: 1,
+                mb: 2,
+                scrollbarWidth: 'none',
+                '&::-webkit-scrollbar': { display: 'none' },
+              }}
+            >
               {results.length === 0 && !query && !selectedCat ? (
-                <Box textAlign="center" mt={5}>
-                  <Typography variant="body2" color="text.secondary">
-                    Start exploring by typing or selecting a category 🧭
+                <Box
+                  textAlign="center"
+                  mt={5}
+                  display="flex"
+                  flexDirection="column"
+                  alignItems="center"
+                  gap={3}
+                >
+                  <img src="/search.png" alt="Search Icon" width={150} />
+                  <Typography variant="body1" color="text.secondary" mt={1.5}>
+                    Start exploring by typing or selecting a category
                   </Typography>
                 </Box>
               ) : validResults.length === 0 ? (
@@ -317,8 +346,8 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                         {place.rating && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <Rating
-                              value={place.rating}
-                              max={10}
+                              value={place.rating / 2}
+                              max={5}
                               precision={0.1}
                               readOnly
                               size="small"

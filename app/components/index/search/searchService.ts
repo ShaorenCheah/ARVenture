@@ -12,7 +12,7 @@ export const fetchPlaces = async (query: string, category: string = '') => {
     ll: SUNWAY_COORDINATES,
     radius: SUNWAY_RADIUS,
     sort: 'RATING', // Sort by rating for better tourist experience
-    limit: 20,
+    limit: 30,
     // Request additional fields for tourist information
     fields:
       'fsq_id,name,location,categories,rating,price,photos,hours,website,tel,email,description,tips,popularity,stats',
@@ -105,79 +105,6 @@ export const fetchPlaceDetails = async (fsq_id: string) => {
   } catch (error) {
     console.error('Error fetching place details:', error);
     return null;
-  }
-};
-
-// Get tourist-friendly places with enhanced data
-export const fetchTouristRecommendations = async () => {
-  const touristCategories = [
-    '16000', // Attractions
-    '13065', // Food & Dining
-    '17000', // Retail (Shopping)
-    '10000', // Entertainment
-    '16032', // Parks & Recreation
-    '12000', // Professional Services (for practical needs)
-  ];
-
-  const params = {
-    ll: SUNWAY_COORDINATES,
-    radius: SUNWAY_RADIUS,
-    categories: touristCategories.join(','),
-    sort: 'RATING',
-    limit: 50,
-    fields:
-      'fsq_id,name,location,categories,rating,price,photos,hours,website,description,tips,popularity,stats,tastes',
-  };
-
-  try {
-    const response = await axios.get(BASE_URL, {
-      headers: {
-        Authorization: process.env.NEXT_PUBLIC_FSQ_API_KEY!,
-        Accept: 'application/json',
-      },
-      params,
-    });
-
-    // Filter and categorize for tourists
-    const results = response.data.results.filter((place: any) => {
-      // Filter out places without proper addresses or those that are closed
-      return place.location?.formatted_address && !place.date_closed;
-    });
-
-    // Group by category for better tourist experience
-    const categorized: {
-      attractions: any[];
-      dining: any[];
-      shopping: any[];
-      entertainment: any[];
-      parks: any[];
-      services: any[];
-    } = {
-      attractions: [],
-      dining: [],
-      shopping: [],
-      entertainment: [],
-      parks: [],
-      services: [],
-    };
-
-    results.forEach((place: any) => {
-      const categoryId = place.categories?.[0]?.id;
-      if (categoryId?.startsWith('16')) categorized.attractions.push(place);
-      else if (categoryId?.startsWith('13')) categorized.dining.push(place);
-      else if (categoryId?.startsWith('17')) categorized.shopping.push(place);
-      else if (categoryId?.startsWith('10')) categorized.entertainment.push(place);
-      else if (categoryId === '16032') categorized.parks.push(place);
-      else categorized.services.push(place);
-    });
-
-    return {
-      all: results,
-      categorized,
-    };
-  } catch (error) {
-    console.error('Error fetching tourist recommendations:', error);
-    return { all: [], categorized: {} };
   }
 };
 

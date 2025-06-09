@@ -17,7 +17,6 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PhoneIcon from '@mui/icons-material/Phone';
 import WebIcon from '@mui/icons-material/Web';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import PhotoIcon from '@mui/icons-material/Photo';
 import { fetchPlaceDetails, fetchPlacePhotos, fetchPlaceTips } from './searchService';
 
 interface SearchResultProps {
@@ -70,6 +69,9 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
   const address = currentPlace.location?.formatted_address || currentPlace.location?.address;
   const iconUrl = category?.icon ? `${category.icon.prefix}64${category.icon.suffix}` : null;
 
+  const fallbackText = (value: string | undefined | null, fallback: string) =>
+    value && value.trim() !== '' ? value : fallback;
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header with Back Button */}
@@ -77,7 +79,7 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          mb: 2,
+          mb: 1,
           position: 'sticky',
           top: 0,
           bgcolor: 'background.paper',
@@ -88,16 +90,34 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
         <IconButton onClick={onBack} sx={{ mr: 1 }}>
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <Typography variant="h4" fontWeight={'bold'} sx={{ flexGrow: 1 }}>
           Place Details
         </Typography>
+        {category && <Chip label={category.name} size="small" color="primary" variant="outlined" />}
       </Box>
 
       {/* Scrollable Content */}
-      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+      <Box
+        sx={{
+          flex: 1,
+          overflowY: 'auto',
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
+        }}
+      >
         {/* Main Info Card */}
-        <Card sx={{ p: 3, mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+        <Card
+          sx={{
+            p: 1.5,
+            mb: 2,
+            maxHeight: 300,
+            overflowY: 'auto',
+            border: '1px solid #e0e0e0',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+            borderRadius: 2,
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
             <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}>
               {iconUrl ? (
                 <Box
@@ -110,32 +130,30 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
                 '📍'
               )}
             </Avatar>
-            <Box sx={{ flex: 1 }}>
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}
+            >
               <Typography variant="h5" fontWeight="bold" gutterBottom>
                 {currentPlace.name}
               </Typography>
 
               {currentPlace.rating && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Rating value={currentPlace.rating} precision={0.1} readOnly size="small" />
-                  <Typography variant="body2" color="text.secondary">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Rating value={currentPlace.rating / 2} precision={0.1} readOnly size="small" />
+                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.2 }}>
                     {currentPlace.rating.toFixed(1)} / 10
                   </Typography>
                 </Box>
               )}
 
-              {category && (
-                <Chip
-                  label={category.name}
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                  sx={{ mb: 1 }}
-                />
-              )}
-
               {currentPlace.price && (
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" mt={0.5}>
                   Price Level: {Array(currentPlace.price).fill('$').join('')}
                 </Typography>
               )}
@@ -143,32 +161,45 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
           </Box>
 
           {currentPlace.description && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {currentPlace.description}
+            <Typography variant="body2" color="text.secondary" sx={{ my: 2 }}>
+              {fallbackText(currentPlace.description, 'No description available')}
             </Typography>
           )}
         </Card>
 
         {/* Contact Information */}
-        <Card sx={{ p: 2, mb: 2 }}>
-          <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <LocationOnIcon fontSize="small" />
+        <Card
+          sx={{
+            p: 1.5,
+            mb: 2,
+            maxHeight: 300,
+            overflowY: 'auto',
+            border: '1px solid #e0e0e0',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+            borderRadius: 2,
+          }}
+        >
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
+          >
             Contact & Location
           </Typography>
 
           {address && (
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
               <LocationOnIcon fontSize="small" color="action" sx={{ mt: 0.5 }} />
-              <Typography variant="body2">{address}</Typography>
+              <Typography variant="body2">{fallbackText(address, 'Address available')}</Typography>
             </Box>
           )}
 
           {currentPlace.tel && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
               <PhoneIcon fontSize="small" color="action" />
-              <Link href={`tel:${currentPlace.tel}`} variant="body2">
-                {currentPlace.tel}
-              </Link>
+              <Typography variant="body2" color="primary.main">
+                {fallbackText(currentPlace.tel, 'Telephone number unavailable')}
+              </Typography>
             </Box>
           )}
 
@@ -188,11 +219,11 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
                 <Typography variant="body2" fontWeight="medium">
                   Hours:
                 </Typography>
-                {currentPlace.hours.display && (
-                  <Typography variant="body2" color="text.secondary">
-                    {currentPlace.hours.display}
-                  </Typography>
-                )}
+                <Typography variant="body2" color="text.secondary">
+                  {currentPlace.hours?.display?.trim()
+                    ? currentPlace.hours.display
+                    : 'Working hours unavailable'}
+                </Typography>
               </Box>
             </Box>
           )}
@@ -200,13 +231,26 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
 
         {/* Photos */}
         {photos && photos.length > 0 && (
-          <Card sx={{ p: 2, mb: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <PhotoIcon fontSize="small" />
+          <Card
+            sx={{
+              p: 1.5,
+              mb: 2,
+              maxHeight: 300,
+              overflowY: 'auto',
+              border: '1px solid #e0e0e0',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+              borderRadius: 2,
+            }}
+          >
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
+            >
               Photos
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1 }}>
-              {photos.slice(0, 5).map((photo, index) => (
+              {photos.slice(0, 10).map((photo, index) => (
                 <Box
                   key={index}
                   component="img"
@@ -226,26 +270,46 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
         )}
 
         {/* Tips/Reviews */}
-        {tips && tips.length > 0 && (
-          <Card sx={{ p: 2, mb: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Tips & Reviews
-            </Typography>
-            {tips.slice(0, 3).map((tip, index) => (
+        <Card
+          sx={{
+            p: 1.5,
+            mb: 2,
+            pb: 0,
+            maxHeight: 300,
+            overflowY: 'auto',
+            border: '1px solid #e0e0e0',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+            Tips & Reviews
+          </Typography>
+
+          {tips && tips.length > 0 ? (
+            tips.slice(0, 10).map((tip, index, arr) => (
               <Box key={index} sx={{ mb: 2 }}>
                 <Typography variant="body2" sx={{ mb: 1 }}>
                   "{tip.text}"
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  - {tip.user?.first_name || 'Anonymous'} •{' '}
-                  {new Date(tip.created_at).toLocaleDateString()}
-                </Typography>
-                {index < tips.length - 1 && <Divider sx={{ mt: 2 }} />}
+                <Box
+                  width="100%"
+                  sx={{ display: 'flex', justifyContent: 'end', alignItems: 'end' }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    - {tip.user?.first_name || 'Anonymous'} •{' '}
+                    {new Date(tip.created_at).toLocaleDateString()}
+                  </Typography>
+                </Box>
+                {index < arr.length - 1 && <Divider sx={{ mt: 2 }} />}
               </Box>
-            ))}
-          </Card>
-        )}
-
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              No reviews available.
+            </Typography>
+          )}
+        </Card>
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           {currentPlace.location?.latitude && currentPlace.location?.longitude && (
