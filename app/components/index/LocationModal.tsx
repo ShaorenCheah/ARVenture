@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useState } from 'react';
 import {
   Box,
   Modal,
@@ -12,9 +13,8 @@ import {
   CardMedia,
   Chip,
   IconButton,
-  useMediaQuery,
-  useTheme,
   Divider,
+  Skeleton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -23,28 +23,26 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt';
 interface LocationModalProps {
   open: boolean;
   onClose: () => void;
-  title?: string;
-  address?: string;
-  description?: string;
-  imageUrl?: string;
-  hiddenCollectible?: string;
-  children?: React.ReactNode;
-  width?: number | string;
-  sx?: SxProps<Theme>;
+  spot?: {
+    title: string;
+    description: string;
+    imageUrl: string;
+    address?: string;
+    collectibleTips?: string;
+    arURL?: string;
+  };
 }
 
-const LocationModal: React.FC<LocationModalProps> = ({
-  open,
-  onClose,
-  title = 'Sunway University',
-  address = '5, Jalan Universiti, Bandar Sunway, 47500 Petaling Jaya, Selangor',
-  description = 'Renowned for its cutting-edge architecture and vibrant campus life, Sunway University is a hub of innovation and academic excellence, offering visitors a glimpse into the heart of education and creativity.',
-  imageUrl = 'locations/SunwayCollege.jpg',
-  hiddenCollectible = 'Look for the pair who stand tall, one full of strength, the other wise and bright. They love to greet visitors in unexpected places—keep your eyes peeled for their playful sight!',
-  children,
-  width = undefined,
-  sx = {},
-}) => {
+const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) => {
+  const {
+    title = 'Unknown',
+    address = 'Unknown',
+    description = 'No description available.',
+    imageUrl = '',
+    collectibleTips = 'Look around for the hidden clue!',
+    arURL = '',
+  } = spot || {};
+
   const modalStyle: SxProps<Theme> = {
     position: 'absolute',
     top: { xs: 'auto', sm: '50%' },
@@ -63,8 +61,9 @@ const LocationModal: React.FC<LocationModalProps> = ({
     outline: 'none',
     display: 'flex',
     flexDirection: 'column',
-    ...sx,
   };
+
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
     <Modal
@@ -108,30 +107,56 @@ const LocationModal: React.FC<LocationModalProps> = ({
         >
           {/* Header Image */}
           <Box sx={{ position: 'relative', height: { xs: 200, sm: 240 } }}>
-            <CardMedia
-              component="img"
-              height="100%"
-              image={imageUrl}
-              alt={title}
+            <Card
               sx={{
-                width: '100%',
                 height: '100%',
-                objectFit: 'cover',
+                width: '100%',
                 borderRadius: '8px 8px 0 0',
+                overflow: 'hidden',
               }}
-            />
-            <Chip
-              label="Find The AR Marker In This Area!"
-              sx={{
-                position: 'absolute',
-                bottom: 16,
-                right: 25,
-                bgcolor: 'primary.main',
-                color: 'white',
-                fontWeight: 'medium',
-                fontSize: { xs: '0.625rem', sm: '0.75rem', md: '0.875rem' },
-              }}
-            />
+            >
+              {!imgLoaded ? (
+                <Skeleton variant="rectangular" width="100%" height="100%" animation="wave" />
+              ) : (
+                <CardMedia
+                  component="img"
+                  image={imageUrl}
+                  alt={title}
+                  onLoad={() => setImgLoaded(true)}
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+              )}
+
+              {/* Preload to detect cached images */}
+              {!imgLoaded && (
+                <img
+                  src={imageUrl}
+                  alt="preload"
+                  style={{ display: 'none' }}
+                  onLoad={() => setImgLoaded(true)}
+                />
+              )}
+            </Card>
+
+            {/* Only show chip after image is fully loaded */}
+            {imgLoaded && (
+              <Chip
+                label="Find The AR Marker In This Area!"
+                sx={{
+                  position: 'absolute',
+                  bottom: 16,
+                  right: 25,
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  fontWeight: 'medium',
+                  fontSize: { xs: '0.625rem', sm: '0.75rem', md: '0.875rem' },
+                }}
+              />
+            )}
           </Box>
 
           {/* Content */}
@@ -221,7 +246,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
                       lineHeight: 1.6,
                     }}
                   >
-                    {hiddenCollectible}
+                    {collectibleTips}
                   </Typography>
                 </Box>
               </Card>
@@ -237,10 +262,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
             {/* Action Button */}
             <Box sx={{ pt: 2 }} display="flex" justifyContent="center">
               <Button
-                onClick={() =>
-                  (window.location.href =
-                    'https://www.kivicube.com/scenes/v148t6VXU9enIyHML79pUr53JqY01ozI')
-                }
+                onClick={() => (window.location.href = arURL)}
                 variant="contained"
                 size="medium"
                 startIcon={<CameraAltIcon />}

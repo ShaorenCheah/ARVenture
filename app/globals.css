@@ -17,13 +17,9 @@
 /* Reset spacing and box model */
 html,
 body {
-  margin: 0 !important;
-  padding: 0 !important;
-  height: 100%;
-  width: 100%;
+  height: auto;
+  min-height: 100%;
   overflow-x: hidden;
-  box-sizing: border-box;
-  background-color: transparent;
 }
 
 /* Reset all elements */
@@ -36,9 +32,9 @@ body {
 }
 
 /* For debugging */
-body {
+/* body {
   border: 2px solid red;
-}
+} */
 
 /* Reset Next.js wrapper if using App Router */
 #__next,
