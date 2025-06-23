@@ -12,14 +12,23 @@ import RedeemOutlinedIcon from '@mui/icons-material/RedeemOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import UserModal from '../user/UserModal';
 import { Stack, Box } from '@mui/material';
+import { useRouter } from 'next/navigation';
+
+import { useUserModal } from '../providers/UserModalContext';
 
 export default function BottomAppBar() {
-  const [openUserModal, setOpenUserModal] = useState(false);
+  const { openUserModal, setOpenUserModal } = useUserModal();
+
+  const router = useRouter();
 
   const buttonList = [
     { title: 'Home', icon: <HomeOutlinedIcon fontSize="small" />, path: '/' },
-    { title: 'Collectibles', icon: <EmojiEventsOutlinedIcon fontSize="small" />, path: '/' },
-    { title: 'Redeem', icon: <RedeemOutlinedIcon fontSize="small" />, path: '/' },
+    {
+      title: 'Collectibles',
+      icon: <EmojiEventsOutlinedIcon fontSize="small" />,
+      path: '/collectibles',
+    },
+    { title: 'Redeem', icon: <RedeemOutlinedIcon fontSize="small" />, path: '/redeem' },
     {
       title: 'Login',
       icon: <PersonOutlineOutlinedIcon fontSize="small" />,
@@ -58,7 +67,10 @@ export default function BottomAppBar() {
                   color="primary"
                   sx={{ flexGrow: 1 }}
                   size="large"
-                  onClick={item.onClick}
+                  onClick={() => {
+                    if (item.onClick) item.onClick();
+                    else router.push(item.path);
+                  }}
                 >
                   {item.icon}
                 </IconButton>

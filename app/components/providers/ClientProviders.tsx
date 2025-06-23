@@ -1,6 +1,7 @@
 'use client';
 
 import ToasterClient from './ToasterClient';
+import { UserModalProvider } from './UserModalContext';
 
 interface ClientProvidersProps {
   children: React.ReactNode;
@@ -8,9 +9,9 @@ interface ClientProvidersProps {
 
 export default function ClientProviders({ children }: ClientProvidersProps) {
   return (
-    <>
+    <UserModalProvider>
       <ToasterClient />
       {children}
-    </>
+    </UserModalProvider>
   );
 }

@@ -13,7 +13,11 @@ const LocationModal = dynamic(() => import('../LocationModal'), {
 });
 import EventPanel from './events/EventPanel';
 
-export default function InfoTabs() {
+interface InfoTabsProps {
+  setOpenUserModal: (value: boolean) => void;
+}
+
+export default function InfoTabs({ setOpenUserModal }: InfoTabsProps) {
   const [tabIndex, setTabIndex] = React.useState(0);
   const [open, setOpen] = React.useState(false);
   const [selectedSpot, setSelectedSpot] = React.useState<{

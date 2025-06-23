@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Modal,
@@ -19,6 +18,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import toast from 'react-hot-toast';
 
 interface LocationModalProps {
   open: boolean;
@@ -43,6 +43,8 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) =>
     arURL = '',
   } = spot || {};
 
+  const [imgLoaded, setImgLoaded] = useState(false);
+
   const modalStyle: SxProps<Theme> = {
     position: 'absolute',
     top: { xs: 'auto', sm: '50%' },
@@ -63,20 +65,22 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) =>
     flexDirection: 'column',
   };
 
-  const [imgLoaded, setImgLoaded] = useState(false);
+  const handleScanClick = async () => {
+    try {
+      window.location.href = arURL;
+    } catch (error) {
+      console.error('Failed to open AR experience:', error);
+      toast.error('Failed to access AR experience.');
+    }
+  };
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      sx={{
-        '& .MuiBackdrop-root': {
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        },
-      }}
+      sx={{ '& .MuiBackdrop-root': { backgroundColor: 'rgba(0, 0, 0, 0.5)' } }}
     >
       <Box sx={modalStyle}>
-        {/* Close Button */}
         <IconButton
           size="small"
           onClick={onClose}
@@ -86,16 +90,13 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) =>
             right: 25,
             zIndex: 10,
             bgcolor: 'rgba(255, 255, 255, 0.9)',
-            '&:hover': {
-              bgcolor: 'rgba(255, 255, 255, 1)',
-            },
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 1)' },
             boxShadow: 2,
           }}
         >
           <CloseIcon />
         </IconButton>
 
-        {/* Scrollable Content */}
         <Box
           sx={{
             flex: 1,
@@ -103,11 +104,10 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) =>
             maxHeight: { xs: 'calc(75vh - 56px)', sm: 'calc(85vh - 56px)' },
             display: 'flex',
             flexDirection: 'column',
-            scrollbarWidth: 'none', // Firefox
-            '&::-webkit-scrollbar': { display: 'none' }, // Chrome, Safari
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
           }}
         >
-          {/* Header Image */}
           <Box sx={{ position: 'relative', height: { xs: 200, sm: 240 } }}>
             <Card
               sx={{
@@ -125,15 +125,9 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) =>
                   image={imageUrl}
                   alt={title}
                   onLoad={() => setImgLoaded(true)}
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
+                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               )}
-
-              {/* Preload to detect cached images */}
               {!imgLoaded && (
                 <img
                   src={imageUrl}
@@ -143,8 +137,6 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) =>
                 />
               )}
             </Card>
-
-            {/* Only show chip after image is fully loaded */}
             {imgLoaded && (
               <Chip
                 label="Find The AR Marker In This Area!"
@@ -161,74 +153,35 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) =>
             )}
           </Box>
 
-          {/* Content */}
           <Box sx={{ p: 3, pb: 4 }}>
-            {/* Title */}
             <Typography
               variant="h5"
               component="h2"
-              sx={{
-                fontWeight: 'bold',
-                mb: 1,
-                color: 'text.primary',
-              }}
+              sx={{ fontWeight: 'bold', mb: 1, color: 'text.primary' }}
             >
               {title}
             </Typography>
-
-            {/* Description Section */}
             <Box>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: 'text.secondary',
-                  lineHeight: 1.6,
-                }}
-              >
+              <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
                 {description}
               </Typography>
             </Box>
-
             <Divider sx={{ my: 2, borderColor: 'grey.300' }} />
-
-            {/* Address Section */}
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 'bold',
-                    color: 'text.primary',
-                  }}
-                >
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
                   Address
                 </Typography>
               </Box>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: 'text.secondary',
-                  lineHeight: 1.6,
-                  pl: 0,
-                }}
-              >
+              <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.6, pl: 0 }}>
                 {address}
               </Typography>
             </Box>
-
             <Divider sx={{ my: 2, borderColor: 'grey.300' }} />
-
-            {/* Hidden Collectible Section */}
             <Box sx={{ mb: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <VisibilityIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 'bold',
-                    color: 'text.primary',
-                  }}
-                >
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
                   Hidden Collectible
                 </Typography>
               </Box>
@@ -241,38 +194,21 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) =>
                 }}
               >
                 <Box sx={{ p: 2 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: 'text.secondary',
-                      lineHeight: 1.6,
-                    }}
-                  >
+                  <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
                     {collectibleTips}
                   </Typography>
                 </Box>
               </Card>
             </Box>
-
-            {/* Custom Children Content */}
-            {/* {children && (
-              <Box sx={{ mb: 3 }}>
-                {children}
-              </Box>
-            )} */}
-
-            {/* Action Button */}
             <Box sx={{ pt: 2 }} display="flex" justifyContent="center">
               <Button
-                onClick={() => (window.location.href = arURL)}
+                onClick={handleScanClick}
                 variant="contained"
                 size="medium"
                 startIcon={<CameraAltIcon />}
                 sx={{
                   bgcolor: 'error.main',
-                  '&:hover': {
-                    bgcolor: 'error.dark',
-                  },
+                  '&:hover': { bgcolor: 'error.dark' },
                   py: 1,
                   borderRadius: 8,
                   fontWeight: 'bold',

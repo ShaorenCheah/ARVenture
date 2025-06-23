@@ -3,13 +3,15 @@
 import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Tabs from './components/index/contentTabs/InfoTabs';
+import InfoTabs from './components/index/contentTabs/InfoTabs';
 import GuideModal from './components/index/GuideModal';
 import { Card } from '@mui/material';
 import { useAuth } from './auth/AuthContext';
 
 export default function Home() {
   const [openGuideModal, setOpenGuideModal] = useState(false);
+  const [openUserModal, setOpenUserModal] = useState(false);
+
   const { user } = useAuth(); // Access user auth state
 
   useEffect(() => {
@@ -37,7 +39,6 @@ export default function Home() {
         },
         display: 'flex',
         flexDirection: 'column',
-        pb: { xs: 2.5, sm: 3, md: 4 },
       }}
     >
       <Grid
@@ -104,7 +105,7 @@ export default function Home() {
               minHeight: { xs: 0, lg: 'unset' },
             }}
           >
-            <Tabs />
+            <InfoTabs setOpenUserModal={setOpenUserModal} />
           </Box>
         </Grid>
       </Grid>
