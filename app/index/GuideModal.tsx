@@ -1,7 +1,7 @@
 'use client';
 
+import { Box, Modal, Typography, SxProps, Theme, Button, Stack } from '@mui/material';
 import React, { useState } from 'react';
-import { Box, Modal, Typography, SxProps, Theme, Button, Fade, Stack } from '@mui/material';
 
 interface GuideModalProps {
   open: boolean;

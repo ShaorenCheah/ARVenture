@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
-import { RegisterFormInputs, registerValidationSchema } from './registerValidation';
-import { registerWithEmail } from './registerService';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+
+import { registerWithEmail } from './registerService';
+import { RegisterFormInputs, registerValidationSchema } from './registerValidation';
 
 interface RegisterFormProps {
   onSwitch: () => void;
@@ -30,8 +31,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
       toast.success('Account created successfully! Please check your email for verification.', {
         duration: 8000,
       });
-    } catch (error: any) {
-      toast.error(error.message || 'Registration failed', { duration: 6000 });
+    } catch (error: unknown) {
+      let message = 'Registration failed';
+
+      if (error instanceof Error) {
+        message = error.message;
+      }
+
+      toast.error(message, { duration: 6000 });
     } finally {
       setLoading(false);
     }

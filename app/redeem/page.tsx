@@ -1,6 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import LoginIcon from '@mui/icons-material/Login';
+import RedeemIcon from '@mui/icons-material/Redeem';
 import {
   Box,
   Card,
@@ -11,18 +14,14 @@ import {
   Avatar,
   Skeleton,
   Container,
-  Paper,
   Stack,
-  Badge,
 } from '@mui/material';
-import RedeemIcon from '@mui/icons-material/Redeem';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import LoginIcon from '@mui/icons-material/Login';
 import { styled } from '@mui/material/styles';
 import { getAuth } from 'firebase/auth';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { fetchRedemptionItems } from './services/redemptionService';
+
+import { fetchRedemptionItems, RedemptionItem } from './services/redemptionService';
 import { useUserModal } from '../components/providers/UserModalContext';
 
 const ItemImage = styled(Avatar)(({ theme }) => ({
@@ -36,7 +35,7 @@ const ItemImage = styled(Avatar)(({ theme }) => ({
   },
 }));
 
-const RedeemButton = styled(Button)(({ theme }) => ({
+const RedeemButton = styled(Button)(() => ({
   borderRadius: 20,
   fontWeight: 'bold',
   fontSize: '0.875rem',
@@ -53,7 +52,7 @@ const RedeemButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-const StockChip = styled(Chip)<{ available: boolean }>(({ available, theme }) => ({
+const StockChip = styled(Chip)<{ available: boolean }>(({ available }) => ({
   backgroundColor: available ? '#e8f5e8' : '#ffeaea',
   color: available ? '#2e7d32' : '#d32f2f',
   fontWeight: '600',
@@ -68,7 +67,7 @@ const StockChip = styled(Chip)<{ available: boolean }>(({ available, theme }) =>
   },
 }));
 
-const StatusChip = styled(Chip)(({ theme }) => ({
+const StatusChip = styled(Chip)(() => ({
   height: 20,
   fontSize: '0.75rem',
   fontWeight: '500',
@@ -77,7 +76,7 @@ const StatusChip = styled(Chip)(({ theme }) => ({
   },
 }));
 
-const CriteriaBox = styled(Box)(({ theme }) => ({
+const CriteriaBox = styled(Box)(() => ({
   backgroundColor: '#f8f9fa',
   borderRadius: 8,
   padding: '12px',
@@ -97,7 +96,7 @@ const ResponsiveContainer = styled(Container)(({ theme }) => ({
 }));
 
 export default function RedemptionPage() {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<RedemptionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userUid, setUserUid] = useState<string | null>(null);
   const { setOpenUserModal } = useUserModal();
@@ -118,7 +117,7 @@ export default function RedemptionPage() {
     });
     console.log('items', items);
     return () => unsubscribe();
-  }, []);
+  }, [items]);
 
   const handleRedeem = async (itemId: string, itemTitle: string) => {
     const auth = getAuth();
@@ -134,7 +133,7 @@ export default function RedemptionPage() {
       toast.success(`Successfully redeemed: ${itemTitle}!`);
       const updatedItems = await fetchRedemptionItems(user.uid);
       setItems(updatedItems);
-    } catch (error) {
+    } catch {
       toast.error('Failed to redeem item. Please try again.');
     }
   };

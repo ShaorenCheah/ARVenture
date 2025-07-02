@@ -1,6 +1,5 @@
 'use client';
 
-import { db } from '@/lib/firebase';
 import {
   collection,
   getDocs,
@@ -11,6 +10,8 @@ import {
   setDoc,
   serverTimestamp,
 } from 'firebase/firestore';
+
+import { db } from '@/lib/firebase';
 
 const RADIUS_METERS = 500;
 

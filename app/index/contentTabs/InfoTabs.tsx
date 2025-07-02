@@ -1,9 +1,8 @@
 'use client';
 
-import * as React from 'react';
 import { Tabs, Tab, Box } from '@mui/material';
-
 import dynamic from 'next/dynamic';
+import * as React from 'react';
 const ArSpotPanel = dynamic(() => import('./arSpots/ArSpotPanel'), {
   ssr: false,
 });
@@ -13,11 +12,7 @@ const LocationModal = dynamic(() => import('../LocationModal'), {
 });
 import EventPanel from './events/EventPanel';
 
-interface InfoTabsProps {
-  setOpenUserModal: (value: boolean) => void;
-}
-
-export default function InfoTabs({ setOpenUserModal }: InfoTabsProps) {
+export default function InfoTabs() {
   const [tabIndex, setTabIndex] = React.useState(0);
   const [open, setOpen] = React.useState(false);
   const [selectedSpot, setSelectedSpot] = React.useState<{

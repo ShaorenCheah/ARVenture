@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Box, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { Box, IconButton } from '@mui/material';
+import React, { useState } from 'react';
+
 import SearchDrawer from './SearchDrawer';
 
 export default function Header() {

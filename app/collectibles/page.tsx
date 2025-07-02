@@ -1,20 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Typography, Card, CardContent, Avatar, Chip, Skeleton } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+
+import RedeemCollectibleModal from './redeemCollectibleModal';
 import {
   fetchAllCollectibles,
   Collectible as CollectibleType,
 } from './services/collectiblesService';
-import { useUserModal } from '../components/providers/UserModalContext';
-import RedeemCollectibleModal from './redeemCollectibleModal';
 import { redeemCollectibleWithLocation } from './services/redeemCollectibleService';
-import toast from 'react-hot-toast';
+import { useUserModal } from '../components/providers/UserModalContext';
 
-const CollectibleCard = styled(Card)(({ theme }) => ({
+const CollectibleCard = styled(Card)(() => ({
   borderRadius: 2,
   backgroundColor: '#ffffff',
 
@@ -30,7 +31,7 @@ const CollectibleCard = styled(Card)(({ theme }) => ({
   },
 }));
 
-const SkeletonCard = styled(Card)(({ theme }) => ({
+const SkeletonCard = styled(Card)(() => ({
   borderRadius: 16,
   backgroundColor: '#ffffff',
   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
@@ -39,7 +40,7 @@ const SkeletonCard = styled(Card)(({ theme }) => ({
   flexDirection: 'column',
 }));
 
-const QuestionMarkAvatar = styled(Avatar)(({ theme }) => ({
+const QuestionMarkAvatar = styled(Avatar)(() => ({
   width: 80,
   height: 80,
   backgroundColor: '#FFD700',
@@ -49,7 +50,7 @@ const QuestionMarkAvatar = styled(Avatar)(({ theme }) => ({
   margin: '0 auto 16px auto',
 }));
 
-const CollectedAvatar = styled(Box)(({ theme }) => ({
+const CollectedAvatar = styled(Box)(() => ({
   width: 80,
   height: 80,
   borderRadius: '50%',
@@ -61,7 +62,7 @@ const CollectedAvatar = styled(Box)(({ theme }) => ({
   backgroundColor: '#fff',
 }));
 
-const RedeemChip = styled(Chip)(({ theme }) => ({
+const RedeemChip = styled(Chip)(() => ({
   backgroundColor: '#FF4444',
   color: 'white',
   fontWeight: 'bold',
@@ -79,13 +80,14 @@ interface Collectible extends CollectibleType {
 }
 
 export default function CollectiblesPage() {
+  const auth = getAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<Collectible[]>([]);
   const [userUid, setUserUid] = useState<string | null>(null);
   const { setOpenUserModal } = useUserModal();
   const [redeemOpen, setRedeemOpen] = useState(false);
 
-  const loadCollectibles = async (user: any) => {
+  const loadCollectibles = async (user: User | null) => {
     setIsLoading(true);
 
     const allCollectibles = await fetchAllCollectibles(user?.uid);
@@ -189,7 +191,6 @@ export default function CollectiblesPage() {
   );
 
   const handleRedeemClick = () => {
-    const auth = getAuth();
     const user = auth.currentUser;
     if (!user) {
       toast.error('Please log in to redeem your collectibles.');
@@ -204,7 +205,6 @@ export default function CollectiblesPage() {
     const result = await redeemCollectibleWithLocation(code, userUid, position);
     if (result.success) {
       toast.success(result.message);
-      const auth = getAuth();
       loadCollectibles(auth.currentUser);
     } else {
       toast.error(result.message);

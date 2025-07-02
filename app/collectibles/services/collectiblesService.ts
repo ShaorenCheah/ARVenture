@@ -1,6 +1,7 @@
-import { db, storage } from '@/lib/firebase';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, Timestamp } from 'firebase/firestore';
 import { getDownloadURL, ref } from 'firebase/storage';
+
+import { db, storage } from '@/lib/firebase';
 
 export interface Collectible {
   id: string;
@@ -9,7 +10,7 @@ export interface Collectible {
   imageURL?: string; // Optional initially
   redemptionCode: string;
   priority: number;
-  createdAt: any;
+  createdAt: Timestamp;
 }
 
 export interface UserCollectible {
@@ -43,7 +44,7 @@ export const fetchAllCollectibles = async (uid?: string): Promise<Collectible[]>
         try {
           const imageRef = ref(storage, `collectibles/${id}.png`);
           imageURL = await getDownloadURL(imageRef);
-        } catch (e) {
+        } catch {
           console.warn(`Image not found for ${id}`);
         }
       }

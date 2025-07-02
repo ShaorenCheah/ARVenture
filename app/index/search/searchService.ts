@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 
 const BASE_URL = 'https://api.foursquare.com/v3/places/search';

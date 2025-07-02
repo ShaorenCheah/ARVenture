@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import ClearIcon from '@mui/icons-material/Clear';
+import CloseIcon from '@mui/icons-material/Close';
 import {
   Drawer,
   Box,
@@ -14,10 +15,10 @@ import {
   InputAdornment,
   Rating,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import ClearIcon from '@mui/icons-material/Clear';
-import { fetchPlaces, fetchSuggestions } from './searchService';
+import React, { useState, useEffect, useRef } from 'react';
+
 import SearchResult from './SearchResult';
+import { fetchPlaces, fetchSuggestions } from './searchService';
 
 const categories = [
   { label: 'Food', id: '13065', icon: '🍽️' },
@@ -34,12 +35,28 @@ interface SearchDrawerProps {
   open: boolean;
   onClose: () => void;
 }
+interface FSQCategory {
+  id: string;
+  name: string;
+}
+
+interface FSQPlace {
+  fsq_id: string;
+  name: string;
+  rating?: number;
+  price?: number;
+  location?: {
+    formatted_address?: string;
+    address?: string;
+  };
+  categories?: FSQCategory[];
+}
 
 export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
   const [query, setQuery] = useState('');
   const [selectedCat, setSelectedCat] = useState('');
   const [results, setResults] = useState([]);
-  const [selectedPlace, setSelectedPlace] = useState<any>(null);
+  const [selectedPlace, setSelectedPlace] = useState<FSQPlace | null>(null);
   const [currentView, setCurrentView] = useState<'search' | 'result'>('search');
 
   // Autocomplete states
@@ -66,7 +83,7 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
   }, [query, selectedCat]);
 
   const validResults = results.filter(
-    (place: any) => place?.location?.formatted_address || place?.location?.address
+    (place: FSQPlace) => place?.location?.formatted_address || place?.location?.address
   );
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -89,7 +106,7 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
     setResults([]);
   };
 
-  const handlePlaceClick = (place: any) => {
+  const handlePlaceClick = (place: FSQPlace) => {
     setSelectedPlace(place);
     setCurrentView('result');
   };
@@ -184,7 +201,7 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                     setSuggestions([]);
                   }
                 }}
-                onBlur={(e) => {
+                onBlur={() => {
                   // Only hide suggestions if we're not clicking on a suggestion
                   // Use setTimeout to allow click events to fire first
                   setTimeout(() => {
@@ -321,9 +338,9 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                   No results found.
                 </Typography>
               ) : (
-                validResults.map((place: any) => {
+                validResults.map((place: FSQPlace) => {
                   const category = categories.find((c) =>
-                    place.categories?.some((cat: any) => cat.id === c.id)
+                    place.categories?.some((cat: FSQCategory) => cat.id === c.id)
                   );
 
                   return (

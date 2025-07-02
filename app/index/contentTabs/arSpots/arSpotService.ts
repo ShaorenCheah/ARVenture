@@ -1,5 +1,6 @@
 import { getDocs, collection } from 'firebase/firestore';
 import { getDownloadURL, ref } from 'firebase/storage';
+
 import { db, storage } from '@/lib/firebase';
 
 export interface ArSpot {
@@ -29,7 +30,7 @@ export async function fetchArSpots(): Promise<ArSpot[]> {
       try {
         const storageRef = ref(storage, `ar_spots/${id}.jpg`);
         imageUrl = await getDownloadURL(storageRef);
-      } catch (error) {
+      } catch {
         console.warn(`Image for ${id} not found`);
       }
 
@@ -37,7 +38,7 @@ export async function fetchArSpots(): Promise<ArSpot[]> {
       try {
         const iconRef = ref(storage, `ar_spots/spots_icons/${id}_icon.jpg`);
         iconUrl = await getDownloadURL(iconRef);
-      } catch (error) {
+      } catch {
         console.warn(`Icon for ${id} not found`);
       }
 

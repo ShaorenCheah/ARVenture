@@ -1,6 +1,7 @@
 'use client';
-
+import { FirebaseError } from 'firebase/app';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+
 import { auth } from '@/lib/firebase';
 
 const firebaseLoginErrorMessages: Record<string, string> = {
@@ -28,15 +29,19 @@ export const loginWithEmail = async (email: string, password: string) => {
     // Optional: Force refresh token to update claims
     await res.user.getIdToken(true);
 
-    return res.user; // ✅ Return the user object
-  } catch (error: any) {
-    if (error.message?.includes('Please verify your email')) {
-      throw error;
-    }
+    return res.user;
+  } catch (error: unknown) {
+    if (error instanceof FirebaseError) {
+      if (error.message?.includes('Please verify your email')) {
+        throw error;
+      }
 
-    const errorCode = error.code || '';
-    const errorMessage =
-      firebaseLoginErrorMessages[errorCode] || 'Login failed. Check your credentials.';
-    throw new Error(errorMessage);
+      const errorCode = error.code || '';
+      const errorMessage =
+        firebaseLoginErrorMessages[errorCode] || 'Login failed. Check your credentials.';
+      throw new Error(errorMessage);
+    }
+    // Fallback: unknown error
+    throw new Error('Login failed. Please try again.');
   }
 };

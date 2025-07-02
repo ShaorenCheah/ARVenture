@@ -1,10 +1,37 @@
 // theme.ts
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
+declare module '@mui/material/styles' {
+  interface Palette {
+    brand: {
+      main: string;
+      accent: string;
+      light: string;
+    };
+  }
+  interface PaletteOptions {
+    brand?: {
+      main: string;
+      accent: string;
+      light: string;
+    };
+  }
+}
+
 let baseTheme = createTheme({
   palette: {
     primary: { main: '#ED1D24' },
     secondary: { main: '#c70e14' },
+    text: {
+      primary: '#1a1a1a', // Pleasing dark gray (not pure black)
+      secondary: '#6b7280', // Muted/grayed out text
+      disabled: '#9ca3af', // Even more muted for disabled states
+    },
+    brand: {
+      main: '#ED1D24', // Your primary red
+      accent: '#c70e14', // Your darker red
+      light: '#f87171', // Lighter red variant
+    },
     background: {
       default: 'white',
     },

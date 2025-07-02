@@ -1,16 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Card } from '@mui/material';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import { useEffect, useState } from 'react';
+
+import { useAuth } from './auth/AuthContext';
 import InfoTabs from './index/contentTabs/InfoTabs';
 import GuideModal from './index/GuideModal';
-import { Card } from '@mui/material';
-import { useAuth } from './auth/AuthContext';
 
 export default function Home() {
   const [openGuideModal, setOpenGuideModal] = useState(false);
-  const [openUserModal, setOpenUserModal] = useState(false);
 
   const { user } = useAuth();
 
@@ -105,7 +105,7 @@ export default function Home() {
               minHeight: { xs: 0, lg: 'unset' },
             }}
           >
-            <InfoTabs setOpenUserModal={setOpenUserModal} />
+            <InfoTabs />
           </Box>
         </Grid>
       </Grid>

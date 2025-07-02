@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import { Box, Modal, SxProps, Theme, Fade } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+
+import ForgotPasswordForm from './forgotPassword/ForgotPasswordForm';
 import LoginForm from './login/LoginForm';
+import ProfileModal from './profile/ProfileModal';
 import RegisterForm from './register/RegisterForm';
 import { useAuth } from '../../auth/AuthContext';
-import ProfileModal from './profile/ProfileModal';
-import ForgotPasswordForm from './forgotPassword/ForgotPasswordForm';
 
 interface UserModalProps {
   open: boolean;

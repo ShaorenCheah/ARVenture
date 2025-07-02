@@ -1,4 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import PhoneIcon from '@mui/icons-material/Phone';
+import WebIcon from '@mui/icons-material/Web';
 import {
   Box,
   Typography,
@@ -12,21 +16,22 @@ import {
   Link,
   CircularProgress,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import PhoneIcon from '@mui/icons-material/Phone';
-import WebIcon from '@mui/icons-material/Web';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import React, { useState, useEffect } from 'react';
+
 import { fetchPlaceDetails, fetchPlacePhotos, fetchPlaceTips } from './searchService';
 
 interface SearchResultProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   place: any;
   onBack: () => void;
 }
 
 export default function SearchResult({ place, onBack }: SearchResultProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [details, setDetails] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [photos, setPhotos] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [tips, setTips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -290,7 +295,7 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
             tips.slice(0, 10).map((tip, index, arr) => (
               <Box key={index} sx={{ mb: 2 }}>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  "{tip.text}"
+                  &quot;{tip.text}&quot;
                 </Typography>
                 <Box
                   width="100%"

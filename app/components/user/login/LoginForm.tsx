@@ -1,9 +1,7 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import loginSchema, { LoginFormInputs } from './loginValidation';
-import { loginWithEmail } from './loginService';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import {
   Box,
   TextField,
@@ -13,9 +11,12 @@ import {
   IconButton,
   Stack,
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+
+import { loginWithEmail } from './loginService';
+import loginSchema, { LoginFormInputs } from './loginValidation';
 
 interface LoginFormProps {
   onSwitch: () => void;
@@ -41,8 +42,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot, onSuccess }) 
       await loginWithEmail(data.email, data.password);
       onSuccess(); // Close modal
       toast.success('Logged in successfully!');
-    } catch (error: any) {
-      toast.error(error.message || 'Login failed');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Login failed. Please try again.';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -137,7 +139,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot, onSuccess }) 
           </Button>
           <Box sx={{ width: '100%' }}>
             <Typography sx={{ textAlign: 'start', mt: 2, color: '#888888' }}>
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Button
                 variant="text"
                 onClick={onSwitch}

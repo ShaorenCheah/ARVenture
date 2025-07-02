@@ -2,10 +2,10 @@
 
 import { Box } from '@mui/material';
 import { usePathname } from 'next/navigation';
+
+import Footer from './footer';
 import Header from './header';
 import SearchBar from '../../index/search/SearchBar';
-import Footer from './footer';
-import { useState } from 'react';
 
 interface MainLayoutProps {
   children: React.ReactNode;

@@ -2,12 +2,15 @@
   "name": "sunway-arventure",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "format": "prettier --write .",
-    "commit": "cz"
+    "commit": "cz",
+    "lint": "eslint app lib",
+    "lint:fix": "eslint app lib --fix"
   },
   "dependencies": {
     "@cloudinary/react": "^1.14.3",
@@ -35,12 +38,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "autoprefixer": "^10.4.21",
     "cz-conventional-changelog": "^3.3.0",
-    "postcss": "^8.5.3",
+    "eslint": "^9.30.1",
+    "eslint-config-next": "^15.3.4",
+    "eslint-plugin-import": "^2.32.0",
+    "globals": "^16.3.0",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "tailwindcss": "^4.1.5",
     "typescript": "^5"
   },
   "config": {

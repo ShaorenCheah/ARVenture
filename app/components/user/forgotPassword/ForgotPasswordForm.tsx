@@ -1,10 +1,11 @@
 'use client';
 
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Button, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import toast from 'react-hot-toast';
+
 import { resetPassword } from './resetPassword';
 import resetPasswordSchema, { ResetPasswordInputs } from './resetPasswordValidation';
 

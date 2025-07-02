@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import CloseIcon from '@mui/icons-material/Close';
+import RedeemIcon from '@mui/icons-material/Redeem';
 import {
   Box,
   Modal,
@@ -11,8 +12,7 @@ import {
   IconButton,
   TextField,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import RedeemIcon from '@mui/icons-material/Redeem';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 
 interface RedeemCollectibleModalProps {
@@ -52,7 +52,7 @@ const RedeemCollectibleModal: React.FC<RedeemCollectibleModalProps> = ({
           onSubmit(code.trim(), position);
           setSubmitting(false);
         },
-        (error) => {
+        (_error) => {
           toast.error('Location access is required to redeem.');
           setSubmitting(false);
         },

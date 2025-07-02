@@ -1,9 +1,10 @@
 'use client';
 
-import { Fragment, useEffect, useState } from 'react';
-import { fetchArSpots, ArSpot } from './arSpotService';
-import { Box, Divider, Stack, Skeleton, Typography, Card, CardContent } from '@mui/material';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import { Box, Divider, Stack, Skeleton, Typography, Card } from '@mui/material';
+import { Fragment, useEffect, useState } from 'react';
+
+import { fetchArSpots, ArSpot } from './arSpotService';
 
 interface Props {
   onSpotClick: (spot: {

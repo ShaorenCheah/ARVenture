@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import CloseIcon from '@mui/icons-material/Close';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Box,
   Modal,
@@ -15,9 +17,7 @@ import {
   Divider,
   Skeleton,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 
 interface LocationModalProps {
