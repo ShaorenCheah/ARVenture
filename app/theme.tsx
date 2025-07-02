@@ -39,6 +39,8 @@ let baseTheme = createTheme({
   spacing: 8,
 });
 
+baseTheme.shadows[1] = '0 2px 12px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.06)';
+
 let theme = createTheme(baseTheme, {
   typography: {
     fontFamily: 'Inter, sans-serif',
@@ -95,20 +97,20 @@ let theme = createTheme(baseTheme, {
     },
   },
   components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          scrollbarWidth: 'thin',
-          scrollbarColor: '#ccc transparent',
-          '&::-webkit-scrollbar': { width: '6px' },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#ccc',
-            borderRadius: '4px',
-          },
-          '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
-        },
-      },
-    },
+    // MuiCssBaseline: {
+    //   styleOverrides: {
+    //     body: {
+    //       scrollbarWidth: 'thin',
+    //       scrollbarColor: '#ccc transparent',
+    //       '&::-webkit-scrollbar': { width: '6px' },
+    //       '&::-webkit-scrollbar-thumb': {
+    //         backgroundColor: '#ccc',
+    //         borderRadius: '4px',
+    //       },
+    //       '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
+    //     },
+    //   },
+    // },
     MuiInputBase: {
       styleOverrides: {
         input: {

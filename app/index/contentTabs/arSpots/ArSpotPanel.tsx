@@ -1,7 +1,7 @@
 'use client';
 
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { Box, Divider, Stack, Skeleton, Typography, Card } from '@mui/material';
+import { Box, Stack, Skeleton, Typography, Card } from '@mui/material';
 import { Fragment, useEffect, useState } from 'react';
 
 import { fetchArSpots, ArSpot } from './arSpotService';
@@ -30,37 +30,73 @@ export default function ArSpotPanel({ onSpotClick }: Props) {
   const renderCardContent = (spot?: ArSpot, isSkeleton = false) => (
     <Card
       sx={{
-        borderRadius: 1,
-        px: 1.5,
-        py: 1,
+        borderRadius: 2,
+        px: 2,
+        py: 1.5,
         cursor: !isSkeleton ? 'pointer' : 'default',
         overflow: 'hidden',
+        border: '1px solid rgba(0, 0, 0, 0.08)',
+        backgroundColor: '#ffffff',
+        boxShadow: 'none',
+        transition: 'all 0.15s ease',
+        '&:hover': !isSkeleton
+          ? {
+              borderColor: 'rgba(0, 0, 0, 0.12)',
+              backgroundColor: 'rgba(0, 0, 0, 0.01)',
+            }
+          : {},
+        '&:active': !isSkeleton
+          ? {
+              borderColor: 'rgba(0, 0, 0, 0.16)',
+              backgroundColor: 'rgba(0, 0, 0, 0.02)',
+              transform: 'scale(0.995)',
+            }
+          : {},
       }}
     >
       <Stack sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         {/* Title Row */}
-        <Stack direction="row" sx={{ alignItems: 'center', gap: 1, mb: 1, width: '100%' }}>
+        <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, mb: 1.5, width: '100%' }}>
           {isSkeleton ? (
-            <Skeleton variant="circular" width={35} height={35} />
+            <Skeleton variant="circular" width={36} height={36} />
           ) : spot?.iconUrl ? (
-            <img
-              src={spot.iconUrl}
-              alt={`${spot.name} icon`}
-              style={{
-                width: '35px',
-                height: '100%',
-                objectFit: 'contain',
-                borderRadius: 8,
+            <Box
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: 1.5,
+                overflow: 'hidden',
+                backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
-            />
+            >
+              <img
+                src={spot.iconUrl}
+                alt={`${spot.name} icon`}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  objectFit: 'contain',
+                }}
+              />
+            </Box>
           ) : (
-            <Box sx={{ width: 35, height: 35 }} />
+            <Box sx={{ width: 36, height: 36 }} />
           )}
 
           {isSkeleton ? (
-            <Skeleton variant="text" width="40%" height={28} />
+            <Skeleton variant="text" width="40%" height={24} />
           ) : (
-            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#333' }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 600,
+                color: '#1a1a1a',
+                lineHeight: 1.2,
+              }}
+            >
               {spot?.name}
             </Typography>
           )}
@@ -68,20 +104,24 @@ export default function ArSpotPanel({ onSpotClick }: Props) {
 
         {/* Description */}
         {isSkeleton ? (
-          <>
-            <Skeleton variant="text" width="95%" height={18} />
-            <Skeleton variant="text" width="90%" height={18} />
-          </>
+          <Stack sx={{ width: '100%', gap: 0.5, mb: 1.5 }}>
+            <Skeleton variant="text" width="95%" height={16} />
+            <Skeleton variant="text" width="85%" height={16} />
+            <Skeleton variant="text" width="75%" height={16} />
+          </Stack>
         ) : (
           <Typography
             component="div"
             variant="body2"
             sx={{
-              color: '#666',
-              lineHeight: 1.5,
+              color: '#666666', // Softer gray
+              lineHeight: 1.4,
+              fontSize: '14px',
+              mb: 1.5,
               display: '-webkit-box',
               WebkitBoxOrient: 'vertical',
-              mb: 1,
+              WebkitLineClamp: 3,
+              overflow: 'hidden',
             }}
           >
             {spot?.description}
@@ -93,22 +133,22 @@ export default function ArSpotPanel({ onSpotClick }: Props) {
           direction="row"
           sx={{
             alignItems: 'center',
-            justifyContent: 'end',
+            justifyContent: 'flex-end',
             width: '100%',
-            mt: 1,
+            opacity: 0.7,
           }}
         >
-          <VisibilityOutlinedIcon sx={{ fontSize: '14px', color: '#888', mr: 0.5 }} />
+          <VisibilityOutlinedIcon sx={{ fontSize: '12px', color: '#999999', mr: 0.5 }} />
           {isSkeleton ? (
-            <Skeleton variant="text" width={60} height={16} />
+            <Skeleton variant="text" width={60} height={14} />
           ) : (
             <Typography
-              variant="body2"
+              variant="caption"
               sx={{
-                color: '#888',
-                overflow: 'hidden',
-                WebkitLineClamp: 2,
-                textAlign: 'end',
+                color: '#999999',
+                fontSize: '12px',
+                fontWeight: 500,
+                letterSpacing: '0.2px',
               }}
             >
               View More
@@ -123,12 +163,9 @@ export default function ArSpotPanel({ onSpotClick }: Props) {
     <Stack spacing={2}>
       {loading
         ? [...Array(3)].map((_, index) => (
-            <Fragment key={index}>
-              {renderCardContent(undefined, true)}
-              {index !== 2 && <Divider sx={{ my: 0.5 }} />}
-            </Fragment>
+            <Fragment key={index}>{renderCardContent(undefined, true)}</Fragment>
           ))
-        : spots.map((spot, index) => (
+        : spots.map((spot) => (
             <Fragment key={spot.id}>
               <Box
                 onClick={() =>
@@ -144,7 +181,6 @@ export default function ArSpotPanel({ onSpotClick }: Props) {
               >
                 {renderCardContent(spot, false)}
               </Box>
-              {index !== spots.length - 1 && <Divider sx={{ my: 0.5 }} />}
             </Fragment>
           ))}
     </Stack>

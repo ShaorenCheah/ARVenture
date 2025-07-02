@@ -11,7 +11,7 @@ export default function Header() {
             borderRadius: '50px',
             minHeight: { xs: '40px', lg: '48px', xl: '56px' },
             backgroundColor: 'white',
-            boxShadow: 2,
+            boxShadow: 1,
           }}
           display="flex"
           justifyContent="center"

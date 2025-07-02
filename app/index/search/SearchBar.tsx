@@ -1,5 +1,5 @@
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
 import SearchDrawer from './SearchDrawer';
@@ -10,6 +10,7 @@ export default function Header() {
   return (
     <>
       <Box
+        onClick={() => setOpenSearch(true)}
         sx={{
           borderRadius: '50px',
           minHeight: { xs: '40px', lg: '48px', xl: '56px' },
@@ -23,16 +24,9 @@ export default function Header() {
           mb: { xs: 2, sm: 3, md: 4 },
         }}
       >
-        <Box
-          component="img"
-          src="/icons/ARVentureLogo.png"
-          alt="ARVenture Logo"
-          sx={{
-            height: { xs: '24px', lg: '40px', xl: '48px' },
-            width: { xs: '100px', lg: '105px', xl: '120px' },
-            objectFit: 'contain',
-          }}
-        />
+        <Typography variant="body2" sx={{ flexGrow: 1, color: 'text.secondary' }}>
+          Search for nearby tourist spots...
+        </Typography>
         <Box
           sx={{
             bgcolor: 'white',
@@ -43,7 +37,7 @@ export default function Header() {
             justifyContent: 'center',
           }}
         >
-          <IconButton onClick={() => setOpenSearch(true)} sx={{ p: 0.5 }}>
+          <IconButton sx={{ p: 0.5 }}>
             <SearchIcon sx={{ fontSize: '16px' }} />
           </IconButton>
         </Box>

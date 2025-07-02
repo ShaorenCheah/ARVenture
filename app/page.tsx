@@ -72,9 +72,10 @@ export default function Home() {
               aspectRatio: '1/1',
               overflow: 'hidden',
               borderRadius: 2,
-              boxShadow: 3,
+              boxShadow: 1,
               position: 'relative',
               backgroundColor: 'white',
+              border: 'none',
             }}
           >
             <Box
@@ -88,6 +89,7 @@ export default function Home() {
                 position: 'absolute',
                 top: 0,
                 left: 0,
+                px: 1,
               }}
             />
           </Card>

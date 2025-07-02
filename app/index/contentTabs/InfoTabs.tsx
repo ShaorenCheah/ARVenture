@@ -3,14 +3,17 @@
 import { Tabs, Tab, Box } from '@mui/material';
 import dynamic from 'next/dynamic';
 import * as React from 'react';
+
+import EventPanel from './events/EventPanel';
+
+import theme from '@/app/theme';
+
 const ArSpotPanel = dynamic(() => import('./arSpots/ArSpotPanel'), {
   ssr: false,
 });
-
 const LocationModal = dynamic(() => import('../LocationModal'), {
   ssr: false,
 });
-import EventPanel from './events/EventPanel';
 
 export default function InfoTabs() {
   const [tabIndex, setTabIndex] = React.useState(0);
@@ -31,52 +34,102 @@ export default function InfoTabs() {
           height: { xs: '375px', md: '475px', lg: '100vh' },
           display: 'flex',
           flexDirection: 'column',
+          position: 'relative',
         }}
       >
+        {/* Floating Tabs */}
         <Tabs
           value={tabIndex}
           onChange={(_, newIndex) => setTabIndex(newIndex)}
+          variant="standard"
+          slotProps={{
+            indicator: {
+              children: <span className="MuiIndicatorThumb" />,
+              sx: {
+                display: 'flex',
+                justifyContent: 'center',
+                backgroundColor: 'transparent',
+                height: '100%',
+                zIndex: 0,
+                '& .MuiIndicatorThumb': {
+                  width: '100%',
+                  backgroundColor: theme.palette.brand.main,
+                  borderRadius: '9999px',
+                  transition: 'all 0.3s ease',
+                },
+              },
+            },
+          }}
           sx={{
-            flexShrink: 0,
-            zIndex: 1,
-            '& .MuiTabs-root, .MuiButtonBase-root, .MuiTabs-scroller,': {
-              minHeight: { xs: '40px', md: '48px' },
-              maxHeight: { xs: '40px', md: '48px' },
-            },
-            '& .MuiTab-root': {
-              width: '110px',
-              fontWeight: 'bold',
-              borderRadius: '6px 6px 0 0',
-              backgroundColor: 'white',
-              zIndex: 1,
+            position: 'absolute',
+            top: '-0px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 10,
+            borderRadius: '9999px',
+            backgroundColor: 'white',
+            minHeight: '40px',
+            padding: '4px',
+            width: 'fit-content',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+
+            '& .MuiTabs-flexContainer': {
               position: 'relative',
-              transition: 'all 0.2s ease',
+              zIndex: 1,
             },
-            '& .Mui-selected': {
+
+            '& .MuiTab-root': {
+              color: theme.palette.brand.main,
+              fontWeight: 600,
+              minHeight: '32px',
+              minWidth: '120px',
+              borderRadius: '9999px',
               zIndex: 2,
-              boxShadow: 3,
-              backgroundColor: 'white',
-              color: '#2A3547',
+              transition: 'color 0.3s ease',
+              textTransform: 'none',
+              fontSize: '14px',
+              letterSpacing: '0.5px',
+              position: 'relative',
             },
+
+            '& .Mui-selected': {
+              color: '#ffffff !important',
+            },
+
             '& .MuiTabs-indicator': {
-              zIndex: 3,
+              display: 'flex',
+              justifyContent: 'center',
+              backgroundColor: 'transparent',
+              height: '100%',
+              zIndex: 0,
+            },
+
+            '& .MuiIndicatorThumb': {
+              width: '100%',
+              backgroundColor: theme.palette.brand.main,
+              borderRadius: '9999px',
+              transition: 'all 0.3s ease',
             },
           }}
         >
-          <Tab label="AR SPOTS" />
-          <Tab label="EVENTS" />
+          <Tab disableRipple label="AR SPOTS" />
+          <Tab disableRipple label="EVENTS" />
         </Tabs>
 
+        {/* Panel */}
         <Box
           sx={{
             flex: 1,
             overflowY: 'auto',
-            p: 2,
             backgroundColor: 'white',
-            borderRadius: '0 6px 6px 6px',
-            boxShadow: 3,
-            scrollbarWidth: 'none', // Firefox
-            '&::-webkit-scrollbar': { display: 'none' }, // Chrome, Safari
+            borderRadius: '12px',
+            paddingTop: '42px',
+            paddingX: '16px',
+            paddingBottom: '16px',
+            marginTop: '20px',
+            boxShadow: 1,
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
           }}
         >
           {tabIndex === 0 ? (
@@ -92,6 +145,7 @@ export default function InfoTabs() {
         </Box>
       </Box>
 
+      {/* Location Modal */}
       {open && (
         <LocationModal
           open={open}

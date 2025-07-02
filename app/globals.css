@@ -14,19 +14,23 @@
   }
 }
 
-/* Reset spacing and box model */
-html,
-body {
-  height: auto;
-  min-height: 100%;
-  overflow-x: hidden;
-  scrollbar-width: none; /* Firefox */
-}
-
-/* Hide scrollbar in WebKit browsers */
+/* Hide scrollbar in WebKit (Chrome, Safari, Edge) */
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
   display: none;
+}
+
+/* Hide scrollbar in Firefox */
+html,
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none; /* for IE & Edge Legacy */
+  overscroll-behavior: none; /* optional: disables bounce scroll */
+}
+
+/* Ensure scroll still works */
+body {
+  overflow-y: scroll;
 }
 
 /* Reset all elements */
@@ -37,11 +41,6 @@ body::-webkit-scrollbar {
   margin: 0;
   padding: 0;
 }
-
-/* For debugging */
-/* body {
-  border: 2px solid red;
-} */
 
 input,
 textarea,
