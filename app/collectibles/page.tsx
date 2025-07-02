@@ -15,9 +15,12 @@ import { redeemCollectibleWithLocation } from './services/redeemCollectibleServi
 import toast from 'react-hot-toast';
 
 const CollectibleCard = styled(Card)(({ theme }) => ({
-  borderRadius: 16,
+  borderRadius: 2,
   backgroundColor: '#ffffff',
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+
+  border: '1px solid #e0e0e0',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+
   display: 'flex',
   flexDirection: 'column',
   '&:hover': {

@@ -12,7 +12,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 
-const RADIUS_METERS = 10;
+const RADIUS_METERS = 500;
 
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const toRad = (x: number) => (x * Math.PI) / 180;
