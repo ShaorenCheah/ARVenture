@@ -1,7 +1,23 @@
 'use client';
 
+import AttractionsIcon from '@mui/icons-material/Attractions';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import ClearIcon from '@mui/icons-material/Clear';
 import CloseIcon from '@mui/icons-material/Close';
+import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import HotelIcon from '@mui/icons-material/Hotel';
+import LocalCafeIcon from '@mui/icons-material/LocalCafe';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import LocalMallIcon from '@mui/icons-material/LocalMall';
+import MovieIcon from '@mui/icons-material/Movie';
+import MuseumIcon from '@mui/icons-material/Museum';
+import NightlifeIcon from '@mui/icons-material/Nightlife';
+import ParkIcon from '@mui/icons-material/Park';
+import RestaurantIcon from '@mui/icons-material/Restaurant';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import TempleBuddhistIcon from '@mui/icons-material/TempleBuddhist';
+import WaterIcon from '@mui/icons-material/Water';
 import {
   Drawer,
   Box,
@@ -20,76 +36,77 @@ import React, { useState, useEffect, useRef } from 'react';
 import SearchResult from './SearchResult';
 import { fetchPlaces, fetchSuggestions } from './searchService';
 
-const categories = [
-  { label: 'Food', id: '13065', icon: '🍽️' },
-  { label: 'Attractions', id: '16000', icon: '🎡' },
-  { label: 'Shopping', id: '17069', icon: '🛍️' },
-  { label: 'Cafes', id: '13032', icon: '☕' },
-  { label: 'Parks', id: '16032', icon: '🌳' },
-  { label: 'Entertainment', id: '10000', icon: '🎬' },
-  { label: 'Fitness', id: '18000', icon: '🏋️' },
-  { label: 'Nightlife', id: '10032', icon: '🌙' },
+export const categories = [
+  { label: 'Food', type: 'restaurant', icon: <RestaurantIcon fontSize="small" /> },
+  { label: 'Attractions', type: 'tourist_attraction', icon: <AttractionsIcon fontSize="small" /> },
+  { label: 'Shopping', type: 'shopping_mall', icon: <LocalMallIcon fontSize="small" /> },
+  { label: 'Cafes', type: 'cafe', icon: <LocalCafeIcon fontSize="small" /> },
+  { label: 'Parks', type: 'park', icon: <ParkIcon fontSize="small" /> },
+  { label: 'Entertainment', type: 'movie_theater', icon: <MovieIcon fontSize="small" /> },
+  { label: 'Fitness', type: 'gym', icon: <FitnessCenterIcon fontSize="small" /> },
+  { label: 'Nightlife', type: 'bar', icon: <NightlifeIcon fontSize="small" /> },
+  { label: 'Hotels', type: 'lodging', icon: <HotelIcon fontSize="small" /> },
+  { label: 'Museums', type: 'museum', icon: <MuseumIcon fontSize="small" /> },
+  { label: 'Temples', type: 'place_of_worship', icon: <TempleBuddhistIcon fontSize="small" /> },
+  { label: 'Water Parks', type: 'amusement_park', icon: <WaterIcon fontSize="small" /> },
+  { label: 'Transport', type: 'transit_station', icon: <DirectionsBusIcon fontSize="small" /> },
+  { label: 'Souvenirs', type: 'store', icon: <ShoppingBagIcon fontSize="small" /> },
+  { label: 'Clinics', type: 'hospital', icon: <LocalHospitalIcon fontSize="small" /> },
+  { label: 'Photo Spots', type: 'point_of_interest', icon: <CameraAltIcon fontSize="small" /> },
 ];
 
 interface SearchDrawerProps {
   open: boolean;
   onClose: () => void;
 }
-interface FSQCategory {
-  id: string;
-  name: string;
-}
 
-interface FSQPlace {
-  fsq_id: string;
+interface GooglePlace {
+  place_id: string;
   name: string;
   rating?: number;
-  price?: number;
-  location?: {
-    formatted_address?: string;
-    address?: string;
-  };
-  categories?: FSQCategory[];
+  price_level?: number;
+  vicinity?: string;
+  types?: string[];
+  photos?: { photo_reference: string }[];
 }
 
 export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
   const [query, setQuery] = useState('');
   const [selectedCat, setSelectedCat] = useState('');
-  const [results, setResults] = useState([]);
-  const [selectedPlace, setSelectedPlace] = useState<FSQPlace | null>(null);
+  const [results, setResults] = useState<GooglePlace[]>([]);
+  const [selectedPlace, setSelectedPlace] = useState<GooglePlace | null>(null);
   const [currentView, setCurrentView] = useState<'search' | 'result'>('search');
 
-  // Autocomplete states
-  type Suggestion = string | { name: string; rating?: number };
+  type Suggestion = string | { name: string; place_id: string };
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
-
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (!query && !selectedCat) {
-        setResults([]); // clear results when everything is reset
+        setResults([]);
         return;
       }
 
-      fetchPlaces(query, selectedCat).then(setResults);
+      fetchPlaces(query, selectedCat).then((res) => {
+        const filtered = res.filter((place) =>
+          place.vicinity?.toLowerCase().includes('bandar sunway')
+        );
+        setResults(filtered);
+      });
     }, 400);
 
     return () => clearTimeout(timeout);
   }, [query, selectedCat]);
 
-  const validResults = results.filter(
-    (place: FSQPlace) => place?.location?.formatted_address || place?.location?.address
-  );
-
   const handleSuggestionClick = (suggestion: string) => {
-    setQuery(suggestion); // Update state
+    setQuery(suggestion);
     if (inputRef.current) {
-      inputRef.current.value = suggestion; // Force update input text
+      inputRef.current.value = suggestion;
     }
 
     setShowSuggestions(false);
@@ -106,7 +123,7 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
     setResults([]);
   };
 
-  const handlePlaceClick = (place: FSQPlace) => {
+  const handlePlaceClick = (place: GooglePlace) => {
     setSelectedPlace(place);
     setCurrentView('result');
   };
@@ -116,7 +133,6 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
     setSelectedPlace(null);
   };
 
-  // Reset view when drawer closes
   useEffect(() => {
     if (!open) {
       setCurrentView('search');
@@ -139,18 +155,9 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
         },
       }}
     >
-      <Box
-        sx={{
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          px: 2,
-          pt: 2,
-        }}
-      >
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', px: 2, pt: 2 }}>
         {currentView === 'search' ? (
           <>
-            {/* Sticky Search Header */}
             <Box sx={{ position: 'sticky', top: 0, bgcolor: 'background.paper', zIndex: 1 }}>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                 <Typography variant="h4" fontWeight="bold">
@@ -161,7 +168,6 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                 </IconButton>
               </Box>
 
-              {/* Category Chips */}
               <Box
                 sx={{
                   display: 'flex',
@@ -175,16 +181,20 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
               >
                 {categories.map((cat) => (
                   <Chip
-                    key={cat.id}
-                    label={`${cat.icon} ${cat.label}`}
+                    key={cat.type}
+                    label={
+                      <Box display="flex" alignItems="center" gap={0.5}>
+                        {cat.icon}
+                        <span>{cat.label}</span>
+                      </Box>
+                    }
                     clickable
-                    color={selectedCat === cat.id ? 'primary' : 'default'}
-                    onClick={() => setSelectedCat((prev) => (prev === cat.id ? '' : cat.id))}
+                    color={selectedCat === cat.type ? 'primary' : 'default'}
+                    onClick={() => setSelectedCat((prev) => (prev === cat.type ? '' : cat.type))}
                   />
                 ))}
               </Box>
 
-              {/* Search Input */}
               <TextField
                 inputRef={inputRef}
                 fullWidth
@@ -196,22 +206,16 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                   setShowSuggestions(true);
 
                   if (val.trim()) {
-                    fetchSuggestions(val, selectedCat).then(setSuggestions);
+                    fetchSuggestions(val).then(setSuggestions);
                   } else {
                     setSuggestions([]);
                   }
                 }}
                 onBlur={() => {
-                  // Only hide suggestions if we're not clicking on a suggestion
-                  // Use setTimeout to allow click events to fire first
-                  setTimeout(() => {
-                    setShowSuggestions(false);
-                  }, 150);
+                  setTimeout(() => setShowSuggestions(false), 150);
                 }}
                 onFocus={() => {
-                  if (suggestions.length > 0) {
-                    setShowSuggestions(true);
-                  }
+                  if (suggestions.length > 0) setShowSuggestions(true);
                 }}
                 InputProps={{
                   endAdornment: (query || selectedCat) && (
@@ -238,7 +242,6 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                 }}
               />
 
-              {/* Suggestions Dropdown */}
               {showSuggestions && suggestions.length > 0 && (
                 <Box
                   sx={{
@@ -263,48 +266,18 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                         cursor: 'pointer',
                         '&:hover': { bgcolor: '#f5f5f5' },
                       }}
-                      onMouseDown={(e) => {
-                        // Prevent the blur event from firing when clicking suggestion
-                        e.preventDefault();
-                      }}
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() =>
                         handleSuggestionClick(typeof sug === 'string' ? sug : sug.name)
                       }
                     >
-                      {typeof sug === 'string' ? (
-                        sug
-                      ) : (
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <Typography>{sug.name}</Typography>
-                          {sug.rating && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <Rating
-                                value={sug.rating / 2}
-                                max={5}
-                                precision={0.1}
-                                readOnly
-                                size="small"
-                              />
-                              <Typography variant="caption" color="text.secondary">
-                                {sug.rating.toFixed(1)}
-                              </Typography>
-                            </Box>
-                          )}
-                        </Box>
-                      )}
+                      <Typography>{typeof sug === 'string' ? sug : sug.name}</Typography>
                     </Box>
                   ))}
                 </Box>
               )}
             </Box>
 
-            {/* Search Results */}
             <Box
               sx={{
                 overflowY: 'auto',
@@ -333,19 +306,17 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                     Start exploring by typing or selecting a category
                   </Typography>
                 </Box>
-              ) : validResults.length === 0 ? (
+              ) : results.length === 0 ? (
                 <Typography variant="body2" color="text.secondary" textAlign="center" mt={5}>
                   No results found.
                 </Typography>
               ) : (
-                validResults.map((place: FSQPlace) => {
-                  const category = categories.find((c) =>
-                    place.categories?.some((cat: FSQCategory) => cat.id === c.id)
-                  );
+                results.map((place) => {
+                  const category = categories.find((c) => place.types?.includes(c.type));
 
                   return (
                     <Card
-                      key={place.fsq_id}
+                      key={place.place_id}
                       sx={{
                         mb: 2,
                         p: 2,
@@ -363,7 +334,7 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                         {place.rating && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <Rating
-                              value={place.rating / 2}
+                              value={place.rating}
                               max={5}
                               precision={0.1}
                               readOnly
@@ -377,12 +348,12 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
                       </Box>
 
                       <Typography variant="body2" color="text.secondary">
-                        {place.location?.formatted_address || place.location?.address}
+                        {place.vicinity || 'No address available'}
                       </Typography>
 
-                      {place.price && (
+                      {place.price_level && (
                         <Typography variant="body2" color="primary" sx={{ mt: 0.5 }}>
-                          Price: {Array(place.price).fill('💲').join('')}
+                          Price: {Array(place.price_level).fill('💲').join('')}
                         </Typography>
                       )}
                     </Card>
@@ -392,7 +363,7 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
             </Box>
           </>
         ) : (
-          <SearchResult place={selectedPlace} onBack={handleBackToSearch} />
+          selectedPlace && <SearchResult place={selectedPlace} onBack={handleBackToSearch} />
         )}
       </Box>
     </Drawer>

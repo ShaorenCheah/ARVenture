@@ -1,151 +1,144 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 
-const BASE_URL = 'https://api.foursquare.com/v3/places/search';
-const DETAILS_URL = 'https://api.foursquare.com/v3/places';
+// ======================
+// Types
+// ======================
 
-// Bandar Sunway coordinates (centered around Sunway Pyramid)
-const SUNWAY_COORDINATES = '3.0725,101.607';
-const SUNWAY_RADIUS = 1500; // 1.5km radius to cover the main Bandar Sunway area
+export interface GoogleAutocompleteSuggestion {
+  name: string;
+  subtitle?: string;
+  place_id: string;
+}
 
-export const fetchPlaces = async (query: string, category: string = '') => {
-  const params: Record<string, any> = {
-    ll: SUNWAY_COORDINATES,
-    radius: SUNWAY_RADIUS,
-    sort: 'RATING', // Sort by rating for better tourist experience
-    limit: 30,
-    // Request additional fields for tourist information
-    fields:
-      'fsq_id,name,location,categories,rating,price,photos,hours,website,tel,email,description,tips,popularity,stats',
+interface GooglePrediction {
+  description: string;
+  place_id: string;
+  structured_formatting?: {
+    main_text: string;
+    secondary_text: string;
   };
+}
 
-  if (query) params.query = query;
-  if (category) params.categories = category;
+export interface GoogleReview {
+  author_name: string;
+  profile_photo_url: string;
+  rating: number;
+  text: string;
+  time: number;
+  relative_time_description: string;
+}
 
-  try {
-    const response = await axios.get(BASE_URL, {
-      headers: {
-        Authorization: process.env.NEXT_PUBLIC_FSQ_API_KEY!,
-        Accept: 'application/json',
-      },
-      params,
-    });
+export interface GooglePlace {
+  place_id: string;
+  name: string;
+  rating?: number;
+  price_level?: number;
+  vicinity?: string;
+  types?: string[];
+  photos?: { photo_reference: string }[];
+}
 
-    // Sort results by rating first, then by popularity
-    const sortedResults = response.data.results.sort((a: any, b: any) => {
-      // Places with ratings come first
-      if (a.rating && !b.rating) return -1;
-      if (!a.rating && b.rating) return 1;
-
-      // If both have ratings, sort by rating (descending)
-      if (a.rating && b.rating) {
-        return b.rating - a.rating;
-      }
-
-      // If neither has rating, sort by popularity/stats
-      const aPopularity = a.popularity || a.stats?.total_checkins || 0;
-      const bPopularity = b.popularity || b.stats?.total_checkins || 0;
-      return bPopularity - aPopularity;
-    });
-
-    return sortedResults;
-  } catch (error) {
-    console.error('Error fetching places:', error);
-    return [];
-  }
-};
-
-export const fetchSuggestions = async (query: string, category: string = '') => {
-  const params: Record<string, any> = {
-    ll: SUNWAY_COORDINATES,
-    radius: SUNWAY_RADIUS,
-    query,
-    sort: 'RELEVANCE',
-    limit: 8, // Increased for better suggestions
-    fields: 'fsq_id,name,rating,categories',
+export interface GooglePlaceDetails extends GooglePlace {
+  formatted_address?: string;
+  formatted_phone_number?: string;
+  website?: string;
+  opening_hours?: {
+    weekday_text: string[];
+    open_now?: boolean;
+    periods?: {
+      open: { day: number; time: string };
+      close?: { day: number; time: string };
+    }[];
   };
+  geometry?: {
+    location: {
+      lat: number;
+      lng: number;
+    };
+  };
+  reviews?: GoogleReview[];
+}
 
-  if (category) params.categories = category;
+// ======================
+// Autocomplete
+// ======================
 
+export const fetchSuggestions = async (input: string): Promise<GoogleAutocompleteSuggestion[]> => {
   try {
-    const response = await axios.get(BASE_URL, {
-      headers: {
-        Authorization: process.env.NEXT_PUBLIC_FSQ_API_KEY!,
-        Accept: 'application/json',
-      },
-      params,
+    const response = await axios.get<{ predictions: GooglePrediction[] }>('/api/googlePlaces', {
+      params: { type: 'autocomplete', input },
     });
 
-    // Return suggestions with ratings for better UX
-    return response.data.results.map((item: any) => ({
-      name: item.name,
-      rating: item.rating,
-      fsq_id: item.fsq_id,
+    return response.data.predictions.map((item) => ({
+      name: item.structured_formatting?.main_text || item.description,
+      subtitle: item.structured_formatting?.secondary_text,
+      place_id: item.place_id,
     }));
   } catch (error) {
-    console.error('Error fetching suggestions:', error);
+    console.error('Error fetching autocomplete suggestions (proxy):', error);
     return [];
   }
 };
 
-// New function to get detailed place information
-export const fetchPlaceDetails = async (fsq_id: string) => {
+// ======================
+// Nearby Search
+// ======================
+
+export const fetchPlaces = async (query: string, category: string = ''): Promise<GooglePlace[]> => {
   try {
-    const response = await axios.get(`${DETAILS_URL}/${fsq_id}`, {
-      headers: {
-        Authorization: process.env.NEXT_PUBLIC_FSQ_API_KEY!,
-        Accept: 'application/json',
-      },
+    const response = await axios.get<{ results: GooglePlace[] }>('/api/googlePlaces', {
       params: {
-        fields:
-          'fsq_id,name,location,categories,rating,price,photos,hours,website,tel,email,description,tips,menu,social_media,date_closed,hours_popular,stats,popularity,tastes',
+        type: 'nearby',
+        keyword: query,
+        category,
       },
     });
 
-    return response.data;
+    return response.data.results;
   } catch (error) {
-    console.error('Error fetching place details:', error);
+    console.error('Error fetching nearby places (proxy):', error);
+    return [];
+  }
+};
+
+// ======================
+// Place Details
+// ======================
+
+export const fetchPlaceDetails = async (placeId: string): Promise<GooglePlaceDetails | null> => {
+  try {
+    const response = await axios.get<{ result: GooglePlaceDetails }>('/api/googlePlaces', {
+      params: {
+        type: 'details',
+        place_id: placeId,
+        fields: [
+          'name',
+          'formatted_address',
+          'geometry',
+          'types',
+          'website',
+          'formatted_phone_number',
+          'rating',
+          'opening_hours',
+          'price_level',
+          'photos',
+          'reviews',
+        ].join(','),
+      },
+    });
+
+    return response.data.result;
+  } catch (error) {
+    console.error('Error fetching place details (proxy):', error);
     return null;
   }
 };
 
-// Get photos for a place
-export const fetchPlacePhotos = async (fsq_id: string) => {
-  try {
-    const response = await axios.get(`${DETAILS_URL}/${fsq_id}/photos`, {
-      headers: {
-        Authorization: process.env.NEXT_PUBLIC_FSQ_API_KEY!,
-        Accept: 'application/json',
-      },
-      params: {
-        limit: 10,
-      },
-    });
+// ======================
+// Photo URL Generator
+// ======================
 
-    return response.data || [];
-  } catch (error) {
-    console.error('Error fetching photos:', error);
-    return [];
-  }
-};
-
-// Get tips/reviews for a place
-export const fetchPlaceTips = async (fsq_id: string) => {
-  try {
-    const response = await axios.get(`${DETAILS_URL}/${fsq_id}/tips`, {
-      headers: {
-        Authorization: process.env.NEXT_PUBLIC_FSQ_API_KEY!,
-        Accept: 'application/json',
-      },
-      params: {
-        limit: 10,
-        sort: 'POPULAR',
-      },
-    });
-
-    return response.data || [];
-  } catch (error) {
-    console.error('Error fetching tips:', error);
-    return [];
-  }
+export const getPhotoUrl = (photoReference: string, maxWidth = 400): string => {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
+  return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photoreference=${photoReference}&key=${apiKey}`;
 };

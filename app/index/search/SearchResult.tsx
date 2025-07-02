@@ -1,3 +1,5 @@
+'use client';
+
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -8,78 +10,53 @@ import {
   Typography,
   IconButton,
   Card,
-  Chip,
-  Divider,
-  Avatar,
   Rating,
   Button,
-  Link,
   CircularProgress,
+  Link,
+  Avatar,
+  Divider,
 } from '@mui/material';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { fetchPlaceDetails, fetchPlacePhotos, fetchPlaceTips } from './searchService';
+import { fetchPlaceDetails, getPhotoUrl } from './searchService';
+import type { GooglePlace, GooglePlaceDetails } from './searchService';
 
 interface SearchResultProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  place: any;
+  place: GooglePlace;
   onBack: () => void;
 }
 
 export default function SearchResult({ place, onBack }: SearchResultProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [details, setDetails] = useState<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [photos, setPhotos] = useState<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [tips, setTips] = useState<any[]>([]);
+  const [details, setDetails] = useState<GooglePlaceDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [expandedReviews, setExpandedReviews] = useState<boolean[]>([]);
 
   useEffect(() => {
-    const loadPlaceData = async () => {
+    const load = async () => {
       setLoading(true);
-      try {
-        const [placeDetails, placePhotos, placeTips] = await Promise.all([
-          fetchPlaceDetails(place.fsq_id),
-          fetchPlacePhotos(place.fsq_id),
-          fetchPlaceTips(place.fsq_id),
-        ]);
-
-        setDetails(placeDetails);
-        setPhotos(placePhotos);
-        setTips(placeTips);
-      } catch (error) {
-        console.error('Error loading place data:', error);
-      }
+      const result = await fetchPlaceDetails(place.place_id);
+      setDetails(result);
+      setExpandedReviews(new Array(result?.reviews?.length || 0).fill(false));
       setLoading(false);
     };
-
-    if (place?.fsq_id) {
-      loadPlaceData();
-    }
+    load();
   }, [place]);
 
-  if (loading) {
+  if (loading || !details) {
     return (
-      <Box
-        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}
-      >
+      <Box display="flex" justifyContent="center" alignItems="center" height={200}>
         <CircularProgress />
       </Box>
     );
   }
 
-  const currentPlace = details || place;
-  const category = currentPlace.categories?.[0];
-  const address = currentPlace.location?.formatted_address || currentPlace.location?.address;
-  const iconUrl = category?.icon ? `${category.icon.prefix}64${category.icon.suffix}` : null;
-
-  const fallbackText = (value: string | undefined | null, fallback: string) =>
-    value && value.trim() !== '' ? value : fallback;
+  const photos = details.photos || [];
+  const reviews = details.reviews || [];
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Header with Back Button */}
+      {/* Header */}
       <Box
         sx={{
           display: 'flex',
@@ -95,251 +72,200 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
         <IconButton onClick={onBack} sx={{ mr: 1 }}>
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h4" fontWeight={'bold'} sx={{ flexGrow: 1 }}>
+        <Typography variant="h4" fontWeight="bold">
           Place Details
         </Typography>
-        {category && <Chip label={category.name} size="small" color="primary" variant="outlined" />}
       </Box>
 
-      {/* Scrollable Content */}
-      <Box
-        sx={{
-          flex: 1,
-          overflowY: 'auto',
-          scrollbarWidth: 'none',
-          '&::-webkit-scrollbar': { display: 'none' },
-        }}
-      >
-        {/* Main Info Card */}
-        <Card
-          sx={{
-            p: 1.5,
-            mb: 2,
-            maxHeight: 300,
-            overflowY: 'auto',
-            border: '1px solid #e0e0e0',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-            borderRadius: 2,
-          }}
-        >
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48 }}>
-              {iconUrl ? (
-                <Box
-                  component="img"
-                  src={iconUrl}
-                  alt={category?.name || 'Category'}
-                  sx={{ width: 32, height: 32 }}
-                />
-              ) : (
-                '📍'
-              )}
-            </Avatar>
-            <Box
-              sx={{
-                flex: 1,
-                minHeight: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-              }}
-            >
-              <Typography variant="h5" fontWeight="bold" gutterBottom>
-                {currentPlace.name}
-              </Typography>
-
-              {currentPlace.rating && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Rating value={currentPlace.rating / 2} precision={0.1} readOnly size="small" />
-                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.2 }}>
-                    {currentPlace.rating.toFixed(1)} / 10
-                  </Typography>
-                </Box>
-              )}
-
-              {currentPlace.price && (
-                <Typography variant="body2" color="text.secondary" mt={0.5}>
-                  Price Level: {Array(currentPlace.price).fill('$').join('')}
-                </Typography>
-              )}
-            </Box>
+      {/* Body Scroll */}
+      <Box sx={{ flex: 1, overflowY: 'auto', pr: 1 }}>
+        {/* Gallery */}
+        {photos.length > 0 && (
+          <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', mb: 2 }}>
+            {photos.map((p, idx) => (
+              <Box
+                component="img"
+                key={idx}
+                src={getPhotoUrl(p.photo_reference, 600)}
+                alt={`Photo ${idx + 1}`}
+                sx={{
+                  height: 200,
+                  width: 300,
+                  objectFit: 'cover',
+                  borderRadius: 2,
+                  flexShrink: 0,
+                }}
+              />
+            ))}
           </Box>
+        )}
 
-          {currentPlace.description && (
-            <Typography variant="body2" color="text.secondary" sx={{ my: 2 }}>
-              {fallbackText(currentPlace.description, 'No description available')}
+        {/* Basic Info */}
+        <Card sx={{ p: 2, mb: 2 }}>
+          <Typography variant="h5" fontWeight="bold">
+            {details.name}
+          </Typography>
+
+          {details.rating && (
+            <Box display="flex" alignItems="center" gap={1} mt={1}>
+              <Rating value={details.rating} precision={0.1} readOnly size="small" />
+              <Typography variant="body2" color="text.secondary">
+                {details.rating.toFixed(1)} / 5
+              </Typography>
+            </Box>
+          )}
+
+          {details.opening_hours?.open_now !== undefined && (
+            <Typography
+              variant="body2"
+              color={details.opening_hours.open_now ? 'success.main' : 'error.main'}
+              fontWeight="bold"
+              mt={0.5}
+            >
+              {details.opening_hours.open_now ? 'Open Now' : 'Closed Now'}
+            </Typography>
+          )}
+
+          {details.price_level && (
+            <Typography variant="body2" color="text.secondary" mt={0.5}>
+              Price Level: {'💲'.repeat(details.price_level)}
             </Typography>
           )}
         </Card>
 
-        {/* Contact Information */}
-        <Card
-          sx={{
-            p: 1.5,
-            mb: 2,
-            maxHeight: 300,
-            overflowY: 'auto',
-            border: '1px solid #e0e0e0',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-            borderRadius: 2,
-          }}
-        >
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
-          >
+        {/* Contact & Hours */}
+        <Card sx={{ p: 2, mb: 2 }}>
+          <Typography variant="h6" fontWeight="bold" mb={1}>
             Contact & Location
           </Typography>
 
-          {address && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <LocationOnIcon fontSize="small" color="action" sx={{ mt: 0.5 }} />
-              <Typography variant="body2">{fallbackText(address, 'Address available')}</Typography>
+          {details.formatted_address && (
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <LocationOnIcon fontSize="small" color="action" />
+              <Typography variant="body2">{details.formatted_address}</Typography>
             </Box>
           )}
 
-          {currentPlace.tel && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          {details.formatted_phone_number && (
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
               <PhoneIcon fontSize="small" color="action" />
-              <Typography variant="body2" color="primary.main">
-                {fallbackText(currentPlace.tel, 'Telephone number unavailable')}
+              <Typography variant="body2" color="primary">
+                {details.formatted_phone_number}
               </Typography>
             </Box>
           )}
 
-          {currentPlace.website && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          {details.website && (
+            <Box display="flex" alignItems="center" gap={1}>
               <WebIcon fontSize="small" color="action" />
-              <Link href={currentPlace.website} target="_blank" variant="body2">
+              <Link href={details.website} target="_blank" rel="noopener" variant="body2">
                 Visit Website
               </Link>
             </Box>
           )}
 
-          {currentPlace.hours && (
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-              <AccessTimeIcon fontSize="small" color="action" sx={{ mt: 0.5 }} />
+          {details.opening_hours?.weekday_text && (
+            <Box display="flex" alignItems="flex-start" gap={1} mt={1}>
+              <AccessTimeIcon fontSize="small" color="action" />
               <Box>
                 <Typography variant="body2" fontWeight="medium">
                   Hours:
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {currentPlace.hours?.display?.trim()
-                    ? currentPlace.hours.display
-                    : 'Working hours unavailable'}
-                </Typography>
+                {details.opening_hours.weekday_text.map((line, i) => (
+                  <Typography key={i} variant="body2" color="text.secondary">
+                    {line}
+                  </Typography>
+                ))}
               </Box>
             </Box>
           )}
         </Card>
 
-        {/* Photos */}
-        {photos && photos.length > 0 && (
-          <Card
-            sx={{
-              p: 1.5,
-              mb: 2,
-              maxHeight: 300,
-              overflowY: 'auto',
-              border: '1px solid #e0e0e0',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-              borderRadius: 2,
-            }}
-          >
-            <Typography
-              variant="h6"
-              fontWeight="bold"
-              sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
-            >
-              Photos
+        {/* Reviews */}
+        {reviews.length > 0 && (
+          <Card sx={{ p: 2, mb: 2, maxHeight: 300, overflowY: 'auto' }}>
+            <Typography variant="h6" fontWeight="bold" mb={1}>
+              Reviews
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1 }}>
-              {photos.slice(0, 10).map((photo, index) => (
-                <Box
-                  key={index}
-                  component="img"
-                  src={`${photo.prefix}300x200${photo.suffix}`}
-                  alt={`${currentPlace.name} photo ${index + 1}`}
-                  sx={{
-                    width: 150,
-                    height: 100,
-                    objectFit: 'cover',
-                    borderRadius: 1,
-                    flexShrink: 0,
-                  }}
-                />
-              ))}
-            </Box>
+
+            {reviews.map((r, i) => {
+              const isExpanded = expandedReviews[i];
+              const maxLength = 150;
+              const isLong = r.text.length > maxLength;
+
+              return (
+                <Box key={i} mb={2}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Avatar
+                      src={r.profile_photo_url}
+                      alt={r.author_name}
+                      sx={{ width: 32, height: 32 }}
+                    />
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold">
+                        {r.author_name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {r.relative_time_description}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Rating value={r.rating} precision={0.5} readOnly size="small" sx={{ mt: 0.5 }} />
+
+                  <Box
+                    sx={{
+                      mt: 0.5,
+                      maxHeight: isExpanded ? 'none' : 60,
+                      overflowY: 'hidden',
+                      position: 'relative',
+                    }}
+                  >
+                    <Typography variant="body2">
+                      {isExpanded ? r.text : `${r.text.slice(0, maxLength)}${isLong ? '...' : ''}`}
+                    </Typography>
+                  </Box>
+
+                  {isLong && (
+                    <Button
+                      size="small"
+                      onClick={() =>
+                        setExpandedReviews((prev) => {
+                          const updated = [...prev];
+                          updated[i] = !updated[i];
+                          return updated;
+                        })
+                      }
+                      sx={{ mt: 1, textTransform: 'none', p: 0 }}
+                    >
+                      {isExpanded ? 'View Less' : 'View More'}
+                    </Button>
+                  )}
+
+                  {i < reviews.length - 1 && <Divider sx={{ mt: 2 }} />}
+                </Box>
+              );
+            })}
           </Card>
         )}
 
-        {/* Tips/Reviews */}
-        <Card
-          sx={{
-            p: 1.5,
-            mb: 2,
-            pb: 0,
-            maxHeight: 300,
-            overflowY: 'auto',
-            border: '1px solid #e0e0e0',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-            borderRadius: 2,
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-            Tips & Reviews
-          </Typography>
-
-          {tips && tips.length > 0 ? (
-            tips.slice(0, 10).map((tip, index, arr) => (
-              <Box key={index} sx={{ mb: 2 }}>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  &quot;{tip.text}&quot;
-                </Typography>
-                <Box
-                  width="100%"
-                  sx={{ display: 'flex', justifyContent: 'end', alignItems: 'end' }}
-                >
-                  <Typography variant="caption" color="text.secondary">
-                    - {tip.user?.first_name || 'Anonymous'} •{' '}
-                    {new Date(tip.created_at).toLocaleDateString()}
-                  </Typography>
-                </Box>
-                {index < arr.length - 1 && <Divider sx={{ mt: 2 }} />}
-              </Box>
-            ))
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              No reviews available.
-            </Typography>
-          )}
-        </Card>
-        {/* Action Buttons */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          {currentPlace.location?.latitude && currentPlace.location?.longitude && (
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={() => {
-                const url = `https://www.google.com/maps/dir/?api=1&destination=${currentPlace.location.latitude},${currentPlace.location.longitude}`;
-                window.open(url, '_blank');
-              }}
-            >
-              Get Directions
-            </Button>
-          )}
-
-          {currentPlace.website && (
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={() => window.open(currentPlace.website, '_blank')}
-            >
-              Visit Website
-            </Button>
-          )}
-        </Box>
+        {/* Google Maps Button */}
+        {details.geometry?.location && (
+          <Button
+            variant="outlined"
+            fullWidth
+            sx={{ my: 2 }}
+            onClick={() => {
+              const { lat, lng } = details.geometry!.location;
+              window.open(
+                `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+                '_blank'
+              );
+            }}
+          >
+            Get Directions
+          </Button>
+        )}
       </Box>
     </Box>
   );
