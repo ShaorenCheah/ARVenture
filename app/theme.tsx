@@ -112,21 +112,42 @@ let theme = createTheme(baseTheme, {
     MuiInputBase: {
       styleOverrides: {
         input: {
-          fontSize: '16px', // prevent iOS zoom
+          fontSize: '16px',
+          paddingTop: '20px',
+          paddingBottom: '12px',
         },
       },
     },
     MuiInputLabel: {
       styleOverrides: {
         root: {
-          fontSize: '16px', // prevent iOS zoom
+          fontSize: '14px', // Default label size - smaller to fit properly
+          '&.Mui-focused:not(.MuiInputLabel-shrink)': {
+            fontSize: '16px', // Only 16px when focused and not shrunk (prevents iOS zoom)
+          },
+          '&.MuiInputLabel-shrink': {
+            fontSize: '12px', // Even smaller when shrunk
+            transform: 'translate(14px, -9px) scale(1)',
+          },
         },
       },
     },
     MuiFormLabel: {
       styleOverrides: {
         root: {
-          fontSize: '16px', // prevent iOS zoom
+          fontSize: '14px', // Base size for form labels
+          '&.Mui-focused:not(.MuiInputLabel-shrink)': {
+            fontSize: '16px', // 16px only when actively focused to prevent iOS zoom
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        notchedOutline: {
+          '& legend': {
+            fontSize: '12px', // Match the shrunk label size
+          },
         },
       },
     },
