@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Header from './header';
 import SearchBar from '../index/search/SearchBar';
 import Footer from './footer';
+import { useState } from 'react';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -34,7 +35,7 @@ export default function MainLayout({
         backgroundAttachment: 'scroll',
         px: { xs: 2.5, sm: 3, md: 4, lg: 20, xl: 25 },
         pt: { xs: 2.5, sm: 3, md: 4 },
-        pb: { xs: '56px', lg: '80px' },
+        pb: { xs: '76px', sm: '80px', lg: 12 },
       }}
     >
       {showHeader && (isLanding ? <SearchBar /> : <Header />)}
