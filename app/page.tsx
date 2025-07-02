@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import InfoTabs from './components/index/contentTabs/InfoTabs';
-import GuideModal from './components/index/GuideModal';
+import InfoTabs from './index/contentTabs/InfoTabs';
+import GuideModal from './index/GuideModal';
 import { Card } from '@mui/material';
 import { useAuth } from './auth/AuthContext';
 
@@ -12,7 +12,7 @@ export default function Home() {
   const [openGuideModal, setOpenGuideModal] = useState(false);
   const [openUserModal, setOpenUserModal] = useState(false);
 
-  const { user } = useAuth(); // Access user auth state
+  const { user } = useAuth();
 
   useEffect(() => {
     const hasShownGuide = sessionStorage.getItem('guideShown');

@@ -3,7 +3,7 @@
 import { Box } from '@mui/material';
 import { usePathname } from 'next/navigation';
 import Header from './header';
-import SearchBar from '../index/search/SearchBar';
+import SearchBar from '../../index/search/SearchBar';
 import Footer from './footer';
 import { useState } from 'react';
 
