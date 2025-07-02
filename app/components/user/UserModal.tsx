@@ -1,6 +1,16 @@
 'use client';
 
-import { Box, Modal, SxProps, Theme, Fade } from '@mui/material';
+import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
+import {
+  Box,
+  Modal,
+  SxProps,
+  Theme,
+  Fade,
+  useMediaQuery,
+  useTheme,
+  IconButton,
+} from '@mui/material';
 import React, { useState, useEffect } from 'react';
 
 import ForgotPasswordForm from './forgotPassword/ForgotPasswordForm';
@@ -18,37 +28,40 @@ interface UserModalProps {
 const UserModal: React.FC<UserModalProps> = ({ open, onClose, sx = {} }) => {
   const { user } = useAuth();
   const [view, setView] = useState<'login' | 'register' | 'forgot'>('login');
-  const [localUser, setLocalUser] = useState(user); // <- local copy
+  const [localUser, setLocalUser] = useState(user);
+
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
 
   // Delay update of localUser until modal fully closes
   useEffect(() => {
     if (!open) {
       const timeout = setTimeout(() => {
         setLocalUser(user);
-      }, 300); // allow modal to fade out before setting
+      }, 300);
       return () => clearTimeout(timeout);
     }
   }, [open, user]);
 
+  useEffect(() => {
+    if (open && !user) {
+      setView('login');
+    }
+  }, [open, user]);
+
   const modalStyle: SxProps<Theme> = {
-    position: 'absolute',
-    top: { xs: 'auto', sm: '50%' },
-    left: '50%',
-    bottom: { xs: 0, sm: 'auto' },
-    transform: {
-      xs: 'translateX(-50%)',
-      sm: 'translate(-50%, -50%)',
-    },
-    width: { xs: '100%', sm: '500px', md: '525px', lg: '550px', xl: '575px' },
-    maxHeight: '100vh',
+    width: '100%',
+    maxWidth: isDesktop ? '550px' : '100%',
     bgcolor: 'background.paper',
-    borderRadius: { xs: '8px 8px 0 0', sm: 3 },
-    boxShadow: 24,
+    borderRadius: isDesktop ? 3 : 0,
     outline: 'none',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
-    p: { xs: 4, sm: 5 },
+    px: 4,
+    py: 4,
+    maxHeight: '100vh',
+    overflowY: 'auto',
+    mx: 'auto',
     ...sx,
   };
 
@@ -77,17 +90,61 @@ const UserModal: React.FC<UserModalProps> = ({ open, onClose, sx = {} }) => {
     <Modal
       open={open}
       onClose={onClose}
+      closeAfterTransition
       sx={{
-        '& .MuiBackdrop-root': {
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        },
+        p: 0,
+        m: 0,
+        '& .MuiBackdrop-root': { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
       }}
     >
       <Fade in={open} timeout={400}>
-        <Box sx={modalStyle} key={view}>
-          <Fade in key={view} timeout={400}>
-            <Box>{renderContent()}</Box>
-          </Fade>
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            bgcolor: 'background.default',
+            zIndex: (theme) => theme.zIndex.modal,
+            overflowY: 'auto',
+          }}
+        >
+          <Box sx={modalStyle} key={view}>
+            <Box display="flex" justifyContent="space-between" mb={6}>
+              {/* Logo */}
+              <Box>
+                <Box
+                  component="img"
+                  src="/icons/ARVentureLogo.png"
+                  sx={{
+                    width: '100%',
+                    height: 'auto',
+                    maxWidth: { xs: '120px', sm: '170px' },
+                  }}
+                />
+              </Box>
+              {/* Return Button */}
+              <Box
+                sx={{
+                  borderRadius: '50%',
+                  backgroundColor: 'brand.main',
+                }}
+              >
+                <IconButton onClick={onClose} sx={{ color: 'white' }}>
+                  <KeyboardReturnIcon />
+                </IconButton>
+              </Box>
+            </Box>
+
+            {/* Content */}
+            <Fade in key={view} timeout={400}>
+              <Box>{renderContent()}</Box>
+            </Fade>
+          </Box>
         </Box>
       </Fade>
     </Modal>

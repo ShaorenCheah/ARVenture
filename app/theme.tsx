@@ -23,14 +23,14 @@ let baseTheme = createTheme({
     primary: { main: '#ED1D24' },
     secondary: { main: '#c70e14' },
     text: {
-      primary: '#1a1a1a', // Pleasing dark gray (not pure black)
-      secondary: '#6b7280', // Muted/grayed out text
-      disabled: '#9ca3af', // Even more muted for disabled states
+      primary: '#1a1a1a',
+      secondary: '#6b7280',
+      disabled: '#9ca3af',
     },
     brand: {
-      main: '#ED1D24', // Your primary red
-      accent: '#c70e14', // Your darker red
-      light: '#f87171', // Lighter red variant
+      main: '#ED1D24',
+      accent: '#c70e14',
+      light: '#f87171',
     },
     background: {
       default: 'white',
@@ -48,91 +48,50 @@ let theme = createTheme(baseTheme, {
     h1: {
       fontWeight: 700,
       fontSize: '2rem',
-      [baseTheme.breakpoints.up('sm')]: {
-        fontSize: '2.5rem',
-      },
-      [baseTheme.breakpoints.up('md')]: {
-        fontSize: '3rem',
-      },
+      [baseTheme.breakpoints.up('sm')]: { fontSize: '2.5rem' },
+      [baseTheme.breakpoints.up('md')]: { fontSize: '3rem' },
     },
     h2: {
       fontWeight: 600,
       fontSize: '1.5rem',
-      [baseTheme.breakpoints.up('sm')]: {
-        fontSize: '2rem',
-      },
-      [baseTheme.breakpoints.up('md')]: {
-        fontSize: '2.25rem',
-      },
+      [baseTheme.breakpoints.up('sm')]: { fontSize: '2rem' },
+      [baseTheme.breakpoints.up('md')]: { fontSize: '2.25rem' },
     },
     h3: {
       fontWeight: 500,
       fontSize: '1.25rem',
-      [baseTheme.breakpoints.up('sm')]: {
-        fontSize: '1.5rem',
-      },
-      [baseTheme.breakpoints.up('md')]: {
-        fontSize: '1.75rem',
-      },
+      [baseTheme.breakpoints.up('sm')]: { fontSize: '1.5rem' },
+      [baseTheme.breakpoints.up('md')]: { fontSize: '1.75rem' },
     },
     h4: {
       fontWeight: 500,
       fontSize: '1rem',
-      [baseTheme.breakpoints.up('sm')]: {
-        fontSize: '1.25rem',
-      },
-      [baseTheme.breakpoints.up('md')]: {
-        fontSize: '1.5rem',
-      },
+      [baseTheme.breakpoints.up('sm')]: { fontSize: '1.25rem' },
+      [baseTheme.breakpoints.up('md')]: { fontSize: '1.5rem' },
     },
     h5: {
       fontWeight: 400,
       fontSize: '0.875rem',
-      [baseTheme.breakpoints.up('sm')]: {
-        fontSize: '1rem',
-      },
-      [baseTheme.breakpoints.up('md')]: {
-        fontSize: '1.125rem',
-      },
-      [baseTheme.breakpoints.up('lg')]: {
-        fontSize: '1.25rem',
-      },
+      [baseTheme.breakpoints.up('sm')]: { fontSize: '1rem' },
+      [baseTheme.breakpoints.up('md')]: { fontSize: '1.125rem' },
     },
     h6: {
       fontWeight: 400,
       fontSize: '0.75rem',
-      [baseTheme.breakpoints.up('sm')]: {
-        fontSize: '0.875rem',
-      },
-      [baseTheme.breakpoints.up('md')]: {
-        fontSize: '1rem',
-      },
+      [baseTheme.breakpoints.up('sm')]: { fontSize: '0.875rem' },
+      [baseTheme.breakpoints.up('md')]: { fontSize: '1rem' },
     },
     body1: {
       fontWeight: 400,
-      fontSize: '0.688rem',
-      [baseTheme.breakpoints.up('sm')]: {
-        fontSize: '0.875rem',
-      },
-      [baseTheme.breakpoints.up('md')]: {
-        fontSize: '1rem',
-      },
-      [baseTheme.breakpoints.up('lg')]: {
-        fontSize: '1.125rem',
-      },
+      fontSize: '0.875rem', // 14px baseline
+      [baseTheme.breakpoints.up('sm')]: { fontSize: '1rem' },
+      [baseTheme.breakpoints.up('md')]: { fontSize: '1.125rem' },
     },
     body2: {
       fontWeight: 400,
-      fontSize: '0.625rem',
-      [baseTheme.breakpoints.up('sm')]: {
-        fontSize: '0.75rem',
-      },
-      [baseTheme.breakpoints.up('md')]: {
-        fontSize: '0.875rem',
-      },
-      [baseTheme.breakpoints.up('lg')]: {
-        fontSize: '1rem',
-      },
+      fontSize: '0.75rem', // 12px baseline
+      [baseTheme.breakpoints.up('sm')]: { fontSize: '0.875rem' },
+      [baseTheme.breakpoints.up('md')]: { fontSize: '1rem' },
     },
   },
   components: {
@@ -141,30 +100,33 @@ let theme = createTheme(baseTheme, {
         body: {
           scrollbarWidth: 'thin',
           scrollbarColor: '#ccc transparent',
-          '&::-webkit-scrollbar': {
-            width: '6px',
-          },
+          '&::-webkit-scrollbar': { width: '6px' },
           '&::-webkit-scrollbar-thumb': {
             backgroundColor: '#ccc',
             borderRadius: '4px',
           },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: 'transparent',
-          },
+          '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
         },
       },
     },
     MuiInputBase: {
       styleOverrides: {
         input: {
-          fontSize: '16px',
+          fontSize: '16px', // prevent iOS zoom
         },
       },
     },
     MuiInputLabel: {
       styleOverrides: {
         root: {
-          fontSize: '16px',
+          fontSize: '16px', // prevent iOS zoom
+        },
+      },
+    },
+    MuiFormLabel: {
+      styleOverrides: {
+        root: {
+          fontSize: '16px', // prevent iOS zoom
         },
       },
     },

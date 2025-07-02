@@ -100,6 +100,7 @@ export default function BottomAppBar() {
                 </Box>
 
                 <Typography
+                  variant="caption"
                   sx={{
                     textAlign: 'center',
                     color: isActive ? 'brand.accent' : 'text.secondary',

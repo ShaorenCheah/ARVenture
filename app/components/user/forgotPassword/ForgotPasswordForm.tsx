@@ -48,8 +48,8 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onSwitch }) => 
           minHeight: { xs: 250, sm: 300 },
         }}
       >
-        <Stack spacing={1} sx={{ mb: 2, textAlign: 'center' }}>
-          <Typography variant="h5" fontWeight="bold" textAlign="center">
+        <Stack spacing={1} sx={{ mb: 4, textAlign: 'center' }}>
+          <Typography variant="h1" fontWeight="bold" textAlign="center">
             Reset Password
           </Typography>
           <Typography variant="body1" color="text.secondary" textAlign="center">
@@ -68,7 +68,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onSwitch }) => 
           variant="contained"
           fullWidth
           disabled={loading}
-          sx={{ mt: 2, py: 1.5, borderRadius: 10 }}
+          sx={{ mt: 5, py: 1.25, borderRadius: 10 }}
         >
           {loading ? 'Sending...' : 'Send Reset Email'}
         </Button>
@@ -78,7 +78,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onSwitch }) => 
           <Button
             variant="text"
             onClick={onSwitch}
-            sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}
+            sx={{ fontWeight: 'bold', fontSize: '0.75rem', py: '0' }}
           >
             Back to Login
           </Button>

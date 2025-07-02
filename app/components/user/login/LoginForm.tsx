@@ -62,27 +62,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot, onSuccess }) 
           minHeight: { xs: 350, sm: 420 },
         }}
       >
-        {/* Logo */}
-        <Box mb={2}>
-          <Box
-            component="img"
-            src="/icons/ARVentureLogo.png"
-            sx={{
-              width: '100%',
-              height: 'auto',
-              maxWidth: { xs: '120px', sm: '170px' },
-            }}
-          />
-        </Box>
-
         {/* Text Content */}
-        <Stack mb={1.5} spacing={2} sx={{ alignItems: 'start', justifyContent: 'center' }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+        <Stack mb={2} spacing={1.5} sx={{ alignItems: 'start', justifyContent: 'center' }}>
+          <Typography variant="h1" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
             Login Account
           </Typography>
           <Typography variant="body1" sx={{ lineHeight: 1.75, color: '#888888' }}>
-            Hello, you must log in first to collect collectibles and redeem gifts in Sunway
-            ARventure
+            Ready to collect, explore, and win? <br />
+            Log in to begin your Sunway ARventure!
           </Typography>
         </Stack>
 
@@ -133,18 +120,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot, onSuccess }) 
             fullWidth
             type="submit"
             disabled={loading}
-            sx={{ mt: 1.5, py: 1.5, borderRadius: 10 }}
+            sx={{ mt: 2, py: 1.25, borderRadius: 10 }}
           >
             {loading ? 'Signing In...' : 'Sign In'}
           </Button>
           <Box sx={{ width: '100%' }}>
-            <Typography sx={{ textAlign: 'start', mt: 2, color: '#888888' }}>
+            <Typography sx={{ textAlign: 'start', mt: 1, color: '#888888' }}>
               Don&apos;t have an account?{' '}
               <Button
                 variant="text"
                 onClick={onSwitch}
                 color="primary"
-                sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}
+                sx={{ fontWeight: 'bold', fontSize: '0.75rem', py: '0' }}
               >
                 Join Us
               </Button>
