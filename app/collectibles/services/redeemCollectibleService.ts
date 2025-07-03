@@ -10,10 +10,11 @@ import {
   setDoc,
   serverTimestamp,
 } from 'firebase/firestore';
+import { ref, getDownloadURL } from 'firebase/storage';
 
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 
-const RADIUS_METERS = 500;
+const RADIUS_METERS = 5000;
 
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const toRad = (x: number) => (x * Math.PI) / 180;
@@ -34,7 +35,15 @@ export const redeemCollectibleWithLocation = async (
   code: string,
   uid: string,
   position: GeolocationPosition | null
-): Promise<{ success: boolean; message: string }> => {
+): Promise<{
+  success: boolean;
+  message: string;
+  data?: {
+    imageURL?: string;
+    title: string;
+    description: string;
+  };
+}> => {
   if (!position) {
     return { success: false, message: 'Location access required.' };
   }
@@ -91,5 +100,21 @@ export const redeemCollectibleWithLocation = async (
     redeemedAt: serverTimestamp(),
   });
 
-  return { success: true, message: 'Collectible successfully redeemed!' };
+  let imageURL = '';
+  try {
+    const imageRef = ref(storage, `collectibles/${collectibleId}.png`);
+    imageURL = await getDownloadURL(imageRef);
+  } catch {
+    console.warn(`No image found for collectible ${collectibleId}`);
+  }
+
+  return {
+    success: true,
+    message: 'Collectible successfully redeemed!',
+    data: {
+      title: collectibleData.title,
+      description: collectibleData.description,
+      imageURL,
+    },
+  };
 };

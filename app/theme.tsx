@@ -1,4 +1,3 @@
-// theme.ts
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
@@ -94,6 +93,12 @@ let theme = createTheme(baseTheme, {
       fontSize: '0.75rem', // 12px baseline
       [baseTheme.breakpoints.up('sm')]: { fontSize: '0.875rem' },
       [baseTheme.breakpoints.up('md')]: { fontSize: '1rem' },
+    },
+    caption: {
+      fontWeight: 400,
+      fontSize: '0.688rem', // 10px baseline
+      [baseTheme.breakpoints.up('sm')]: { fontSize: '0.75rem' },
+      [baseTheme.breakpoints.up('md')]: { fontSize: '0.875rem' },
     },
   },
   components: {

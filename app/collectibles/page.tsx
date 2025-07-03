@@ -1,35 +1,36 @@
 'use client';
 
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { Box, Typography, Card, CardContent, Avatar, Chip, Skeleton } from '@mui/material';
+import RedeemIcon from '@mui/icons-material/Redeem';
+import {
+  Box,
+  Typography,
+  Card,
+  CircularProgress,
+  Collapse,
+  CardContent,
+  Avatar,
+  Chip,
+  Skeleton,
+  IconButton,
+  InputAdornment,
+  alpha,
+  Divider,
+  TextField,
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
-import RedeemCollectibleModal from './redeemCollectibleModal';
+import CollectibleSuccessModal from './CollectibleSuccessModal';
 import {
   fetchAllCollectibles,
   Collectible as CollectibleType,
 } from './services/collectiblesService';
 import { redeemCollectibleWithLocation } from './services/redeemCollectibleService';
 import { useUserModal } from '../components/providers/UserModalContext';
-
-const CollectibleCard = styled(Card)(() => ({
-  borderRadius: 2,
-  backgroundColor: '#ffffff',
-
-  border: '1px solid #e0e0e0',
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-
-  display: 'flex',
-  flexDirection: 'column',
-  '&:hover': {
-    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
-    transform: 'translateY(-2px)',
-    transition: 'all 0.3s ease',
-  },
-}));
 
 const SkeletonCard = styled(Card)(() => ({
   borderRadius: 16,
@@ -47,7 +48,6 @@ const QuestionMarkAvatar = styled(Avatar)(() => ({
   color: '#FFA500',
   fontSize: '2rem',
   fontWeight: 'bold',
-  margin: '0 auto 16px auto',
 }));
 
 const CollectedAvatar = styled(Box)(() => ({
@@ -62,18 +62,6 @@ const CollectedAvatar = styled(Box)(() => ({
   backgroundColor: '#fff',
 }));
 
-const RedeemChip = styled(Chip)(() => ({
-  backgroundColor: '#FF4444',
-  color: 'white',
-  fontWeight: 'bold',
-  fontSize: '0.75rem',
-  height: 24,
-  cursor: 'pointer',
-  '& .MuiChip-label': {
-    paddingX: 1,
-  },
-}));
-
 interface Collectible extends CollectibleType {
   collected?: boolean;
   collectedDate?: string;
@@ -85,7 +73,17 @@ export default function CollectiblesPage() {
   const [data, setData] = useState<Collectible[]>([]);
   const [userUid, setUserUid] = useState<string | null>(null);
   const { setOpenUserModal } = useUserModal();
-  const [redeemOpen, setRedeemOpen] = useState(false);
+
+  const [collapseOpen, setCollapseOpen] = useState(true);
+  const [code, setCode] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [successData, setSuccessData] = useState<{
+    imageURL: string;
+    title: string;
+    description: string;
+  } | null>(null);
 
   const loadCollectibles = async (user: User | null) => {
     setIsLoading(true);
@@ -96,6 +94,43 @@ export default function CollectiblesPage() {
     setIsLoading(false);
   };
 
+  const handleRedeem = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      toast.error('Please log in to redeem your collectibles.');
+      setOpenUserModal(true);
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          await handleRedeemSubmit(code.trim(), position);
+          setSubmitting(false);
+          setCode('');
+        },
+        (_error) => {
+          toast.error('Location access is required to redeem.');
+          setSubmitting(false);
+        },
+        { enableHighAccuracy: true }
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to get location.');
+      setSubmitting(false);
+    }
+  };
+
+  // Reload collectibles when the success modal is closed
+  useEffect(() => {
+    if (!successModalOpen) {
+      loadCollectibles(auth.currentUser);
+    }
+  }, [successModalOpen, auth.currentUser]);
+
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -103,6 +138,24 @@ export default function CollectiblesPage() {
     });
     return () => unsubscribe();
   }, []);
+
+  const handleRedeemSubmit = async (code: string, position: GeolocationPosition | null) => {
+    if (!userUid) return;
+
+    const result = await redeemCollectibleWithLocation(code, userUid, position);
+
+    if (result.success && result.data) {
+      toast.success(result.message);
+      setSuccessData({
+        imageURL: result.data.imageURL ?? '',
+        title: result.data.title,
+        description: `You've found ${result.data.description} at ${result.data.title}!`,
+      });
+      setSuccessModalOpen(true);
+    } else {
+      toast.error(result.message);
+    }
+  };
 
   const renderSkeletonCards = () => (
     <>
@@ -114,7 +167,7 @@ export default function CollectiblesPage() {
               flexDirection: 'column',
               alignItems: 'center',
               textAlign: 'center',
-              py: 3,
+              py: 1,
               px: 2,
               flex: 1,
             }}
@@ -132,8 +185,15 @@ export default function CollectiblesPage() {
   const renderCollectibleCards = () => (
     <>
       {data.map((collectible) => (
-        <CollectibleCard key={collectible.id}>
-          <CardContent
+        <Card
+          key={collectible.id}
+          sx={{
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            borderRadius: 2,
+            boxShadow: 'none',
+          }}
+        >
+          <Box
             sx={{
               display: 'flex',
               flexDirection: 'column',
@@ -144,7 +204,7 @@ export default function CollectiblesPage() {
               flex: 1,
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333', mb: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'text.main', mb: 2 }}>
               {collectible.title}
             </Typography>
 
@@ -162,92 +222,277 @@ export default function CollectiblesPage() {
               </CollectedAvatar>
             ) : (
               <QuestionMarkAvatar>
-                <HelpOutlineIcon fontSize="large" />
+                <HelpOutlineIcon sx={{ fontSize: '60px', color: 'white' }} />
               </QuestionMarkAvatar>
             )}
 
             <Typography
-              variant="body1"
+              variant="h5"
               sx={{
                 fontWeight: collectible.collected ? 'bold' : 'normal',
                 color: collectible.collected ? '#FF4444' : '#999',
-                my: 1,
+                mt: 2,
+                mb: 0.5,
               }}
             >
               {collectible.collected ? collectible.description : '???'}
             </Typography>
 
-            <Typography variant="body2" sx={{ color: '#666', fontSize: '0.875rem' }}>
-              {collectible.collected
-                ? collectible.collectedDate
-                  ? `Collected on ${new Date(collectible.collectedDate).toLocaleDateString()}`
-                  : 'Collected date invalid'
-                : 'Not Collected'}
-            </Typography>
-          </CardContent>
-        </CollectibleCard>
+            {collectible.collected ? (
+              <Chip
+                size="small"
+                color="success"
+                variant="outlined"
+                sx={{ mt: 0.5 }}
+                label={
+                  collectible.collectedDate
+                    ? `Collected on ${new Date(collectible.collectedDate).toLocaleDateString()}`
+                    : 'Collection date unavailable'
+                }
+              />
+            ) : (
+              <Chip
+                label="Not Collected"
+                size="small"
+                variant="outlined"
+                sx={{
+                  mt: 0.5,
+                  color: 'brand.main',
+                  borderColor: 'brand.main',
+                }}
+              />
+            )}
+          </Box>
+        </Card>
       ))}
     </>
   );
 
-  const handleRedeemClick = () => {
-    const user = auth.currentUser;
-    if (!user) {
-      toast.error('Please log in to redeem your collectibles.');
-      setOpenUserModal(true);
-    } else {
-      setRedeemOpen(true);
-    }
-  };
-
-  const handleRedeemSubmit = async (code: string, position: GeolocationPosition | null) => {
-    if (!userUid) return;
-    const result = await redeemCollectibleWithLocation(code, userUid, position);
-    if (result.success) {
-      toast.success(result.message);
-      loadCollectibles(auth.currentUser);
-    } else {
-      toast.error(result.message);
-    }
-    setRedeemOpen(false);
-  };
   return (
     <>
-      <Card sx={{ maxWidth: 1200, mx: 'auto', p: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333' }}>
-            Your Collectibles
-          </Typography>
-          <RedeemChip label="REDEEM" onClick={handleRedeemClick} />
-        </Box>
-
+      <Box
+        sx={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
+          maxHeight: '800px',
+        }}
+      >
+        {/* Title */}
         <Box
           sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: 'repeat(1, 1fr)',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(2, 1fr)',
-              lg: 'repeat(2, 1fr)',
-            },
-            gap: 3,
-            maxHeight: '550px',
-            overflowY: 'auto',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            '&::-webkit-scrollbar': {
-              display: 'none',
-            },
+            position: 'absolute',
+            top: '-0px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 10,
+            borderRadius: '9999px',
+            backgroundColor: 'white',
+            minHeight: '40px',
+            p: '6px',
+            width: 'fit-content',
+            boxShadow: 1,
+            display: 'flex',
+            alignItems: 'center',
           }}
         >
-          {isLoading ? renderSkeletonCards() : renderCollectibleCards()}
+          <Box
+            sx={{
+              bgcolor: 'brand.main',
+              borderRadius: '9999px',
+              px: 2,
+              py: 1,
+              width: 'fit-content',
+            }}
+          >
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'white' }}>
+              COLLECTIBLES
+            </Typography>
+          </Box>
+
+          {/* <RedeemChip label="REDEEM" onClick={handleRedeemClick} /> */}
         </Box>
-      </Card>
-      <RedeemCollectibleModal
-        open={redeemOpen}
-        onClose={() => setRedeemOpen(false)}
-        onSubmit={handleRedeemSubmit}
-      />
+
+        <Card
+          sx={{
+            width: '100%',
+            maxWidth: 1200,
+            mx: 'auto',
+            paddingTop: '42px',
+            paddingX: '16px',
+            paddingBottom: '16px',
+            marginTop: '20px',
+            borderRadius: 2.5,
+            boxShadow: 1,
+            overflowY: 'auto',
+            flex: 1,
+          }}
+        >
+          {/* Top Section*/}
+          <Box mb={2}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 1.5,
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: '500',
+                  color: 'text.secondary',
+                  textAlign: 'center',
+                }}
+              >
+                {data.filter((c) => c.collected).length} out of {data.length} collected
+              </Typography>
+
+              {/* Collapse Button */}
+
+              <IconButton
+                onClick={() => setCollapseOpen(!collapseOpen)}
+                sx={{
+                  bgcolor: 'transparent',
+                  width: 30,
+                  height: 30,
+                  transform: collapseOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease-in-out',
+                  '&:hover': { bgcolor: alpha('#8E8E93', 0.2) },
+                }}
+              >
+                <ExpandMoreIcon fontSize="small" />
+              </IconButton>
+            </Box>
+
+            <Collapse in={collapseOpen} timeout="auto" unmountOnExit>
+              <Divider sx={{ mb: 2 }} />
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 'bold',
+                  color: 'text.primary',
+                  textAlign: 'center',
+                  mb: 1.5,
+                }}
+              >
+                Redeem your collectibles with a unique code!
+              </Typography>
+              <TextField
+                label="Enter collectible code"
+                variant="outlined"
+                fullWidth
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                disabled={submitting}
+                size="small"
+                slotProps={{
+                  input: {
+                    sx: {
+                      py: 0, // vertical padding
+                      pr: 2.5, // horizontal padding
+                    },
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={handleRedeem}
+                          color="error"
+                          disabled={submitting || !code.trim()}
+                          edge="end"
+                          sx={{
+                            borderRadius: '50%',
+                            width: 32,
+                            height: 32,
+                            ml: 1,
+                          }}
+                        >
+                          {submitting ? (
+                            <CircularProgress size={16} thickness={5} color="error" />
+                          ) : (
+                            <RedeemIcon fontSize="small" />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+              <Card
+                sx={{
+                  p: 2,
+                  gap: 0.5,
+                  mt: 2,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  boxShadow: 1,
+                }}
+              >
+                <Typography fontSize="0.725rem" sx={{ fontWeight: 'bold' }}>
+                  Collectible Redemption Terms & Conditions
+                </Typography>
+                <Typography fontSize="0.688rem" color="text.secondary" ml={1}>
+                  1. Collectible codes must be redeemed within the vicinity of the associated AR
+                  spot.
+                </Typography>
+                <Typography fontSize="0.688rem" color="text.secondary" ml={1}>
+                  2. Location access is required and will be used to verify proximity for
+                  redemption.
+                </Typography>
+                <Typography fontSize="0.688rem" color="text.secondary" ml={1}>
+                  2. Each collectible code is valid for a single redemption per user account.
+                </Typography>
+                <Typography fontSize="0.688rem" color="text.secondary" ml={1}>
+                  3. Successfully redeemed collectibles may qualify for physical or digital gifts.
+                </Typography>
+                <Typography fontSize="0.688rem" color="text.secondary" ml={1}>
+                  4. Rewards are subject to availability and offered on a first-come, first-served
+                  basis.
+                </Typography>
+                <Typography fontSize="0.688rem" color="text.secondary">
+                  By redeeming, you agree to these terms and consent to location tracking solely for
+                  validation purposes.
+                </Typography>
+              </Card>
+
+              <Divider sx={{ mb: 1, mt: 3 }} />
+            </Collapse>
+          </Box>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: 'repeat(1, 1fr)',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(2, 1fr)',
+                lg: 'repeat(2, 1fr)',
+              },
+              gap: 2,
+              minHeight: '100%',
+              overflowY: 'auto',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              '&::-webkit-scrollbar': {
+                display: 'none',
+              },
+            }}
+          >
+            {isLoading ? renderSkeletonCards() : renderCollectibleCards()}
+          </Box>
+        </Card>
+      </Box>
+
+      {successData && (
+        <CollectibleSuccessModal
+          open={successModalOpen}
+          onClose={() => setSuccessModalOpen(false)}
+          imageUrl={successData.imageURL}
+          title={successData.title}
+          description={successData.description}
+        />
+      )}
     </>
   );
 }
