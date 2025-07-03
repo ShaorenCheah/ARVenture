@@ -11,7 +11,7 @@ import theme from '@/app/theme';
 const ArSpotPanel = dynamic(() => import('./arSpots/ArSpotPanel'), {
   ssr: false,
 });
-const LocationModal = dynamic(() => import('../LocationModal'), {
+const LocationModalWithGuide = dynamic(() => import('./arSpots/LocationModalWithGuide'), {
   ssr: false,
 });
 
@@ -146,12 +146,8 @@ export default function InfoTabs() {
       </Box>
 
       {/* Location Modal */}
-      {open && (
-        <LocationModal
-          open={open}
-          onClose={() => setOpen(false)}
-          spot={selectedSpot ?? undefined}
-        />
+      {open && selectedSpot && (
+        <LocationModalWithGuide open={open} onClose={() => setOpen(false)} spot={selectedSpot} />
       )}
     </>
   );

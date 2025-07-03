@@ -1,52 +1,47 @@
 'use client';
+
 import { Box, Modal, Typography, SxProps, Theme, Button, Stack } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
-interface GuideModalProps {
+interface ARGuideModalProps {
   open: boolean;
   onClose: () => void;
+  onFinish?: () => void;
   sx?: SxProps<Theme>;
 }
 
-const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
+const ARGuideModal: React.FC<ARGuideModalProps> = ({ open, onClose, onFinish, sx = {} }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [locationPrompted, setLocationPrompted] = useState(false);
 
   const steps = [
     {
-      title: 'Discover, Experience, and Explore through AR',
+      title: 'Open in WeChat Mobile',
       description:
-        'Experience Bandar Sunway in a whole new way — unlock hidden gems and stories through immersive Augmented Reality.',
+        'This AR experience only works in the mobile WeChat application, you’ll be redirected shortly.',
     },
     {
-      title: 'Discover AR Spots',
+      title: 'Find the Hidden Code',
       description:
-        'Tap on the list of AR spots to find their locations and access the unique AR QR codes to unlock the experience.',
+        'Explore the AR scene carefully. A collectible code will appear somewhere in the augmented world. Look around and take note of it.',
     },
     {
-      title: 'Collect and Redeem',
+      title: 'Return and Redeem',
       description:
-        'Explore AR spots to uncover hidden collectibles and earn rewards along the way, making your journey through Bandar Sunway even more unforgettable.',
-    },
-    {
-      title: 'Share Your Location',
-      description:
-        'Help us recommend the popular spots and events near you by allowing location access — or feel free to explore manually.',
+        'Once you’ve found the code, return to this browser and enter it in the "Collectibles" section to unlock your reward.',
     },
   ];
 
   const isLastStep = currentStep === steps.length - 1;
-  const buttonText = isLastStep ? "LET'S EXPLORE" : 'NEXT';
+  const buttonText = isLastStep ? 'START AR EXPERIENCE' : 'NEXT';
 
   useEffect(() => {
-    // Prompt for location on entering last step
     if (currentStep === steps.length - 1 && !locationPrompted) {
-      setLocationPrompted(true); // only prompt once
+      setLocationPrompted(true);
       if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             console.log('User location granted:', pos.coords);
-            // You can store in session state if needed
           },
           (err) => {
             console.log('User denied location:', err.message);
@@ -56,35 +51,39 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
     }
   }, [currentStep, locationPrompted, steps.length]);
 
+  useEffect(() => {
+    if (open) {
+      setCurrentStep(0);
+      setLocationPrompted(false);
+    }
+  }, [open]);
+
   const handleNext = () => {
     if (isLastStep) {
-      onClose(); // Always allow user to proceed
+      if (onFinish) {
+        onFinish();
+      }
     } else {
       setCurrentStep((prev) => prev + 1);
     }
   };
 
   const modalStyle: SxProps<Theme> = {
-    position: 'absolute',
-    top: { xs: 'auto', sm: '50%' },
-    left: '50%',
-    bottom: { xs: 0, sm: 'auto' },
-    transform: {
-      xs: 'translateX(-50%)',
-      sm: 'translate(-50%, -50%)',
-    },
     width: { xs: '100%', sm: '425px', md: '475px', lg: '525px', xl: '575px' },
-    height: { xs: '400px', sm: '525px', md: '550px', lg: '575px', xl: '600px' },
-    maxHeight: '100vh',
+    maxWidth: '350px',
+    maxHeight: '400px',
+    height: '100%',
     bgcolor: 'background.paper',
-    borderRadius: { xs: '8px 8px 0 0', sm: 3 },
+    borderRadius: 3,
     boxShadow: 24,
     outline: 'none',
+    overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     p: { xs: 4, sm: 4, md: 5 },
-    px: { xs: 6, sm: 8, md: 10 },
+    px: { xs: 5, sm: 8, md: 10 },
+    my: { xs: 2, sm: 4 },
     ...sx,
   };
 
@@ -98,6 +97,9 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
         }
       }}
       sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         '& .MuiBackdrop-root': {
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
         },
@@ -114,7 +116,6 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
             minHeight: { xs: 350, sm: 420 },
           }}
         >
-          {/* Step content */}
           <Typography
             variant="h5"
             component="h2"
@@ -122,6 +123,7 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
               fontWeight: 'bold',
               color: 'text.primary',
               textAlign: 'center',
+              mb: 2,
             }}
           >
             {steps[currentStep].title}
@@ -137,7 +139,7 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
           >
             <Box
               component="img"
-              src={`/steps/step${currentStep + 1}.png`}
+              src={`/ARsteps/step${currentStep + 1}.png`}
               alt={`Step ${currentStep + 1}`}
               sx={{
                 width: '100%',
@@ -148,24 +150,24 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
           </Box>
 
           <Typography
-            variant="body1"
+            variant="body2"
             sx={{
               color: 'text.secondary',
               lineHeight: 1.6,
               textAlign: 'center',
+              mt: 2,
             }}
           >
             {steps[currentStep].description}
           </Typography>
 
-          {/* Pagination Dots & Button */}
           <Stack sx={{ gap: 2 }}>
             <Box
               sx={{
                 display: 'flex',
                 justifyContent: 'center',
                 gap: 1,
-                zIndex: 1,
+                mt: 2,
               }}
             >
               {steps.map((_, index) => (
@@ -198,6 +200,16 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
                 {buttonText}
               </Button>
             </Box>
+            <Button
+              onClick={onClose}
+              sx={{
+                fontSize: '0.75rem',
+                color: 'text.secondary',
+                textTransform: 'none',
+              }}
+            >
+              Cancel and Go Back
+            </Button>
           </Stack>
         </Stack>
       </Box>
@@ -205,4 +217,4 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
   );
 };
 
-export default GuideModal;
+export default ARGuideModal;

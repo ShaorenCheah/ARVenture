@@ -18,7 +18,6 @@ import {
   Skeleton,
 } from '@mui/material';
 import React, { useState } from 'react';
-import toast from 'react-hot-toast';
 
 interface LocationModalProps {
   open: boolean;
@@ -31,9 +30,10 @@ interface LocationModalProps {
     collectibleTips?: string;
     arURL?: string;
   };
+  onScanClick?: () => void;
 }
 
-const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) => {
+const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot, onScanClick }) => {
   const {
     title = 'Unknown',
     address = 'Unknown',
@@ -65,12 +65,11 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) =>
     flexDirection: 'column',
   };
 
-  const handleScanClick = async () => {
-    try {
+  const handleScanClick = () => {
+    if (onScanClick) {
+      onScanClick();
+    } else if (arURL) {
       window.location.href = arURL;
-    } catch (error) {
-      console.error('Failed to open AR experience:', error);
-      toast.error('Failed to access AR experience.');
     }
   };
 
