@@ -21,6 +21,39 @@ function isWithinBoundingBox(lat: number, lng: number): boolean {
   );
 }
 
+// Tourist-friendly categories for initial recommendations
+const TOURIST_FRIENDLY_TYPES = [
+  'restaurant',
+  'shopping_mall',
+  'tourist_attraction',
+  'cafe',
+  'amusement_park',
+  'movie_theater',
+  'museum',
+  'park',
+  'store',
+  'point_of_interest',
+  'establishment',
+];
+
+// Categories to exclude from recommendations (less tourist-friendly)
+const EXCLUDE_FROM_RECOMMENDATIONS = [
+  'lodging',
+  'hospital',
+  'pharmacy',
+  'bank',
+  'atm',
+  'gas_station',
+  'car_repair',
+  'real_estate_agency',
+  'insurance_agency',
+  'lawyer',
+  'dentist',
+  'veterinary_care',
+  'transit_station',
+  'gym',
+];
+
 // === Type definitions ===
 
 interface GooglePrediction {
@@ -48,6 +81,8 @@ interface GooglePlaceResult {
   place_id: string;
   name: string;
   geometry?: GooglePlaceGeometry;
+  types?: string[];
+  rating?: number;
   [key: string]: unknown; // allow extra fields without any
 }
 
@@ -63,6 +98,7 @@ export async function GET(req: NextRequest) {
   const keyword = searchParams.get('keyword') || '';
   const category = searchParams.get('category') || '';
   const placeId = searchParams.get('place_id');
+  const isRecommendation = searchParams.get('recommendation') === 'true';
 
   try {
     let url = '';
@@ -89,12 +125,18 @@ export async function GET(req: NextRequest) {
           return NextResponse.json({ predictions: filtered });
         }
 
-      case 'nearby':
+      case 'nearby': {
         url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json';
+
+        const lat = searchParams.get('lat');
+        const lng = searchParams.get('lng');
+
+        const locationParam = lat && lng ? `${lat},${lng}` : LOCATION;
+
         Object.assign(params, {
           keyword,
           type: category,
-          location: LOCATION,
+          location: locationParam,
           radius: RADIUS.toString(),
         });
 
@@ -102,14 +144,79 @@ export async function GET(req: NextRequest) {
           const response = await axios.get<GoogleNearbySearchResponse>(url, { params });
           const results = response.data.results || [];
 
-          const filtered = results.filter((place: GooglePlaceResult) => {
-            const lat = place.geometry?.location.lat;
-            const lng = place.geometry?.location.lng;
-            return lat !== undefined && lng !== undefined && isWithinBoundingBox(lat, lng);
-          });
+          let filtered: GooglePlaceResult[];
+
+          if (isRecommendation) {
+            // For initial recommendations: tourist-friendly places with high ratings
+            filtered = results.filter((place: GooglePlaceResult) => {
+              const placeLat = place.geometry?.location.lat;
+              const placeLng = place.geometry?.location.lng;
+
+              // Must be within Bandar Sunway
+              const isInSunway =
+                placeLat !== undefined &&
+                placeLng !== undefined &&
+                isWithinBoundingBox(placeLat, placeLng);
+
+              if (!isInSunway) return false;
+
+              // Must be tourist-friendly type
+              const isTouristFriendly =
+                Array.isArray(place.types) &&
+                place.types.some((t) => TOURIST_FRIENDLY_TYPES.includes(t));
+
+              // Should not be excluded types
+              const isNotExcluded =
+                !Array.isArray(place.types) ||
+                !place.types.some((t) => EXCLUDE_FROM_RECOMMENDATIONS.includes(t));
+
+              // Must have high rating (4.0+) or be a major attraction
+              const isHighlyRated = typeof place.rating === 'number' && place.rating >= 4.0;
+              const isMajorAttraction =
+                Array.isArray(place.types) && place.types.includes('tourist_attraction');
+
+              return isTouristFriendly && isNotExcluded && (isHighlyRated || isMajorAttraction);
+            });
+
+            // Sort by rating (highest first) and limit to top results
+            filtered.sort((a, b) => {
+              const ratingA = a.rating || 0;
+              const ratingB = b.rating || 0;
+              return ratingB - ratingA;
+            });
+
+            // Take top 15 results for recommendations
+            filtered = filtered.slice(0, 15);
+          } else {
+            // For search results: more lenient filtering
+            filtered = results.filter((place: GooglePlaceResult) => {
+              const placeLat = place.geometry?.location.lat;
+              const placeLng = place.geometry?.location.lng;
+
+              // Must be within Bandar Sunway
+              const isInSunway =
+                placeLat !== undefined &&
+                placeLng !== undefined &&
+                isWithinBoundingBox(placeLat, placeLng);
+
+              // For search results, we're more permissive with ratings
+              // Allow places with rating 3.5+ or places without ratings
+              const hasGoodRating = !place.rating || place.rating >= 3.5;
+
+              return isInSunway && hasGoodRating;
+            });
+
+            // Sort by rating but keep more results
+            filtered.sort((a, b) => {
+              const ratingA = a.rating || 0;
+              const ratingB = b.rating || 0;
+              return ratingB - ratingA;
+            });
+          }
 
           return NextResponse.json({ results: filtered });
         }
+      }
 
       case 'details':
         if (!placeId) {
@@ -120,7 +227,7 @@ export async function GET(req: NextRequest) {
         Object.assign(params, {
           place_id: placeId,
           fields:
-            'name,formatted_address,geometry,types,website,formatted_phone_number,rating,opening_hours,price_level,photos,reviews',
+            'name,formatted_address,geometry,types,website,formatted_phone_number,rating,user_ratings_total,opening_hours,price_level,photos,reviews',
         });
 
         {

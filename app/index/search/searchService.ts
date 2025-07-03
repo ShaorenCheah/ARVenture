@@ -1,32 +1,4 @@
-import axios from 'axios';
-
-// ======================
-// Types
-// ======================
-
-export interface GoogleAutocompleteSuggestion {
-  name: string;
-  subtitle?: string;
-  place_id: string;
-}
-
-interface GooglePrediction {
-  description: string;
-  place_id: string;
-  structured_formatting?: {
-    main_text: string;
-    secondary_text: string;
-  };
-}
-
-export interface GoogleReview {
-  author_name: string;
-  profile_photo_url: string;
-  rating: number;
-  text: string;
-  time: number;
-  relative_time_description: string;
-}
+'use client';
 
 export interface GooglePlace {
   place_id: string;
@@ -38,17 +10,16 @@ export interface GooglePlace {
   photos?: { photo_reference: string }[];
 }
 
-export interface GooglePlaceDetails extends GooglePlace {
+export interface GooglePlaceDetails {
+  name: string;
+  rating?: number;
+  price_level?: number;
   formatted_address?: string;
   formatted_phone_number?: string;
   website?: string;
   opening_hours?: {
-    weekday_text: string[];
     open_now?: boolean;
-    periods?: {
-      open: { day: number; time: string };
-      close?: { day: number; time: string };
-    }[];
+    weekday_text?: string[];
   };
   geometry?: {
     location: {
@@ -56,89 +27,102 @@ export interface GooglePlaceDetails extends GooglePlace {
       lng: number;
     };
   };
-  reviews?: GoogleReview[];
+  types?: string[];
+  photos?: { photo_reference: string }[];
+  reviews?: {
+    author_name: string;
+    rating: number;
+    relative_time_description: string;
+    text: string;
+    profile_photo_url: string;
+  }[];
+  user_ratings_total?: number;
 }
 
-// ======================
-// Autocomplete
-// ======================
+export interface PlaceSuggestion {
+  name: string;
+  place_id: string;
+}
 
-export const fetchSuggestions = async (input: string): Promise<GoogleAutocompleteSuggestion[]> => {
-  try {
-    const response = await axios.get<{ predictions: GooglePrediction[] }>('/api/googlePlaces', {
-      params: { type: 'autocomplete', input },
-    });
+interface GoogleAutocompletePrediction {
+  description: string;
+  place_id: string;
+  structured_formatting?: {
+    main_text: string;
+    secondary_text?: string;
+  };
+}
 
-    return response.data.predictions.map((item) => ({
-      name: item.structured_formatting?.main_text || item.description,
-      subtitle: item.structured_formatting?.secondary_text,
-      place_id: item.place_id,
-    }));
-  } catch (error) {
-    console.error('Error fetching autocomplete suggestions (proxy):', error);
-    return [];
+// Get photo URL from reference
+export function getPhotoUrl(photoReference: string, maxWidth = 400): string {
+  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photoreference=${photoReference}&key=${key}`;
+}
+
+// Fetch place details by ID
+export async function fetchPlaceDetails(placeId: string): Promise<GooglePlaceDetails> {
+  const res = await fetch(`/api/googlePlaces?type=details&place_id=${placeId}`);
+  const data = await res.json();
+  return data.result;
+}
+
+// Fetch nearby places
+export async function fetchPlaces(
+  keyword: string = '',
+  category: string = '',
+  lat?: number,
+  lng?: number
+): Promise<GooglePlace[]> {
+  const params = new URLSearchParams({
+    type: 'nearby',
+    keyword,
+    category,
+  });
+
+  if (lat && lng) {
+    params.set('lat', lat.toString());
+    params.set('lng', lng.toString());
   }
-};
 
-// ======================
-// Nearby Search
-// ======================
+  const res = await fetch(`/api/googlePlaces?${params.toString()}`);
+  const data = await res.json();
+  return data.results || [];
+}
 
-export const fetchPlaces = async (query: string, category: string = ''): Promise<GooglePlace[]> => {
-  try {
-    const response = await axios.get<{ results: GooglePlace[] }>('/api/googlePlaces', {
-      params: {
-        type: 'nearby',
-        keyword: query,
-        category,
-      },
-    });
+// Fetch autocomplete suggestions
+export async function fetchSuggestions(
+  input: string,
+  category?: string
+): Promise<PlaceSuggestion[]> {
+  const params = new URLSearchParams({
+    type: 'autocomplete',
+    input,
+  });
 
-    return response.data.results;
-  } catch (error) {
-    console.error('Error fetching nearby places (proxy):', error);
-    return [];
+  const res = await fetch(`/api/googlePlaces?${params.toString()}`);
+  const data = await res.json();
+
+  let suggestions =
+    data.predictions?.map((p: GoogleAutocompletePrediction) => ({
+      name: p.structured_formatting?.main_text || p.description,
+      place_id: p.place_id,
+    })) || [];
+
+  // If a category is selected, do a secondary check using Place Details
+  if (category) {
+    // Run Place Details in parallel
+    const filtered = await Promise.all(
+      suggestions.map(async (s: { place_id: string }) => {
+        try {
+          const details = await fetchPlaceDetails(s.place_id);
+          return details.types?.includes(category) ? s : null;
+        } catch {
+          return null;
+        }
+      })
+    );
+    suggestions = filtered.filter(Boolean) as PlaceSuggestion[];
   }
-};
 
-// ======================
-// Place Details
-// ======================
-
-export const fetchPlaceDetails = async (placeId: string): Promise<GooglePlaceDetails | null> => {
-  try {
-    const response = await axios.get<{ result: GooglePlaceDetails }>('/api/googlePlaces', {
-      params: {
-        type: 'details',
-        place_id: placeId,
-        fields: [
-          'name',
-          'formatted_address',
-          'geometry',
-          'types',
-          'website',
-          'formatted_phone_number',
-          'rating',
-          'opening_hours',
-          'price_level',
-          'photos',
-          'reviews',
-        ].join(','),
-      },
-    });
-
-    return response.data.result;
-  } catch (error) {
-    console.error('Error fetching place details (proxy):', error);
-    return null;
-  }
-};
-
-// ======================
-// Photo URL Generator
-// ======================
-
-export const getPhotoUrl = (photoReference: string, maxWidth = 400): string => {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
-  return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photoreference=${photoReference}&key=${apiKey}`;
-};
+  return suggestions;
+}

@@ -2,20 +2,21 @@
 
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import NavigationIcon from '@mui/icons-material/Navigation';
 import PhoneIcon from '@mui/icons-material/Phone';
+import StarIcon from '@mui/icons-material/Star';
 import WebIcon from '@mui/icons-material/Web';
 import {
   Box,
   Typography,
   IconButton,
-  Card,
-  Rating,
-  Button,
   CircularProgress,
   Link,
   Avatar,
-  Divider,
+  Button,
+  Chip,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
@@ -27,10 +28,11 @@ interface SearchResultProps {
   onBack: () => void;
 }
 
-export default function SearchResult({ place, onBack }: SearchResultProps) {
+export default function IOSPlaceDetails({ place, onBack }: SearchResultProps) {
   const [details, setDetails] = useState<GooglePlaceDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedReviews, setExpandedReviews] = useState<boolean[]>([]);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -45,8 +47,14 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
 
   if (loading || !details) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height={200}>
-        <CircularProgress />
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+        bgcolor="#f8f9fa"
+      >
+        <CircularProgress size={40} />
       </Box>
     );
   }
@@ -55,206 +63,467 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
   const reviews = details.reviews || [];
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
       {/* Header */}
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          mb: 1,
           position: 'sticky',
           top: 0,
-          bgcolor: 'background.paper',
-          zIndex: 1,
-          pb: 1,
+          zIndex: 50,
+          bgcolor: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
         }}
       >
-        <IconButton onClick={onBack} sx={{ mr: 1 }}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h4" fontWeight="bold">
-          Place Details
-        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 2,
+            py: 1.5,
+          }}
+        >
+          <IconButton
+            onClick={onBack}
+            sx={{
+              p: 1,
+              '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' },
+            }}
+          >
+            <ArrowBackIcon sx={{ color: '#666' }} />
+          </IconButton>
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 600,
+              color: '#1a1a1a',
+            }}
+          >
+            Place Details
+          </Typography>
+          <Box sx={{ width: 40 }} />
+        </Box>
       </Box>
 
-      {/* Body Scroll */}
-      <Box sx={{ flex: 1, overflowY: 'auto', pr: 1 }}>
-        {/* Gallery */}
-        {photos.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', mb: 2 }}>
-            {photos.map((p, idx) => (
+      {/* Photo Gallery */}
+      {photos.length > 0 && (
+        <Box sx={{ position: 'relative' }}>
+          <Box
+            sx={{
+              aspectRatio: '4/3',
+              bgcolor: '#e5e7eb',
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                width: `${photos.length * 100}%`,
+                height: '100%',
+                transform: `translateX(-${activePhotoIndex * (100 / photos.length)}%)`,
+                transition: 'transform 0.3s ease-in-out',
+              }}
+            >
+              {photos.map((photo, index) => (
+                <Box
+                  key={index}
+                  component="img"
+                  src={getPhotoUrl(photo.photo_reference, 800)}
+                  alt={`Place photo ${index + 1}`}
+                  sx={{
+                    width: `${100 / photos.length}%`,
+                    height: '100%',
+                    objectFit: 'cover',
+                    flexShrink: 0,
+                  }}
+                />
+              ))}
+            </Box>
+
+            {/* Touch/Swipe overlay */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+              }}
+            >
+              {/* Left touch area */}
               <Box
-                component="img"
-                key={idx}
-                src={getPhotoUrl(p.photo_reference, 600)}
-                alt={`Photo ${idx + 1}`}
                 sx={{
-                  height: 200,
-                  width: 300,
-                  objectFit: 'cover',
-                  borderRadius: 2,
-                  flexShrink: 0,
+                  flex: 1,
+                  cursor: 'pointer',
+                  opacity: 0,
+                }}
+                onClick={() => {
+                  if (activePhotoIndex > 0) {
+                    setActivePhotoIndex(activePhotoIndex - 1);
+                  }
                 }}
               />
-            ))}
+              {/* Right touch area */}
+              <Box
+                sx={{
+                  flex: 1,
+                  cursor: 'pointer',
+                  opacity: 0,
+                }}
+                onClick={() => {
+                  if (activePhotoIndex < photos.length - 1) {
+                    setActivePhotoIndex(activePhotoIndex + 1);
+                  }
+                }}
+              />
+            </Box>
           </Box>
-        )}
 
+          {/* Photo indicators */}
+          {photos.length > 1 && (
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 16,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                display: 'flex',
+                gap: 1,
+              }}
+            >
+              {photos.map((_, index) => (
+                <Box
+                  key={index}
+                  onClick={() => setActivePhotoIndex(index)}
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    bgcolor: index === activePhotoIndex ? 'white' : 'rgba(255, 255, 255, 0.5)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                />
+              ))}
+            </Box>
+          )}
+
+          {/* Photo counter */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              bgcolor: 'rgba(0, 0, 0, 0.5)',
+              color: 'white',
+              px: 2,
+              py: 1,
+              borderRadius: '20px',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+            }}
+          >
+            <CameraAltIcon sx={{ fontSize: 16 }} />
+            {photos.length}
+          </Box>
+        </Box>
+      )}
+
+      {/* Content */}
+      <Box sx={{ p: 3, space: 3 }}>
         {/* Basic Info */}
-        <Card sx={{ p: 2, mb: 2 }}>
-          <Typography variant="h5" fontWeight="bold">
+        <Box
+          sx={{
+            bgcolor: 'white',
+            borderRadius: '16px',
+            p: 2.5,
+            mb: 3,
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 700,
+              color: '#1a1a1a',
+              mb: 1,
+              lineHeight: 1.3,
+            }}
+          >
             {details.name}
           </Typography>
 
-          {details.rating && (
-            <Box display="flex" alignItems="center" gap={1} mt={1}>
-              <Rating value={details.rating} precision={0.1} readOnly size="small" />
-              <Typography variant="body2" color="text.secondary">
-                {details.rating.toFixed(1)} / 5
-              </Typography>
-            </Box>
-          )}
-
-          {details.opening_hours?.open_now !== undefined && (
-            <Typography
-              variant="body2"
-              color={details.opening_hours.open_now ? 'success.main' : 'error.main'}
-              fontWeight="bold"
-              mt={0.5}
-            >
-              {details.opening_hours.open_now ? 'Open Now' : 'Closed Now'}
-            </Typography>
-          )}
-
-          {details.price_level && (
-            <Typography variant="body2" color="text.secondary" mt={0.5}>
-              Price Level: {'💲'.repeat(details.price_level)}
-            </Typography>
-          )}
-        </Card>
-
-        {/* Contact & Hours */}
-        <Card sx={{ p: 2, mb: 2 }}>
-          <Typography variant="h6" fontWeight="bold" mb={1}>
-            Contact & Location
-          </Typography>
-
-          {details.formatted_address && (
-            <Box display="flex" alignItems="center" gap={1} mb={1}>
-              <LocationOnIcon fontSize="small" color="action" />
-              <Typography variant="body2">{details.formatted_address}</Typography>
-            </Box>
-          )}
-
-          {details.formatted_phone_number && (
-            <Box display="flex" alignItems="center" gap={1} mb={1}>
-              <PhoneIcon fontSize="small" color="action" />
-              <Typography variant="body2" color="primary">
-                {details.formatted_phone_number}
-              </Typography>
-            </Box>
-          )}
-
-          {details.website && (
-            <Box display="flex" alignItems="center" gap={1}>
-              <WebIcon fontSize="small" color="action" />
-              <Link href={details.website} target="_blank" rel="noopener" variant="body2">
-                Visit Website
-              </Link>
-            </Box>
-          )}
-
-          {details.opening_hours?.weekday_text && (
-            <Box display="flex" alignItems="flex-start" gap={1} mt={1}>
-              <AccessTimeIcon fontSize="small" color="action" />
-              <Box>
-                <Typography variant="body2" fontWeight="medium">
-                  Hours:
-                </Typography>
-                {details.opening_hours.weekday_text.map((line, i) => (
-                  <Typography key={i} variant="body2" color="text.secondary">
-                    {line}
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}
+          >
+            {/* Rating */}
+            {details.rating && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                  <StarIcon sx={{ color: '#fbbf24', fontSize: 20 }} />
+                  <Typography variant="body1" sx={{ fontWeight: 600, color: '#1a1a1a' }}>
+                    {details.rating.toFixed(1)}
                   </Typography>
-                ))}
+                </Box>
+                <Typography variant="body2" sx={{ color: '#666' }}>
+                  ({details.user_ratings_total || 0} reviews)
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
+
+        {/* Contact Information */}
+        <Box
+          sx={{
+            bgcolor: 'white',
+            borderRadius: '16px',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+            overflow: 'hidden',
+            mb: 3,
+          }}
+        >
+          <Box sx={{ p: 3, borderBottom: '1px solid #f3f4f6' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 2.5,
+              }}
+            >
+              <Typography variant="h4" sx={{ fontWeight: 600, color: '#1a1a1a' }}>
+                Information
+              </Typography>
+
+              {/* Price Level */}
+              {details.price_level && (
+                <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+                  {'$'.repeat(details.price_level)} •{' '}
+                  {details.types?.[0]
+                    ?.replace(/_/g, ' ')
+                    .replace(/\b\w/g, (c) => c.toUpperCase()) || 'Business'}
+                </Typography>
+              )}
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {details.formatted_address && (
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <LocationOnIcon sx={{ color: '#9ca3af', mt: 0.5, fontSize: 20 }} />
+                  <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
+                    {details.formatted_address}
+                  </Typography>
+                </Box>
+              )}
+
+              {details.formatted_phone_number && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <PhoneIcon sx={{ color: '#9ca3af', fontSize: 20 }} />
+                  <Link
+                    variant="body1"
+                    href={`tel:${details.formatted_phone_number}`}
+                    sx={{
+                      color: 'brand.main',
+                      fontWeight: 500,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
+                  >
+                    {details.formatted_phone_number}
+                  </Link>
+                </Box>
+              )}
+
+              {details.website && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <WebIcon sx={{ color: '#9ca3af', fontSize: 20 }} />
+                  <Link
+                    variant="body1"
+                    href={details.website}
+                    target="_blank"
+                    rel="noopener"
+                    sx={{
+                      color: 'brand.main',
+                      fontWeight: 500,
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
+                  >
+                    Visit Website
+                  </Link>
+                </Box>
+              )}
+            </Box>
+          </Box>
+
+          {/* Hours */}
+          {details.opening_hours?.weekday_text && (
+            <Box sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  mb: 1.5,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <AccessTimeIcon sx={{ color: '#9ca3af', fontSize: 18 }} />
+                  <Typography variant="h4" sx={{ fontWeight: 500, color: '#1a1a1a' }}>
+                    Opening Hours
+                  </Typography>
+                </Box>
+
+                {/* Status */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  {details.opening_hours?.open_now !== undefined && (
+                    <Chip
+                      label={details.opening_hours.open_now ? 'Open Now' : 'Closed'}
+                      sx={{
+                        bgcolor: details.opening_hours.open_now ? '#dcfce7' : '#fef2f2',
+                        color: details.opening_hours.open_now ? '#166534' : '#dc2626',
+                        fontWeight: 500,
+                        fontSize: '12px',
+                        '& .MuiChip-label': { px: 1.5, py: 0.25 },
+                      }}
+                    />
+                  )}
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {details.opening_hours.weekday_text.map((hour, index) => {
+                  const [day, ...timeParts] = hour.split(':');
+                  const timeRange = timeParts.join(':').trim();
+                  return (
+                    <Box
+                      key={index}
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
+                        {day}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        {timeRange}
+                      </Typography>
+                    </Box>
+                  );
+                })}
               </Box>
             </Box>
           )}
-        </Card>
+        </Box>
 
         {/* Reviews */}
         {reviews.length > 0 && (
-          <Card sx={{ p: 2, mb: 2, maxHeight: 300, overflowY: 'auto' }}>
-            <Typography variant="h6" fontWeight="bold" mb={1}>
+          <Box
+            sx={{
+              bgcolor: 'white',
+              borderRadius: '16px',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+              p: 3,
+              mb: 3,
+            }}
+          >
+            <Typography variant="h4" sx={{ fontWeight: 600, color: 'text.primary', mb: 2 }}>
               Reviews
             </Typography>
 
-            {reviews.map((r, i) => {
-              const isExpanded = expandedReviews[i];
-              const maxLength = 150;
-              const isLong = r.text.length > maxLength;
-
-              return (
-                <Box key={i} mb={2}>
-                  <Box display="flex" alignItems="center" gap={1}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {reviews.map((review, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    borderBottom: index < reviews.length - 1 ? '1px solid #f3f4f6' : 'none',
+                    pb: index < reviews.length - 1 ? 2 : 0,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                     <Avatar
-                      src={r.profile_photo_url}
-                      alt={r.author_name}
-                      sx={{ width: 32, height: 32 }}
+                      src={review.profile_photo_url}
+                      alt={review.author_name}
+                      sx={{ width: 40, height: 40 }}
                     />
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">
-                        {r.author_name}
+                    <Box sx={{ flex: 1 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          mb: 1,
+                        }}
+                      >
+                        <Typography variant="body1" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                          {review.author_name}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+                          {review.relative_time_description}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5 }}>
+                        {[...Array(5)].map((_, i) => (
+                          <StarIcon
+                            key={i}
+                            sx={{
+                              fontSize: 16,
+                              color: i < review.rating ? '#fbbf24' : '#d1d5db',
+                            }}
+                          />
+                        ))}
+                      </Box>
+
+                      <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
+                        {expandedReviews[index] || review.text.length <= 150
+                          ? review.text
+                          : `${review.text.slice(0, 150)}...`}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {r.relative_time_description}
-                      </Typography>
+
+                      {review.text.length > 150 && (
+                        <Button
+                          onClick={() =>
+                            setExpandedReviews((prev) => {
+                              const updated = [...prev];
+                              updated[index] = !updated[index];
+                              return updated;
+                            })
+                          }
+                          sx={{
+                            color: 'brand.main',
+                            fontWeight: 500,
+                            textTransform: 'none',
+                            p: 0,
+                            mt: 1,
+                            fontSize: '12px',
+                            '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' },
+                          }}
+                        >
+                          {expandedReviews[index] ? 'Show less' : 'Show more'}
+                        </Button>
+                      )}
                     </Box>
                   </Box>
-
-                  <Rating value={r.rating} precision={0.5} readOnly size="small" sx={{ mt: 0.5 }} />
-
-                  <Box
-                    sx={{
-                      mt: 0.5,
-                      maxHeight: isExpanded ? 'none' : 60,
-                      overflowY: 'hidden',
-                      position: 'relative',
-                    }}
-                  >
-                    <Typography variant="body2">
-                      {isExpanded ? r.text : `${r.text.slice(0, maxLength)}${isLong ? '...' : ''}`}
-                    </Typography>
-                  </Box>
-
-                  {isLong && (
-                    <Button
-                      size="small"
-                      onClick={() =>
-                        setExpandedReviews((prev) => {
-                          const updated = [...prev];
-                          updated[i] = !updated[i];
-                          return updated;
-                        })
-                      }
-                      sx={{ mt: 1, textTransform: 'none', p: 0 }}
-                    >
-                      {isExpanded ? 'View Less' : 'View More'}
-                    </Button>
-                  )}
-
-                  {i < reviews.length - 1 && <Divider sx={{ mt: 2 }} />}
                 </Box>
-              );
-            })}
-          </Card>
+              ))}
+            </Box>
+          </Box>
         )}
 
-        {/* Google Maps Button */}
+        {/* Get Directions Button */}
         {details.geometry?.location && (
           <Button
-            variant="outlined"
+            variant="contained"
             fullWidth
-            sx={{ my: 2 }}
             onClick={() => {
               const { lat, lng } = details.geometry!.location;
               window.open(
@@ -262,6 +531,21 @@ export default function SearchResult({ place, onBack }: SearchResultProps) {
                 '_blank'
               );
             }}
+            sx={{
+              bgcolor: 'brand.main',
+              color: 'white',
+              py: 1.5,
+              borderRadius: '16px',
+              fontWeight: 600,
+              fontSize: '16px',
+              textTransform: 'none',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              '&:hover': {
+                bgcolor: '#1d4ed8',
+                boxShadow: '0 6px 8px -1px rgba(0, 0, 0, 0.15)',
+              },
+            }}
+            startIcon={<NavigationIcon />}
           >
             Get Directions
           </Button>
