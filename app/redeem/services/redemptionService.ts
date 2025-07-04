@@ -17,7 +17,6 @@ export interface RedemptionItem {
 
 export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem[]> => {
   const snapshot = await getDocs(collection(db, 'redemption_items'));
-  console.log('snapshot', snapshot);
 
   let userCollected: Set<string> = new Set();
 

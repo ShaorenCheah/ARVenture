@@ -310,8 +310,6 @@ export default function CollectiblesPage() {
               COLLECTIBLES
             </Typography>
           </Box>
-
-          {/* <RedeemChip label="REDEEM" onClick={handleRedeemClick} /> */}
         </Box>
 
         <Card
@@ -427,6 +425,7 @@ export default function CollectiblesPage() {
                   display: 'flex',
                   flexDirection: 'column',
                   boxShadow: 1,
+                  borderRadius: 2,
                 }}
               >
                 <Typography fontSize="0.725rem" sx={{ fontWeight: 'bold' }}>

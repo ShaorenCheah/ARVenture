@@ -29,7 +29,7 @@ let baseTheme = createTheme({
     brand: {
       main: '#ED1D24',
       accent: '#c70e14',
-      light: '#f87171',
+      light: '#ffdfe0',
     },
     background: {
       default: 'white',

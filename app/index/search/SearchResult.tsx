@@ -541,7 +541,7 @@ export default function IOSPlaceDetails({ place, onBack }: SearchResultProps) {
               textTransform: 'none',
               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               '&:hover': {
-                bgcolor: '#1d4ed8',
+                bgcolor: 'brand.accent',
                 boxShadow: '0 6px 8px -1px rgba(0, 0, 0, 0.15)',
               },
             }}

@@ -376,7 +376,7 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
       case 'nearby':
         return (
           <>
-            <Typography variant="h6" fontWeight={600} mt={2} mb={3} color="text.primary">
+            <Typography variant="h5" fontWeight={600} mt={1} mb={2} color="text.primary">
               Nearby Places
             </Typography>
             {results.map((place) => (
