@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Card } from '@mui/material';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import InfoTabs from './components/index/contentTabs/InfoTabs';
-import GuideModal from './components/index/GuideModal';
-import { Card } from '@mui/material';
+import { useEffect, useState } from 'react';
+
 import { useAuth } from './auth/AuthContext';
+import InfoTabs from './index/contentTabs/InfoTabs';
+import GuideModal from './index/GuideModal';
 
 export default function Home() {
   const [openGuideModal, setOpenGuideModal] = useState(false);
-  const [openUserModal, setOpenUserModal] = useState(false);
 
-  const { user } = useAuth(); // Access user auth state
+  const { user } = useAuth();
 
   useEffect(() => {
     const hasShownGuide = sessionStorage.getItem('guideShown');
@@ -72,9 +72,10 @@ export default function Home() {
               aspectRatio: '1/1',
               overflow: 'hidden',
               borderRadius: 2,
-              boxShadow: 3,
+              boxShadow: 1,
               position: 'relative',
               backgroundColor: 'white',
+              border: 'none',
             }}
           >
             <Box
@@ -88,6 +89,7 @@ export default function Home() {
                 position: 'absolute',
                 top: 0,
                 left: 0,
+                px: 1,
               }}
             />
           </Card>
@@ -105,7 +107,7 @@ export default function Home() {
               minHeight: { xs: 0, lg: 'unset' },
             }}
           >
-            <InfoTabs setOpenUserModal={setOpenUserModal} />
+            <InfoTabs />
           </Box>
         </Grid>
       </Grid>

@@ -1,8 +1,9 @@
 'use client';
 
-import { AuthProvider } from '@/app/auth/AuthContext';
-import ThemeProviders from './ThemeRegistry';
 import ClientProviders from './ClientProviders';
+import ThemeProviders from './ThemeRegistry';
+
+import { AuthProvider } from '@/app/auth/AuthContext';
 import MainLayout from '@/app/components/layout/MainLayout';
 
 export default function AppProviders({ children }: { children: React.ReactNode }) {

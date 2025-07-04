@@ -1,6 +1,7 @@
-import { db, storage } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
+
+import { db, storage } from '@/lib/firebase';
 
 export interface RedemptionItem {
   id: string;
@@ -11,11 +12,11 @@ export interface RedemptionItem {
   stock: number;
   remaining: number;
   hasCollected: boolean;
+  imageURL?: string;
 }
 
 export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem[]> => {
   const snapshot = await getDocs(collection(db, 'redemption_items'));
-  console.log('snapshot', snapshot);
 
   let userCollected: Set<string> = new Set();
 
@@ -32,10 +33,11 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
       const id = docSnap.id;
 
       let imageURL = '';
+
       try {
         const imgRef = ref(storage, `redemption_items/${id}.png`);
         imageURL = await getDownloadURL(imgRef);
-      } catch (e) {
+      } catch {
         console.warn(`Image for redemption ${id} not found`);
       }
 
@@ -53,6 +55,7 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
         stock,
         remaining: Math.max(0, stock - claimedCount),
         hasCollected: uid ? userCollected.has(data.requiredCollectibleId) : false,
+        imageURL,
       };
     })
   );

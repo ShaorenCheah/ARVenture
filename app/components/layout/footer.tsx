@@ -1,39 +1,43 @@
 'use client';
 
-import * as React from 'react';
-import { useState } from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
-import RedeemOutlinedIcon from '@mui/icons-material/RedeemOutlined';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
-import UserModal from '../user/UserModal';
-import { Stack, Box } from '@mui/material';
-import { useRouter } from 'next/navigation';
+import RedeemOutlinedIcon from '@mui/icons-material/RedeemOutlined';
+import { AppBar, Toolbar, Typography, IconButton, Stack, Box } from '@mui/material';
+import { useRouter, usePathname } from 'next/navigation';
+import * as React from 'react';
 
 import { useUserModal } from '../providers/UserModalContext';
+import UserModal from '../user/UserModal';
 
 export default function BottomAppBar() {
   const { openUserModal, setOpenUserModal } = useUserModal();
-
   const router = useRouter();
+  const pathname = usePathname();
 
   const buttonList = [
-    { title: 'Home', icon: <HomeOutlinedIcon fontSize="small" />, path: '/' },
+    {
+      title: 'Home',
+      icon: <HomeOutlinedIcon fontSize="small" />,
+      path: '/',
+    },
     {
       title: 'Collectibles',
       icon: <EmojiEventsOutlinedIcon fontSize="small" />,
       path: '/collectibles',
     },
-    { title: 'Redeem', icon: <RedeemOutlinedIcon fontSize="small" />, path: '/redeem' },
+    {
+      title: 'Redeem',
+      icon: <RedeemOutlinedIcon fontSize="small" />,
+      path: '/redeem',
+    },
     {
       title: 'Login',
       icon: <PersonOutlineOutlinedIcon fontSize="small" />,
-      path: '/',
+      path: '/', // just for consistency; won't be used
       onClick: () => setOpenUserModal(true),
+      isModal: true,
     },
   ];
 
@@ -45,43 +49,72 @@ export default function BottomAppBar() {
         sx={{
           top: 'auto',
           bottom: 0,
-          height: { xs: '56px', lg: '80px' },
+          height: { xs: '75px', lg: '80px' },
           backgroundColor: 'white',
           boxShadow: 3,
         }}
       >
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-around', mx: { xl: 50 }, py: 2 }}>
-          {buttonList.map((item, index) => (
-            <Stack
-              key={index}
-              sx={{
-                flexGrow: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Box>
-                <IconButton
-                  key={index}
-                  color="primary"
-                  sx={{ flexGrow: 1 }}
-                  size="large"
-                  onClick={() => {
-                    if (item.onClick) item.onClick();
-                    else router.push(item.path);
+        <Toolbar
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-around',
+            alignItems: 'center',
+            height: '100%',
+            mx: { xl: 50 },
+          }}
+        >
+          {buttonList.map((item, index) => {
+            const isActive = item.isModal ? openUserModal : pathname === item.path;
+
+            return (
+              <Stack
+                key={index}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Box
+                  sx={{
+                    borderRadius: '50%',
+                    backgroundColor: isActive ? 'brand.main' : 'transparent',
+                    mb: 0.5,
+                    mt: 0.75,
                   }}
                 >
-                  {item.icon}
-                </IconButton>
-              </Box>
-              <Typography sx={{ flexGrow: 1, textAlign: 'center' }} color="textSecondary">
-                {item.title}
-              </Typography>
-            </Stack>
-          ))}
+                  <IconButton
+                    key={index}
+                    sx={{
+                      padding: 1,
+                      color: isActive ? 'white' : 'text.secondary',
+                    }}
+                    size="large"
+                    onClick={() => {
+                      if (item.onClick) item.onClick();
+                      else router.push(item.path);
+                    }}
+                  >
+                    {item.icon}
+                  </IconButton>
+                </Box>
+
+                <Typography
+                  variant="caption"
+                  sx={{
+                    textAlign: 'center',
+                    color: isActive ? 'brand.accent' : 'text.secondary',
+                    fontWeight: isActive ? 'bold' : 'normal',
+                  }}
+                >
+                  {item.title}
+                </Typography>
+              </Stack>
+            );
+          })}
         </Toolbar>
       </AppBar>
+
       <UserModal open={openUserModal} onClose={() => setOpenUserModal(false)} />
     </>
   );

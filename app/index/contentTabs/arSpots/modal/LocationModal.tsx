@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import CloseIcon from '@mui/icons-material/Close';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Box,
   Modal,
@@ -15,10 +17,7 @@ import {
   Divider,
   Skeleton,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
-import toast from 'react-hot-toast';
+import React, { useState } from 'react';
 
 interface LocationModalProps {
   open: boolean;
@@ -31,9 +30,10 @@ interface LocationModalProps {
     collectibleTips?: string;
     arURL?: string;
   };
+  onScanClick?: () => void;
 }
 
-const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) => {
+const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot, onScanClick }) => {
   const {
     title = 'Unknown',
     address = 'Unknown',
@@ -65,12 +65,11 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot }) =>
     flexDirection: 'column',
   };
 
-  const handleScanClick = async () => {
-    try {
+  const handleScanClick = () => {
+    if (onScanClick) {
+      onScanClick();
+    } else if (arURL) {
       window.location.href = arURL;
-    } catch (error) {
-      console.error('Failed to open AR experience:', error);
-      toast.error('Failed to access AR experience.');
     }
   };
 

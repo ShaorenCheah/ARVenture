@@ -1,12 +1,13 @@
 'use client';
 
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Button, Stack, TextField, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, Button, Stack, TextField, Typography } from '@mui/material';
-import { RegisterFormInputs, registerValidationSchema } from './registerValidation';
-import { registerWithEmail } from './registerService';
 import toast from 'react-hot-toast';
+
+import { registerWithEmail } from './registerService';
+import { RegisterFormInputs, registerValidationSchema } from './registerValidation';
 
 interface RegisterFormProps {
   onSwitch: () => void;
@@ -30,8 +31,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
       toast.success('Account created successfully! Please check your email for verification.', {
         duration: 8000,
       });
-    } catch (error: any) {
-      toast.error(error.message || 'Registration failed', { duration: 6000 });
+    } catch (error: unknown) {
+      let message = 'Registration failed';
+
+      if (error instanceof Error) {
+        message = error.message;
+      }
+
+      toast.error(message, { duration: 6000 });
     } finally {
       setLoading(false);
     }
@@ -49,22 +56,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
           minHeight: { xs: 350, sm: 420 },
         }}
       >
-        {/* Logo */}
-        <Box mb={2}>
-          <Box
-            component="img"
-            src="/icons/ARVentureLogo.png"
-            sx={{
-              width: '100%',
-              height: 'auto',
-              maxWidth: { xs: '120px', sm: '170px' },
-            }}
-          />
-        </Box>
-
         {/* Text Content */}
         <Stack mb={2} spacing={2} sx={{ alignItems: 'start', justifyContent: 'center' }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+          <Typography variant="h1" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
             Register Account
           </Typography>
           <Typography variant="body1" sx={{ lineHeight: 1.75, color: '#888888' }}>
@@ -76,7 +70,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
         {/* Text Field */}
         <Stack
           sx={{
-            gap: 1,
+            gap: 0.5,
             alignItems: 'end',
             justifyContent: 'center',
             mb: 3,
@@ -123,7 +117,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitch }) => {
           variant="contained"
           fullWidth
           disabled={loading}
-          sx={{ mt: 1.5, borderRadius: 10, py: 1.5 }}
+          sx={{ mt: 1, borderRadius: 10, py: 1.25 }}
         >
           {loading ? 'Creating Account...' : 'Sign Up'}
         </Button>

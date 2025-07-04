@@ -1,7 +1,6 @@
 'use client';
-
-import React, { useState } from 'react';
-import { Box, Modal, Typography, SxProps, Theme, Button, Fade, Stack } from '@mui/material';
+import { Box, Modal, Typography, SxProps, Theme, Button, Stack } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 
 interface GuideModalProps {
   open: boolean;
@@ -11,6 +10,7 @@ interface GuideModalProps {
 
 const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [locationPrompted, setLocationPrompted] = useState(false);
 
   const steps = [
     {
@@ -28,14 +28,37 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
       description:
         'Explore AR spots to uncover hidden collectibles and earn rewards along the way, making your journey through Bandar Sunway even more unforgettable.',
     },
+    {
+      title: 'Share Your Location',
+      description:
+        'Help us recommend the popular spots and events near you by allowing location access — or feel free to explore manually.',
+    },
   ];
 
   const isLastStep = currentStep === steps.length - 1;
   const buttonText = isLastStep ? "LET'S EXPLORE" : 'NEXT';
 
+  useEffect(() => {
+    // Prompt for location on entering last step
+    if (currentStep === steps.length - 1 && !locationPrompted) {
+      setLocationPrompted(true); // only prompt once
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            console.log('User location granted:', pos.coords);
+            // You can store in session state if needed
+          },
+          (err) => {
+            console.log('User denied location:', err.message);
+          }
+        );
+      }
+    }
+  }, [currentStep, locationPrompted, steps.length]);
+
   const handleNext = () => {
     if (isLastStep) {
-      onClose();
+      onClose(); // Always allow user to proceed
     } else {
       setCurrentStep((prev) => prev + 1);
     }
@@ -92,7 +115,6 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
           }}
         >
           {/* Step content */}
-
           <Typography
             variant="h5"
             component="h2"
@@ -124,6 +146,7 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
               }}
             />
           </Box>
+
           <Typography
             variant="body1"
             sx={{
@@ -134,12 +157,9 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
           >
             {steps[currentStep].description}
           </Typography>
-          {/* Pagination Dots */}
-          <Stack
-            sx={{
-              gap: 2,
-            }}
-          >
+
+          {/* Pagination Dots & Button */}
+          <Stack sx={{ gap: 2 }}>
             <Box
               sx={{
                 display: 'flex',
@@ -161,8 +181,7 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
               ))}
             </Box>
 
-            {/* Action Button */}
-            <Box sx={{}}>
+            <Box>
               <Button
                 variant="contained"
                 fullWidth

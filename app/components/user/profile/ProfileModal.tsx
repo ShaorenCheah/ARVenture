@@ -1,12 +1,13 @@
 'use client';
 
 import { Button, Typography, Stack } from '@mui/material';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { User, signOut } from 'firebase/auth';
 import toast from 'react-hot-toast';
 
+import { auth } from '@/lib/firebase';
+
 interface ProfileModalProps {
-  user: any;
+  user: User;
   onLogout: () => void;
 }
 
@@ -16,7 +17,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onLogout }) => {
       await signOut(auth);
       toast.success('Logged out successfully.');
       onLogout();
-    } catch (error) {
+    } catch {
       toast.error('Failed to log out. Please try again.');
     }
   };
