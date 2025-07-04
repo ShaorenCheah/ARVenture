@@ -1,6 +1,6 @@
 'use client';
 import { Box, Modal, Typography, SxProps, Theme, Button, Stack } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 interface GuideModalProps {
   open: boolean;
@@ -10,7 +10,7 @@ interface GuideModalProps {
 
 const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [locationPrompted, setLocationPrompted] = useState(false);
+  const [locationRequested, setLocationRequested] = useState(false);
 
   const steps = [
     {
@@ -38,27 +38,51 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
   const isLastStep = currentStep === steps.length - 1;
   const buttonText = isLastStep ? "LET'S EXPLORE" : 'NEXT';
 
-  useEffect(() => {
-    // Prompt for location on entering last step
-    if (currentStep === steps.length - 1 && !locationPrompted) {
-      setLocationPrompted(true); // only prompt once
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            console.log('User location granted:', pos.coords);
-            // You can store in session state if needed
-          },
-          (err) => {
-            console.log('User denied location:', err.message);
-          }
-        );
+  const requestLocation = () => {
+    if ('geolocation' in navigator && !locationRequested) {
+      setLocationRequested(true);
+
+      // Check if we're on HTTPS
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        console.warn('Geolocation requires HTTPS');
+        return;
       }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          console.log('User location granted:', pos.coords);
+          // Store location data as needed
+          // localStorage.setItem('userLocation', JSON.stringify(pos.coords));
+        },
+        (err) => {
+          console.log('User denied location or error occurred:', err.message);
+          // Handle different error types
+          switch (err.code) {
+            case err.PERMISSION_DENIED:
+              console.log('Location access denied by user');
+              break;
+            case err.POSITION_UNAVAILABLE:
+              console.log('Location information unavailable');
+              break;
+            case err.TIMEOUT:
+              console.log('Location request timed out');
+              break;
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000, // 5 minutes
+        }
+      );
     }
-  }, [currentStep, locationPrompted, steps.length]);
+  };
 
   const handleNext = () => {
     if (isLastStep) {
-      onClose(); // Always allow user to proceed
+      // Request location when user clicks "LET'S EXPLORE"
+      requestLocation();
+      onClose();
     } else {
       setCurrentStep((prev) => prev + 1);
     }

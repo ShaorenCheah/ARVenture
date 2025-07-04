@@ -9,7 +9,6 @@ import {
   Card,
   CircularProgress,
   Collapse,
-  CardContent,
   Avatar,
   Chip,
   Skeleton,
@@ -31,15 +30,6 @@ import {
 } from './services/collectiblesService';
 import { redeemCollectibleWithLocation } from './services/redeemCollectibleService';
 import { useUserModal } from '../components/providers/UserModalContext';
-
-const SkeletonCard = styled(Card)(() => ({
-  borderRadius: 16,
-  backgroundColor: '#ffffff',
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-  height: '280px',
-  display: 'flex',
-  flexDirection: 'column',
-}));
 
 const QuestionMarkAvatar = styled(Avatar)(() => ({
   width: 80,
@@ -94,6 +84,57 @@ export default function CollectiblesPage() {
     setIsLoading(false);
   };
 
+  const requestLocationAndRedeem = async (code: string) => {
+    // Check if we're on HTTPS (required for geolocation)
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      toast.error('Location access requires a secure connection (HTTPS)');
+      return;
+    }
+
+    if (!('geolocation' in navigator)) {
+      toast.error('Geolocation is not supported by this browser');
+      return;
+    }
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve(pos),
+          (error) => {
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                reject(
+                  new Error(
+                    'Location access was denied. Please enable location permissions and try again.'
+                  )
+                );
+                break;
+              case error.POSITION_UNAVAILABLE:
+                reject(new Error('Location information is unavailable.'));
+                break;
+              case error.TIMEOUT:
+                reject(new Error('Location request timed out.'));
+                break;
+              default:
+                reject(new Error('An unknown error occurred while retrieving location.'));
+                break;
+            }
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000, // 5 minutes
+          }
+        );
+      });
+
+      await handleRedeemSubmit(code, position);
+    } catch (error) {
+      console.error('Location error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to get location');
+    }
+  };
+
   const handleRedeem = async () => {
     const user = auth.currentUser;
     if (!user) {
@@ -102,25 +143,22 @@ export default function CollectiblesPage() {
       return;
     }
 
+    const trimmedCode = code.trim();
+    if (!trimmedCode) {
+      toast.error('Please enter a valid collectible code.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          await handleRedeemSubmit(code.trim(), position);
-          setSubmitting(false);
-          setCode('');
-        },
-        (_error) => {
-          toast.error('Location access is required to redeem.');
-          setSubmitting(false);
-        },
-        { enableHighAccuracy: true }
-      );
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to get location.');
+      await requestLocationAndRedeem(trimmedCode);
+    } catch (error) {
+      console.error('Redemption error:', error);
+      toast.error('Failed to redeem collectible. Please try again.');
+    } finally {
       setSubmitting(false);
+      setCode('');
     }
   };
 
@@ -160,24 +198,38 @@ export default function CollectiblesPage() {
   const renderSkeletonCards = () => (
     <>
       {Array.from({ length: 6 }).map((_, index) => (
-        <SkeletonCard key={index}>
-          <CardContent
+        <Card
+          key={index}
+          sx={{
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            borderRadius: 2,
+            boxShadow: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            py: 3,
+            px: 2,
+            height: '100%',
+          }}
+        >
+          <Skeleton variant="text" width="60%" height={28} sx={{ mb: 2 }} />
+
+          <Box
             sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              textAlign: 'center',
-              py: 1,
-              px: 2,
-              flex: 1,
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              backgroundColor: '#f0f0f0',
+              mb: 2,
             }}
           >
-            <Skeleton variant="text" width="60%" height={32} sx={{ mb: 2 }} />
-            <Skeleton variant="circular" width={80} height={80} sx={{ mb: 2 }} />
-            <Skeleton variant="text" width="40%" height={24} sx={{ mb: 1 }} />
-            <Skeleton variant="text" width="50%" height={20} />
-          </CardContent>
-        </SkeletonCard>
+            <Skeleton variant="circular" width={80} height={80} />
+          </Box>
+
+          <Skeleton variant="text" width="40%" height={22} sx={{ mb: 1 }} />
+          <Skeleton variant="rounded" width="30%" height={24} />
+        </Card>
       ))}
     </>
   );

@@ -8,6 +8,7 @@ import { AppBar, Toolbar, Typography, IconButton, Stack, Box } from '@mui/materi
 import { useRouter, usePathname } from 'next/navigation';
 import * as React from 'react';
 
+import { useAuth } from '../../auth/AuthContext';
 import { useUserModal } from '../providers/UserModalContext';
 import UserModal from '../user/UserModal';
 
@@ -15,6 +16,8 @@ export default function BottomAppBar() {
   const { openUserModal, setOpenUserModal } = useUserModal();
   const router = useRouter();
   const pathname = usePathname();
+
+  const { user } = useAuth();
 
   const buttonList = [
     {
@@ -33,7 +36,7 @@ export default function BottomAppBar() {
       path: '/redeem',
     },
     {
-      title: 'Login',
+      title: user ? 'Logout' : 'Login',
       icon: <PersonOutlineOutlinedIcon fontSize="small" />,
       path: '/', // just for consistency; won't be used
       onClick: () => setOpenUserModal(true),

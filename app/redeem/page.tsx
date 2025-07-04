@@ -129,14 +129,43 @@ export default function RedemptionPage() {
     Array.from({ length: 6 }).map((_, i) => (
       <StyledCard key={i}>
         <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
-            <Skeleton variant="rounded" width={80} height={80} />
-            <Box sx={{ flex: 1 }}>
-              <Skeleton variant="text" width="60%" height={28} />
-              <Skeleton variant="text" width="40%" height={20} />
-              <Skeleton variant="text" width="80%" height={16} />
+          <Stack alignItems="center">
+            <Box
+              sx={{
+                width: 84,
+                height: 84,
+                borderRadius: 2,
+                mb: 3,
+                backgroundColor: '#f0f0f0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 16px #ffdfe0',
+                border: '1px solid rgba(255, 255, 255, 0.8)',
+              }}
+            >
+              <Skeleton variant="rounded" width={64} height={64} />
             </Box>
-          </Box>
+
+            <Skeleton variant="text" width="60%" height={28} sx={{ mb: 1.5 }} />
+
+            <Stack
+              direction="row"
+              spacing={1}
+              justifyContent="center"
+              sx={{ width: '100%', mt: 1 }}
+            >
+              <Skeleton variant="rounded" width={80} height={28} />
+              <Skeleton variant="rounded" width={120} height={28} />
+            </Stack>
+
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height={80}
+              sx={{ mt: 3, borderRadius: 2 }}
+            />
+          </Stack>
         </CardContent>
       </StyledCard>
     ));
