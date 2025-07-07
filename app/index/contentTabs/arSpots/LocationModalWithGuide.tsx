@@ -38,7 +38,7 @@ export default function LocationModalWithGuide({ spot, open, onClose }: Props) {
   }
 
   function handleFinalRedirect() {
-    window.location.href = spot.arURL || '/';
+    window.open(spot.arURL || '/', '_blank');
   }
 
   return (

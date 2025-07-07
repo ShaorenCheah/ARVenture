@@ -35,21 +35,21 @@ const ARGuideModal: React.FC<ARGuideModalProps> = ({ open, onClose, onFinish, sx
   const isLastStep = currentStep === steps.length - 1;
   const buttonText = isLastStep ? 'START AR EXPERIENCE' : 'NEXT';
 
-  useEffect(() => {
-    if (currentStep === steps.length - 1 && !locationPrompted) {
-      setLocationPrompted(true);
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            console.log('User location granted:', pos.coords);
-          },
-          (err) => {
-            console.log('User denied location:', err.message);
-          }
-        );
-      }
-    }
-  }, [currentStep, locationPrompted, steps.length]);
+  // useEffect(() => {
+  //   if (currentStep === steps.length - 1 && !locationPrompted) {
+  //     setLocationPrompted(true);
+  //     if ('geolocation' in navigator) {
+  //       navigator.geolocation.getCurrentPosition(
+  //         (pos) => {
+  //           console.log('User location granted:', pos.coords);
+  //         },
+  //         (err) => {
+  //           console.log('User denied location:', err.message);
+  //         }
+  //       );
+  //     }
+  //   }
+  // }, [currentStep, locationPrompted, steps.length]);
 
   useEffect(() => {
     if (open) {
