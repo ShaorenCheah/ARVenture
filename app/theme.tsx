@@ -151,6 +151,11 @@ let theme = createTheme(baseTheme, {
     },
     MuiOutlinedInput: {
       styleOverrides: {
+        root: {
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#ED1D24', // or any hover color
+          },
+        },
         notchedOutline: {
           '& legend': {
             fontSize: '12px', // Match the shrunk label size

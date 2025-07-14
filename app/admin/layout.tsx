@@ -59,7 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <Box
         sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
       >
-        <CircularProgress sx={{color:'#ED1D24'}}/>
+        <CircularProgress sx={{ color: '#ED1D24' }} />
       </Box>
     );
   }

@@ -40,7 +40,7 @@ export const loginWithEmail = async (email: string, password: string) => {
     setCookie('role', role, {
       path: '/',
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 3600,
+      maxAge: 86400,
     });
 
     return { user: res.user, role };
