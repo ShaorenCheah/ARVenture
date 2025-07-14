@@ -1,4 +1,5 @@
 'use client';
+import { setCookie } from 'cookies-next';
 import { FirebaseError } from 'firebase/app';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -26,22 +27,22 @@ export const loginWithEmail = async (email: string, password: string) => {
       );
     }
 
-    // Fetch role from Firestore
     const userRef = doc(db, 'users', res.user.uid);
     const userSnap = await getDoc(userRef);
 
     const role = userSnap.exists() ? userSnap.data()?.role || 'user' : 'user';
 
-    // Refresh token if needed (especially if you later use custom claims)
-    await res.user.getIdToken(true);
+    // Set cookie for middleware to use
+    setCookie('role', role, {
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 3600,
+    });
 
-    // Return user and role
     return { user: res.user, role };
   } catch (error: unknown) {
     if (error instanceof FirebaseError) {
-      if (error.message?.includes('Please verify your email')) {
-        throw error;
-      }
+      if (error.message?.includes('Please verify your email')) throw error;
 
       const errorCode = error.code || '';
       const errorMessage =

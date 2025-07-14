@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Typography, Stack } from '@mui/material';
+import { deleteCookie } from 'cookies-next';
 import { User, signOut } from 'firebase/auth';
 import toast from 'react-hot-toast';
 
@@ -15,6 +16,8 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onLogout }) => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      deleteCookie('role');
+
       toast.success('Logged out successfully.');
       onLogout();
     } catch {
