@@ -1,5 +1,6 @@
 'use client';
 
+import { useUserModal } from '@components/providers/UserModalContext';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import RedeemIcon from '@mui/icons-material/Redeem';
@@ -29,7 +30,6 @@ import {
   Collectible as CollectibleType,
 } from './services/collectiblesService';
 import { redeemCollectibleWithLocation } from './services/redeemCollectibleService';
-import { useUserModal } from '../components/providers/UserModalContext';
 
 const QuestionMarkAvatar = styled(Avatar)(() => ({
   width: 80,

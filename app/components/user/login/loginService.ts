@@ -1,8 +1,9 @@
 'use client';
 import { FirebaseError } from 'firebase/app';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 
 const firebaseLoginErrorMessages: Record<string, string> = {
   'auth/invalid-email': 'The email address is not valid.',
@@ -16,7 +17,6 @@ export const loginWithEmail = async (email: string, password: string) => {
   try {
     const res = await signInWithEmailAndPassword(auth, email, password);
 
-    // Ensure up-to-date user info
     await res.user.reload();
 
     if (!res.user.emailVerified) {
@@ -26,10 +26,17 @@ export const loginWithEmail = async (email: string, password: string) => {
       );
     }
 
-    // Optional: Force refresh token to update claims
+    // Fetch role from Firestore
+    const userRef = doc(db, 'users', res.user.uid);
+    const userSnap = await getDoc(userRef);
+
+    const role = userSnap.exists() ? userSnap.data()?.role || 'user' : 'user';
+
+    // Refresh token if needed (especially if you later use custom claims)
     await res.user.getIdToken(true);
 
-    return res.user;
+    // Return user and role
+    return { user: res.user, role };
   } catch (error: unknown) {
     if (error instanceof FirebaseError) {
       if (error.message?.includes('Please verify your email')) {
@@ -41,7 +48,7 @@ export const loginWithEmail = async (email: string, password: string) => {
         firebaseLoginErrorMessages[errorCode] || 'Login failed. Check your credentials.';
       throw new Error(errorMessage);
     }
-    // Fallback: unknown error
+
     throw new Error('Login failed. Please try again.');
   }
 };

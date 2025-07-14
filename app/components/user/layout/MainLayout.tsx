@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 
 import Footer from './footer';
 import Header from './header';
-import SearchBar from '../../index/search/SearchBar';
+import SearchBar from '../../../(user)/index/search/SearchBar';
 
 interface MainLayoutProps {
   children: React.ReactNode;

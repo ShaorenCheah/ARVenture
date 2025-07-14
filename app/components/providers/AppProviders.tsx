@@ -4,7 +4,7 @@ import ClientProviders from './ClientProviders';
 import ThemeProviders from './ThemeRegistry';
 
 import { AuthProvider } from '@/app/auth/AuthContext';
-import MainLayout from '@/app/components/layout/MainLayout';
+import MainLayout from '@/app/components/user/layout/MainLayout';
 
 export default function AppProviders({ children }: { children: React.ReactNode }) {
   return (

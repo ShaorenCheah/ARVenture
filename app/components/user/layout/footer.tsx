@@ -8,9 +8,9 @@ import { AppBar, Toolbar, Typography, IconButton, Stack, Box } from '@mui/materi
 import { useRouter, usePathname } from 'next/navigation';
 import * as React from 'react';
 
-import { useAuth } from '../../auth/AuthContext';
-import { useUserModal } from '../providers/UserModalContext';
-import UserModal from '../user/UserModal';
+import { useAuth } from '../../../auth/AuthContext';
+import { useUserModal } from '../../providers/UserModalContext';
+import UserModal from '../UserModal';
 
 export default function BottomAppBar() {
   const { openUserModal, setOpenUserModal } = useUserModal();
