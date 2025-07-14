@@ -8,8 +8,8 @@ export interface ArSpot {
   name: string;
   description: string;
   priority: number;
-  imageUrl: string;
-  iconUrl?: string;
+  imageURL: string;
+  iconURL?: string;
   address?: string;
   collectibleTips?: string;
   modalDescription?: string;
@@ -23,23 +23,27 @@ export async function fetchArSpots(): Promise<ArSpot[]> {
     snapshot.docs.map(async (doc) => {
       const data = doc.data();
       const id = doc.id;
-      let imageUrl = '';
-      let iconUrl = '';
 
-      // Fetch main image
-      try {
-        const storageRef = ref(storage, `ar_spots/${id}.jpg`);
-        imageUrl = await getDownloadURL(storageRef);
-      } catch {
-        console.warn(`Image for ${id} not found`);
+      let imageURL = '';
+      let iconURL = '';
+
+      // Prefer Firebase document image paths if available
+      if (data.imgURL) {
+        try {
+          const storageRef = ref(storage, data.imgURL);
+          imageURL = await getDownloadURL(storageRef);
+        } catch {
+          console.warn(`Failed to load image from path: ${data.imgURL}`);
+        }
       }
 
-      // Fetch icon
-      try {
-        const iconRef = ref(storage, `ar_spots/spots_icons/${id}_icon.jpg`);
-        iconUrl = await getDownloadURL(iconRef);
-      } catch {
-        console.warn(`Icon for ${id} not found`);
+      if (data.iconURL) {
+        try {
+          const iconRef = ref(storage, data.iconURL);
+          iconURL = await getDownloadURL(iconRef);
+        } catch {
+          console.warn(`Failed to load icon from path: ${data.iconURL}`);
+        }
       }
 
       return {
@@ -47,8 +51,8 @@ export async function fetchArSpots(): Promise<ArSpot[]> {
         name: data.name,
         description: data.description,
         priority: data.priority || 99,
-        imageUrl,
-        iconUrl,
+        imageURL,
+        iconURL,
         address: data.address,
         collectibleTips: data.collectibleTips,
         modalDescription: data.modalDescription,
