@@ -77,7 +77,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               onNavigate={router.push}
               onLogout={handleLogout}
             />
-            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <Box component="main" sx={{ flexGrow: 1, p: 3, bgcolor: '#f9fafb' }}>
               {children}
             </Box>
           </Box>

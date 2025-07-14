@@ -67,7 +67,7 @@ export default function AdminSidebar({
   onNavigate = () => {},
   onLogout = () => {},
 }: AdminSidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(innerWidth < 768); // Collapse on small screens
 
   const menuItems: SidebarItem[] = [
     {
