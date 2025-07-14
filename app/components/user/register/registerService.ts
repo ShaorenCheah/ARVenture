@@ -7,30 +7,30 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-import { auth, db } from '@/lib/firebase'; // Ensure db is Firestore instance
+import { auth, db } from '@/lib/firebase';
 
 export const registerWithEmail = async (name: string, email: string, password: string) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
     const user = userCredential.user;
 
     if (user) {
-      // 1. Set display name
+      // 1. Set display name in Firebase Auth
       await updateProfile(user, { displayName: name });
 
-      // 2. Create Firestore user document with default role
+      // 2. Create Firestore user document with displayName and emailVerified
       await setDoc(doc(db, 'users', user.uid), {
         email,
         displayName: name,
-        role: 'user', // default role
+        emailVerified: false,
+        role: 'user',
         createdAt: serverTimestamp(),
       });
 
       // 3. Send verification email
       await sendEmailVerification(user);
 
-      // 4. Sign out (optional, as per your existing logic)
+      // 4. Sign out
       await signOut(auth);
     }
 

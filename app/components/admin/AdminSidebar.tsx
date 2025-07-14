@@ -49,16 +49,6 @@ interface AdminSidebarProps {
 const drawerWidthExpanded = 300;
 const drawerWidthCollapsed = 86;
 
-// Mock data for badges
-const mockBadges = {
-  totalUsers: 1247,
-  activeArSpots: 23,
-  totalCollectibles: 156,
-  redemptionItems: 42,
-  userCollections: 89,
-  pendingReviews: 5,
-};
-
 export default function AdminSidebar({
   role,
   userName = 'Admin User',
@@ -81,35 +71,30 @@ export default function AdminSidebar({
       icon: <PeopleIcon />,
       path: '/admin/users',
       roles: ['admin'],
-      badge: mockBadges.totalUsers,
     },
     {
       text: 'AR Spots',
       icon: <SportsIcon />,
       path: '/admin/ar-spots',
       roles: ['admin', 'merchant'],
-      badge: mockBadges.activeArSpots,
     },
     {
       text: 'Collectibles',
       icon: <CollectiblesIcon />,
       path: '/admin/collectibles',
       roles: ['admin', 'merchant'],
-      badge: mockBadges.totalCollectibles,
     },
     {
       text: 'Redemption Items',
       icon: <RedeemIcon />,
       path: '/admin/redemption-items',
       roles: ['merchant', 'admin'],
-      badge: mockBadges.redemptionItems,
     },
     {
       text: 'User Collections',
       icon: <InventoryIcon />,
       path: '/admin/user-collections',
       roles: ['admin'],
-      badge: mockBadges.userCollections,
     },
     {
       text: 'My Store',

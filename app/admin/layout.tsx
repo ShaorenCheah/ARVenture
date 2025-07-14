@@ -59,7 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <Box
         sx={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
       >
-        <CircularProgress />
+        <CircularProgress sx={{color:'#ED1D24'}}/>
       </Box>
     );
   }
@@ -77,7 +77,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               onNavigate={router.push}
               onLogout={handleLogout}
             />
-            <Box component="main" sx={{ flexGrow: 1, p: 3, bgcolor: '#f9fafb' }}>
+            <Box
+              component="main"
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+                height: '100vh',
+                p: { xs: 2, md: 4 },
+                gap: 3,
+                bgcolor: '#f9fafb',
+              }}
+            >
               {children}
             </Box>
           </Box>

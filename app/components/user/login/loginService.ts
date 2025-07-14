@@ -2,7 +2,7 @@
 import { setCookie } from 'cookies-next';
 import { FirebaseError } from 'firebase/app';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 import { auth, db } from '@/lib/firebase';
 
@@ -29,6 +29,10 @@ export const loginWithEmail = async (email: string, password: string) => {
 
     const userRef = doc(db, 'users', res.user.uid);
     const userSnap = await getDoc(userRef);
+
+    await updateDoc(userRef, {
+      emailVerified: true,
+    });
 
     const role = userSnap.exists() ? userSnap.data()?.role || 'user' : 'user';
 
