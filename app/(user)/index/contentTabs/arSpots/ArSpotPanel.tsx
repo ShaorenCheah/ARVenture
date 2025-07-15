@@ -14,6 +14,7 @@ interface Props {
     address?: string;
     collectibleTips?: string;
     arURL?: string;
+    iconURL?: string;
   }) => void;
 }
 
@@ -59,7 +60,7 @@ export default function ArSpotPanel({ onSpotClick }: Props) {
         <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, mb: 1.5, width: '100%' }}>
           {isSkeleton ? (
             <Skeleton variant="circular" width={36} height={36} />
-          ) : spot?.iconUrl ? (
+          ) : spot?.iconURL ? (
             <Box
               sx={{
                 width: 36,
@@ -73,7 +74,7 @@ export default function ArSpotPanel({ onSpotClick }: Props) {
               }}
             >
               <img
-                src={spot.iconUrl}
+                src={spot.iconURL}
                 alt={`${spot.name} icon`}
                 style={{
                   width: '28px',
@@ -172,7 +173,7 @@ export default function ArSpotPanel({ onSpotClick }: Props) {
                   onSpotClick({
                     title: spot.name,
                     description: spot.description ?? 'No description available.',
-                    imageUrl: spot.imageUrl,
+                    imageUrl: spot.imageURL,
                     address: spot.address ?? 'Default address',
                     collectibleTips: spot.collectibleTips ?? 'Clue not available.',
                     arURL: spot.arURL ?? '',

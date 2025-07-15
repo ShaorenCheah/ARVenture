@@ -11,6 +11,7 @@ import {
   IconButton,
   Stack,
 } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
@@ -25,6 +26,7 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot, onSuccess }) => {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -39,8 +41,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot, onSuccess }) 
   const onSubmit = async (data: LoginFormInputs) => {
     try {
       setLoading(true);
-      await loginWithEmail(data.email, data.password);
-      onSuccess(); // Close modal
+      const { role } = await loginWithEmail(data.email, data.password);
+
+      // Redirect based on role
+      if (role === 'admin' || role === 'merchant') {
+        router.push('/admin');
+      } else {
+        router.push('/home'); // or '/' if that’s your default user dashboard
+      }
+
+      onSuccess(); // close modal
       toast.success('Logged in successfully!');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Login failed. Please try again.';

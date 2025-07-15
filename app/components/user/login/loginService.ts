@@ -1,8 +1,10 @@
 'use client';
+import { setCookie } from 'cookies-next';
 import { FirebaseError } from 'firebase/app';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 
 const firebaseLoginErrorMessages: Record<string, string> = {
   'auth/invalid-email': 'The email address is not valid.',
@@ -16,7 +18,6 @@ export const loginWithEmail = async (email: string, password: string) => {
   try {
     const res = await signInWithEmailAndPassword(auth, email, password);
 
-    // Ensure up-to-date user info
     await res.user.reload();
 
     if (!res.user.emailVerified) {
@@ -26,22 +27,33 @@ export const loginWithEmail = async (email: string, password: string) => {
       );
     }
 
-    // Optional: Force refresh token to update claims
-    await res.user.getIdToken(true);
+    const userRef = doc(db, 'users', res.user.uid);
+    const userSnap = await getDoc(userRef);
 
-    return res.user;
+    await updateDoc(userRef, {
+      emailVerified: true,
+    });
+
+    const role = userSnap.exists() ? userSnap.data()?.role || 'user' : 'user';
+
+    // Set cookie for middleware to use
+    setCookie('role', role, {
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 86400,
+    });
+
+    return { user: res.user, role };
   } catch (error: unknown) {
     if (error instanceof FirebaseError) {
-      if (error.message?.includes('Please verify your email')) {
-        throw error;
-      }
+      if (error.message?.includes('Please verify your email')) throw error;
 
       const errorCode = error.code || '';
       const errorMessage =
         firebaseLoginErrorMessages[errorCode] || 'Login failed. Check your credentials.';
       throw new Error(errorMessage);
     }
-    // Fallback: unknown error
+
     throw new Error('Login failed. Please try again.');
   }
 };

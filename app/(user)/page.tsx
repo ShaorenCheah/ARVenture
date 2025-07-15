@@ -1,13 +1,12 @@
 'use client';
 
+import { useAuth } from '@auth/AuthContext';
 import { Card } from '@mui/material';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import InfoTabs from '@user/index/contentTabs/InfoTabs';
+import GuideModal from '@user/index/GuideModal';
 import { useEffect, useState } from 'react';
-
-import { useAuth } from './auth/AuthContext';
-import InfoTabs from './index/contentTabs/InfoTabs';
-import GuideModal from './index/GuideModal';
 
 export default function Home() {
   const [openGuideModal, setOpenGuideModal] = useState(false);

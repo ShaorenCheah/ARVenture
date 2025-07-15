@@ -14,7 +14,7 @@ export default [
 
   // App files — TS/TSX/JS/JSX
   {
-    files: ['app/**/*.{js,jsx,ts,tsx}', 'lib/**/*.{js,jsx,ts,tsx}'],
+    files: ['app/**/**/*.{js,jsx,ts,tsx}', 'lib/**/*.{js,jsx,ts,tsx}'],
     ignores: [
       '**/.next/**',
       '**/node_modules/**',

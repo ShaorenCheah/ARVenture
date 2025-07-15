@@ -1,15 +1,12 @@
-import './globals.css';
-import ClientOnly from './components/ClientOnly';
-import AppProviders from './components/providers/AppProviders';
+export const metadata = {
+  title: 'Sunway ARventure',
+  description: 'Explore Bandar Sunway through AR!',
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <ClientOnly>
-          <AppProviders>{children}</AppProviders>
-        </ClientOnly>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

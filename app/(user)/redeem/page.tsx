@@ -1,5 +1,6 @@
 'use client';
 
+import { useUserModal } from '@components/providers/UserModalContext';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -24,7 +25,6 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 import { fetchRedemptionItems, RedemptionItem } from './services/redemptionService';
-import { useUserModal } from '../components/providers/UserModalContext';
 
 const StyledCard = styled(Card)(() => ({
   borderRadius: 16,
