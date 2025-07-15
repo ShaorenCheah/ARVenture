@@ -28,6 +28,7 @@ import {
   Skeleton,
   Chip,
 } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
@@ -35,6 +36,8 @@ import CreateUserModal from './CreateUserModal';
 import { fetchUsers, UserRecord } from './services/userServices';
 
 export default function AdminUserPage() {
+  const router = useRouter();
+
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [filterName, setFilterName] = useState('');
   const [filterRole, setFilterRole] = useState('');
@@ -278,11 +281,11 @@ export default function AdminUserPage() {
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                       </TableCell>
                       <TableCell align="center">
-                        {user.role === 'user' && (
-                          <IconButton>
-                            <VisibilityIcon sx={{ color: 'text.disabled' }} />
-                          </IconButton>
-                        )}
+                        {/* {user.role === 'user' && ( */}
+                        <IconButton onClick={() => router.push(`/admin/users/${user.id}`)}>
+                          <VisibilityIcon sx={{ color: 'text.disabled' }} />
+                        </IconButton>
+                        {/* )} */}
                         <IconButton onClick={() => handleDelete(user.id, user.displayName)}>
                           <DeleteIcon sx={{ color: 'brand.main' }} />
                         </IconButton>

@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(req: NextRequest) {
-  console.log('Role from cookie:', req.cookies.get('role')?.value);
   const role = req.cookies.get('role')?.value;
   const pathname = req.nextUrl.pathname;
 
