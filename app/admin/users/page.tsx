@@ -6,6 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EmailIcon from '@mui/icons-material/Email';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Box,
   Button,
@@ -277,6 +278,11 @@ export default function AdminUserPage() {
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                       </TableCell>
                       <TableCell align="center">
+                        {user.role === 'user' && (
+                          <IconButton>
+                            <VisibilityIcon sx={{ color: 'text.disabled' }} />
+                          </IconButton>
+                        )}
                         <IconButton onClick={() => handleDelete(user.id, user.displayName)}>
                           <DeleteIcon sx={{ color: 'brand.main' }} />
                         </IconButton>

@@ -7,6 +7,7 @@ import {
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   Logout as LogoutIcon,
+  Redeem as RedemptionIcon,
 } from '@mui/icons-material';
 import {
   Drawer,
@@ -80,6 +81,12 @@ export default function AdminSidebar({
       text: 'Collectibles',
       icon: <CollectiblesIcon />,
       path: '/admin/collectibles',
+      roles: ['admin'],
+    },
+    {
+      text: 'Redemption Items',
+      icon: <RedemptionIcon />,
+      path: '/admin/redemption-items',
       roles: ['admin'],
     },
   ];
