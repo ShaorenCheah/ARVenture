@@ -1,5 +1,10 @@
 'use client';
 
+import { yupResolver } from '@hookform/resolvers/yup';
+import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import PhotoIcon from '@mui/icons-material/Photo';
 import {
   Modal,
   Box,
@@ -9,109 +14,424 @@ import {
   IconButton,
   TextField,
   Button,
+  Collapse,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  FormControlLabel,
+  Checkbox,
+  Divider,
+  CircularProgress,
+  Chip,
+  Avatar,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Card,
+  CardContent,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, Controller, useWatch, SubmitHandler } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
 import toast from 'react-hot-toast';
-import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { uploadBytes, ref } from 'firebase/storage';
 
-import { db, storage } from '@/lib/firebase';
-import {
-  ARSpotFormInputs,
-  arSpotValidationSchema,
-} from './arSpotValidation';
+import { createARSpot, updateARSpot, fetchAllCollectibles } from './arSpotServices';
+import { ARSpotFormInputs, arSpotValidationSchema } from './arSpotValidation';
 
 interface ARSpotModalProps {
   open: boolean;
   onClose: () => void;
   reloadSpots: () => void;
   initialData?: Partial<ARSpotFormInputs> & {
+    id?: string;
     imgURL?: string;
     iconURL?: string;
+    collectibleImageURL?: string;
+    collectibleId?: string;
   };
+  mode: 'create' | 'edit';
 }
+
+interface ImagePreviewProps {
+  imageUrl?: string;
+  label: string;
+  onRemove?: () => void;
+  isExisting?: boolean;
+}
+
+interface CollectibleOption {
+  id: string;
+  title: string;
+  description: string;
+  redemptionCode: string;
+  priority: number;
+  imageURL?: string;
+  arSpotId?: string;
+}
+
+const ImagePreview = ({ imageUrl, label, onRemove, isExisting }: ImagePreviewProps) => {
+  if (!imageUrl) return null;
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+      <Avatar src={imageUrl} sx={{ width: 40, height: 40, borderRadius: 1 }} variant="rounded">
+        <PhotoIcon />
+      </Avatar>
+      <Box sx={{ flex: 1 }}>
+        <Typography variant="body2" fontWeight={500}>
+          {label}
+        </Typography>
+        <Chip
+          label={isExisting ? 'Current Image' : 'New Image'}
+          size="small"
+          color={isExisting ? 'primary' : 'success'}
+          variant="outlined"
+        />
+      </Box>
+      {onRemove && (
+        <IconButton size="small" onClick={onRemove} color="error">
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      )}
+    </Box>
+  );
+};
 
 export default function ARSpotModal({
   open,
   onClose,
   reloadSpots,
   initialData,
+  mode,
 }: ARSpotModalProps) {
-  const isEdit = !!initialData;
+  const isEdit = mode === 'edit';
+  const [loadingCollectibles, setLoadingCollectibles] = useState(false);
+  const [availableCollectibles, setAvailableCollectibles] = useState<CollectibleOption[]>([]);
+  const [selectedCollectible, setSelectedCollectible] = useState<CollectibleOption | null>(null);
+
+  // Track existing and new images
+  const [existingImages, setExistingImages] = useState({
+    mainImage: initialData?.imgURL || '',
+    iconImage: initialData?.iconURL || '',
+  });
+
+  const [newImagePreviews, setNewImagePreviews] = useState({
+    mainImage: '',
+    iconImage: '',
+  });
 
   const {
     control,
     handleSubmit,
-    reset,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<ARSpotFormInputs>({
-    resolver: yupResolver(arSpotValidationSchema, { context: { isEdit } }),
+    resolver: yupResolver(arSpotValidationSchema),
     defaultValues: {
-      id: '',
       name: '',
       description: '',
       address: '',
       arURL: '',
       collectibleId: '',
-      collectibleTips: '',
-      priority: 1,
+      hasCollectible: false,
+      priority: 0,
       coordinates: { lat: 0, lng: 0 },
       imageFile: null,
       iconFile: null,
-      ...initialData,
+      isEdit: mode === 'edit', // make sure to pass this in
+      mainImageRemoved: false,
+      iconImageRemoved: false,
     },
   });
+  const hasCollectible = useWatch({ control, name: 'hasCollectible' });
 
-  const name = useWatch({ control, name: 'name' });
-
+  // Load available collectibles
   useEffect(() => {
-    if (!isEdit && name) {
-      const id = name.toLowerCase().replace(/\s+/g, '_');
-      setValue('id', id);
+    if (open) {
+      loadCollectibles();
     }
-  }, [name, isEdit, setValue]);
+  }, [open]);
+
+  const loadCollectibles = async () => {
+    setLoadingCollectibles(true);
+    try {
+      const collectibles = await fetchAllCollectibles();
+      setAvailableCollectibles(collectibles);
+    } catch (error) {
+      console.error('Failed to load collectibles:', error);
+      toast.error('Failed to load collectibles');
+    } finally {
+      setLoadingCollectibles(false);
+    }
+  };
+
+  // Load initial data when editing
+  useEffect(() => {
+    if (!isEdit || !initialData || !open || availableCollectibles.length === 0) return;
+
+    reset({
+      name: initialData.name || '',
+      description: initialData.description || '',
+      address: initialData.address || '',
+      arURL: initialData.arURL || '',
+      priority: initialData.priority || 0,
+      coordinates: initialData.coordinates || { lat: 0, lng: 0 },
+      collectibleId: initialData.collectibleId || '',
+      hasCollectible: !!initialData.collectibleId,
+      imageFile: null,
+      iconFile: null,
+      isEdit: true,
+      mainImageRemoved: !initialData.imgURL,
+      iconImageRemoved: !initialData.iconURL,
+    });
+
+    setExistingImages({
+      mainImage: initialData.imgURL || '',
+      iconImage: initialData.iconURL || '',
+    });
+
+    if (initialData.collectibleId) {
+      const collectible = availableCollectibles.find((c) => c.id === initialData.collectibleId);
+      if (collectible) {
+        setSelectedCollectible(collectible);
+      }
+    }
+  }, [isEdit, initialData, open, availableCollectibles, setValue, reset]);
 
   const handleClose = () => {
-    reset();
+    reset({
+      name: '',
+      description: '',
+      address: '',
+      arURL: '',
+      collectibleId: '',
+      priority: 0,
+      coordinates: { lat: 0, lng: 0 },
+      imageFile: null,
+      iconFile: null,
+      hasCollectible: false,
+      isEdit: isEdit,
+      mainImageRemoved: false,
+      iconImageRemoved: false,
+    });
+
+    // Reset image states
+    setExistingImages({
+      mainImage: '',
+      iconImage: '',
+    });
+    setNewImagePreviews({
+      mainImage: '',
+      iconImage: '',
+    });
+    setSelectedCollectible(null);
+
     onClose();
   };
 
+  const handleImageChange = (file: File | null, type: 'mainImage' | 'iconImage') => {
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setNewImagePreviews((prev) => ({
+          ...prev,
+          [type]: e.target?.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setNewImagePreviews((prev) => ({
+        ...prev,
+        [type]: '',
+      }));
+    }
+  };
+
+  const handleRemoveExistingImage = (type: 'mainImage' | 'iconImage') => {
+    setExistingImages((prev) => ({
+      ...prev,
+      [type]: '',
+    }));
+
+    if (type === 'mainImage') {
+      setValue('mainImageRemoved', true, { shouldValidate: true });
+      setValue('imageFile', null);
+    } else {
+      setValue('iconImageRemoved', true, { shouldValidate: true });
+      setValue('iconFile', null);
+    }
+  };
+
+  const handleRemoveNewImage = (type: 'mainImage' | 'iconImage') => {
+    setNewImagePreviews((prev) => ({
+      ...prev,
+      [type]: '',
+    }));
+
+    // Clear the file input
+    if (type === 'mainImage') {
+      setValue('imageFile', null);
+    } else {
+      setValue('iconFile', null);
+    }
+  };
+
+  const handleCollectibleSelect = (collectibleId: string) => {
+    const collectible = availableCollectibles.find((c) => c.id === collectibleId);
+    setSelectedCollectible(collectible || null);
+    setValue('collectibleId', collectibleId);
+  };
+
+  const handleRemoveCollectible = () => {
+    setSelectedCollectible(null);
+    setValue('collectibleId', '');
+    setValue('hasCollectible', false);
+  };
+
+  const renderImageField = (
+    fieldName: 'imageFile' | 'iconFile',
+    label: string,
+    type: 'mainImage' | 'iconImage',
+    disabled = false
+  ) => (
+    <Controller
+      name={fieldName}
+      control={control}
+      render={({ field: { onChange } }) => (
+        <Box>
+          <Typography variant="body2" fontWeight={500} mb={1}>
+            {label}
+          </Typography>
+
+          <ImagePreview
+            imageUrl={
+              newImagePreviews[type] || // show new image first
+              existingImages[type] || // fallback to existing
+              undefined // nothing
+            }
+            label={
+              newImagePreviews[type]
+                ? 'New Image'
+                : existingImages[type]
+                  ? 'Current Image'
+                  : 'No image'
+            }
+            onRemove={() => {
+              if (newImagePreviews[type]) {
+                handleRemoveNewImage(type);
+              } else if (existingImages[type]) {
+                handleRemoveExistingImage(type);
+              }
+            }}
+            isExisting={!newImagePreviews[type] && !!existingImages[type]}
+          />
+
+          {/* File input */}
+          <Box
+            sx={{
+              border: '1px solid rgba(0, 0, 0, 0.23)',
+              borderRadius: 1,
+              px: 1.5,
+              py: 1,
+              backgroundColor: 'background.paper',
+            }}
+          >
+            <input
+              type="file"
+              accept="image/jpeg,image/png"
+              onChange={(e) => {
+                const file = (e.target as HTMLInputElement).files?.[0] || null;
+                onChange(file);
+                handleImageChange(file, type);
+              }}
+              style={{ width: '100%' }}
+              disabled={disabled}
+            />
+          </Box>
+
+          {/* Helper text */}
+          {isEdit && !newImagePreviews[type] && existingImages[type] && (
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+              Leave empty to keep current image
+            </Typography>
+          )}
+
+          {/* Error message */}
+          {errors[fieldName] && (
+            <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+              {errors[fieldName]?.message as string}
+            </Typography>
+          )}
+        </Box>
+      )}
+    />
+  );
+
+  const renderCollectibleDetails = () => {
+    if (!selectedCollectible) return null;
+
+    return (
+      <Card sx={{ mt: 2 }}>
+        <CardContent>
+          <Stack spacing={2}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {selectedCollectible.imageURL && (
+                <Avatar
+                  src={selectedCollectible.imageURL}
+                  sx={{ width: 60, height: 60, borderRadius: 1 }}
+                  variant="rounded"
+                >
+                  <PhotoIcon />
+                </Avatar>
+              )}
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" fontWeight={600}>
+                  {selectedCollectible.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Code: {selectedCollectible.redemptionCode}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Priority: {selectedCollectible.priority}
+                </Typography>
+              </Box>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleRemoveCollectible}
+                startIcon={<DeleteIcon />}
+              >
+                Remove
+              </Button>
+            </Box>
+            <Typography variant="body2">{selectedCollectible.description}</Typography>
+            {selectedCollectible.arSpotId && (
+              <Chip
+                label={`Currently assigned to: ${selectedCollectible.arSpotId}`}
+                size="small"
+                color="warning"
+                variant="outlined"
+              />
+            )}
+          </Stack>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const handleFormSubmit: SubmitHandler<ARSpotFormInputs> = async (data) => {
-    const { id, imageFile, iconFile } = data;
-
     try {
-      let imgURL = initialData?.imgURL || '';
-      let iconURL = initialData?.iconURL || '';
-
-      if (imageFile) {
-        const ext = imageFile.name.split('.').pop();
-        imgURL = `ar_spots/${id}.${ext}`;
-        await uploadBytes(ref(storage, imgURL), imageFile);
+      if (isEdit && initialData?.id) {
+        // Update existing AR Spot
+        await updateARSpot(data, initialData.id, {
+          imgURL: existingImages.mainImage,
+          iconURL: existingImages.iconImage,
+        });
+      } else {
+        // Create new AR Spot
+        await createARSpot(data);
       }
-
-      if (iconFile) {
-        const ext = iconFile.name.split('.').pop();
-        iconURL = `ar_spots/spots_icons/${id}_icon.${ext}`;
-        await uploadBytes(ref(storage, iconURL), iconFile);
-      }
-
-      await setDoc(doc(db, 'ar_spots', id), {
-        name: data.name,
-        description: data.description,
-        address: data.address,
-        arURL: data.arURL,
-        collectibleId: data.collectibleId,
-        collectibleTips: data.collectibleTips,
-        priority: data.priority,
-        coordinates: data.coordinates,
-        createdAt: serverTimestamp(),
-        imgURL,
-        iconURL,
-      });
 
       toast.success(`AR Spot ${isEdit ? 'updated' : 'created'} successfully!`);
       reset();
@@ -124,7 +444,7 @@ export default function ARSpotModal({
   };
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open} onClose={handleClose} key={initialData?.id || 'new'}>
       <Box
         sx={{
           zIndex: 1301,
@@ -160,17 +480,18 @@ export default function ARSpotModal({
             {isEdit ? 'Edit' : 'Create'} AR Spot
           </Typography>
 
-          <form onSubmit={handleSubmit(handleFormSubmit)} noValidate>
+          <form
+            onSubmit={handleSubmit(handleFormSubmit as SubmitHandler<ARSpotFormInputs>)}
+            noValidate
+          >
             <Stack spacing={2}>
+              {/* Basic AR Spot Fields */}
               {[
-                { name: 'id', label: 'Spot ID', disabled: isEdit },
                 { name: 'name', label: 'Name' },
                 { name: 'description', label: 'Description' },
                 { name: 'address', label: 'Address' },
                 { name: 'arURL', label: 'AR URL' },
-                { name: 'collectibleId', label: 'Collectible ID' },
-                { name: 'collectibleTips', label: 'Collectible Tips' },
-              ].map(({ name, label, disabled }) => (
+              ].map(({ name, label }) => (
                 <Controller
                   key={name}
                   name={name as keyof ARSpotFormInputs}
@@ -180,7 +501,6 @@ export default function ARSpotModal({
                       {...field}
                       label={label}
                       fullWidth
-                      disabled={disabled}
                       error={!!errors[name as keyof typeof errors]}
                       helperText={errors[name as keyof typeof errors]?.message}
                     />
@@ -188,6 +508,7 @@ export default function ARSpotModal({
                 />
               ))}
 
+              {/* Coordinates */}
               <Stack direction="row" spacing={2}>
                 <Controller
                   name="coordinates.lat"
@@ -200,6 +521,11 @@ export default function ARSpotModal({
                       fullWidth
                       error={!!errors.coordinates?.lat}
                       helperText={errors.coordinates?.lat?.message}
+                      slotProps={{
+                        htmlInput: {
+                          step: 0.0001,
+                        },
+                      }}
                     />
                   )}
                 />
@@ -214,6 +540,11 @@ export default function ARSpotModal({
                       fullWidth
                       error={!!errors.coordinates?.lng}
                       helperText={errors.coordinates?.lng?.message}
+                      slotProps={{
+                        htmlInput: {
+                          step: 0.0001,
+                        },
+                      }}
                     />
                   )}
                 />
@@ -234,84 +565,102 @@ export default function ARSpotModal({
                 )}
               />
 
+              {/* AR Spot Images */}
+              {renderImageField('imageFile', 'Main Image (.jpg or .png)', 'mainImage')}
+              {renderImageField('iconFile', 'Icon Image (.jpg or .png)', 'iconImage')}
+
+              <Divider sx={{ my: 2 }} />
+
+              {/* Collectible Toggle */}
               <Controller
-                name="imageFile"
+                name="hasCollectible"
                 control={control}
-                render={({ field: { onChange } }) => (
-                  <Box>
-                    <Typography variant="body2" fontWeight={500} mb={0.5}>
-                      Main Image (.jpg or .png)
-                    </Typography>
-                    <Box
-                      sx={{
-                        border: '1px solid rgba(0, 0, 0, 0.23)',
-                        borderRadius: 1,
-                        px: 1.5,
-                        py: 1,
-                        backgroundColor: 'background.paper',
-                      }}
-                    >
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png"
-                        onChange={(e) => {
-                          const file = (e.target as HTMLInputElement).files?.[0] || null;
-                          onChange(file);
-                        }}
-                        style={{ width: '100%' }}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value || false}
+                        onChange={(e) => field.onChange(e.target.checked)}
                       />
-                    </Box>
-                    {errors.imageFile && (
-                      <Typography variant="caption" color="error" mt={0.5}>
-                        {errors.imageFile.message}
-                      </Typography>
-                    )}
-                  </Box>
+                    }
+                    label="Add Collectible to this AR Spot"
+                  />
                 )}
               />
 
-              <Controller
-                name="iconFile"
-                control={control}
-                render={({ field: { onChange } }) => (
-                  <Box>
-                    <Typography variant="body2" fontWeight={500} mt={2} mb={0.5}>
-                      Icon Image (.jpg or .png)
+              {/* Collectible Section */}
+              <Collapse in={hasCollectible}>
+                <Accordion elevation={0} sx={{ border: '1px solid rgba(0, 0, 0, 0.12)' }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography variant="h6" fontWeight={500}>
+                      Collectible Assignment
+                      {loadingCollectibles && <CircularProgress size={16} sx={{ ml: 1 }} />}
                     </Typography>
-                    <Box
-                      sx={{
-                        border: '1px solid rgba(0, 0, 0, 0.23)',
-                        borderRadius: 1,
-                        px: 1.5,
-                        py: 1,
-                        backgroundColor: 'background.paper',
-                      }}
-                    >
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png"
-                        onChange={(e) => {
-                          const file = (e.target as HTMLInputElement).files?.[0] || null;
-                          onChange(file);
-                        }}
-                        style={{ width: '100%' }}
-                      />
-                    </Box>
-                    {errors.iconFile && (
-                      <Typography variant="caption" color="error" mt={0.5}>
-                        {errors.iconFile.message}
-                      </Typography>
-                    )}
-                  </Box>
-                )}
-              />
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Stack spacing={2}>
+                      {/* Collectible Selection */}
+                      <FormControl fullWidth>
+                        <InputLabel>Select Collectible</InputLabel>
+                        <Controller
+                          name="collectibleId"
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              {...field}
+                              label="Select Collectible"
+                              disabled={loadingCollectibles}
+                              error={!!errors.collectibleId}
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                                handleCollectibleSelect(e.target.value as string);
+                              }}
+                            >
+                              <MenuItem value="">
+                                <em>None</em>
+                              </MenuItem>
+                              {availableCollectibles.map((collectible) => (
+                                <MenuItem key={collectible.id} value={collectible.id}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    {collectible.imageURL && (
+                                      <Avatar
+                                        src={collectible.imageURL}
+                                        sx={{ width: 24, height: 24 }}
+                                      />
+                                    )}
+                                    <Box>
+                                      <Typography variant="body2" fontWeight={500}>
+                                        {collectible.title}
+                                      </Typography>
+                                      <Typography variant="caption" color="text.secondary">
+                                        {collectible.redemptionCode}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          )}
+                        />
+                        {errors.collectibleId && (
+                          <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                            {errors.collectibleId?.message}
+                          </Typography>
+                        )}
+                      </FormControl>
 
+                      {/* Collectible Details Display */}
+                      {renderCollectibleDetails()}
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+              </Collapse>
 
               <Stack direction="row" justifyContent="flex-end" spacing={2} pt={2}>
                 <Button onClick={handleClose} variant="outlined">
                   Cancel
                 </Button>
-                <Button type="submit" variant="contained">
+                <Button type="submit" variant="contained" disabled={loadingCollectibles}>
                   {isEdit ? 'Update' : 'Create'}
                 </Button>
               </Stack>

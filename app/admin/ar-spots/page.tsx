@@ -2,12 +2,12 @@
 
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FingerprintIcon from '@mui/icons-material/Fingerprint';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
-import ImageIcon from '@mui/icons-material/Image';
 import EditIcon from '@mui/icons-material/Edit';
+import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import ImageIcon from '@mui/icons-material/Image';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import {
   Box,
   Button,
@@ -28,18 +28,20 @@ import {
   Skeleton,
   Tooltip,
   CircularProgress,
-  Tab,
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 import ARSpotModal from './ARSpotModal';
-import { fetchArSpots, ArSpot } from './arSpotServices';
+import { fetchArSpots, ArSpot, deleteARSpot } from './arSpotServices';
+import { ARSpotFormInputs } from './arSpotValidation';
 
 export default function AdminUserPage() {
   const [openModal, setOpenModal] = useState(false);
   const [filterName, setFilterName] = useState('');
   const [page, setPage] = useState(1);
+  const [editingSpot, setEditingSpot] = useState<ArSpot | null>(null);
+  const [mode, setMode] = useState<'create' | 'edit'>('create');
   const rowsPerPage = 10;
 
   const theme = useTheme();
@@ -64,7 +66,7 @@ export default function AdminUserPage() {
     try {
       const result = await fetchArSpots();
       setArSpots(result);
-    } catch (err) {
+    } catch {
       toast.error('Failed to load AR spots');
     }
     setLoading(false);
@@ -79,27 +81,63 @@ export default function AdminUserPage() {
   );
   const paginatedSpots = filteredSpots.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-  // const handleDelete = async (uid: string, displayName: string) => {
-  //   if (!confirm(`Are you sure you want to delete "${displayName}"?`)) return;
+  const handleEdit = (spotId: string) => {
+    const spot = arSpots.find((s) => s.id === spotId);
+    if (spot) {
+      setEditingSpot(spot);
+      setMode('edit');
+      setOpenModal(true);
+    }
+  };
 
-  //   try {
-  //     const res = await fetch('/admin/users/services', {
-  //       method: 'DELETE',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({ uid }),
-  //     });
+  const handleCreate = () => {
+    setEditingSpot(null);
+    setMode('create');
+    setOpenModal(true);
+  };
 
-  //     const result = await res.json();
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setEditingSpot(null);
+  };
 
-  //     if (!res.ok) throw new Error(result.message);
+  const handleDelete = async (spotId: string, displayName: string) => {
+    if (!confirm(`Are you sure you want to delete "${displayName}"?`)) return;
 
-  //     toast.success('User deleted successfully');
-  //     await loadUsers(); // refresh the list
-  //   } catch (error: unknown) {
-  //     const message = error instanceof Error ? error.message : 'Failed to delete user';
-  //     toast.error(message);
-  //   }
-  // };
+    try {
+      await deleteARSpot(spotId);
+      toast.success('AR Spot deleted successfully');
+      await loadArSpots(); // refresh the list
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to delete AR spot';
+      toast.error(message);
+    }
+  };
+
+  // Convert ArSpot to ARSpotFormInputs format for editing
+  const getInitialDataForEdit = (
+    spot: ArSpot
+  ): Partial<ARSpotFormInputs> & {
+    id?: string;
+    imgURL?: string;
+    iconURL?: string;
+    collectibleImageURL?: string;
+  } => {
+    return {
+      id: spot.id,
+      name: spot.name,
+      description: spot.description,
+      address: spot.address,
+      arURL: spot.arURL,
+      priority: spot.priority,
+      coordinates: spot.coordinates,
+      hasCollectible: !!spot.collectibleId,
+      collectibleId: spot.collectibleId || '',
+      imgURL: spot.imgURL,
+      iconURL: spot.iconURL,
+      collectibleImageURL: undefined,
+    };
+  };
 
   return (
     <>
@@ -120,7 +158,7 @@ export default function AdminUserPage() {
             variant="contained"
             startIcon={<AddIcon />}
             sx={{ borderRadius: 2 }}
-            onClick={() => setOpenModal(true)}
+            onClick={handleCreate}
           >
             Add AR Spot
           </Button>
@@ -152,7 +190,6 @@ export default function AdminUserPage() {
               onChange={(e) => setFilterName(e.target.value)}
               sx={{ width: { xs: '100%', md: '400px' } }}
             />
-
           </Stack>
           <Stack direction="row" spacing={1} mt={3}>
             <Button
@@ -176,14 +213,30 @@ export default function AdminUserPage() {
             <Table size="medium">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ width: '120px' }}><strong>No.</strong></TableCell>
-                  <TableCell sx={{ width: '15%' }}><strong>Name</strong></TableCell>
-                  <TableCell sx={{ width: '10px' }}><strong>Image</strong></TableCell>
-                  <TableCell sx={{ width: '20%' }}><strong>Description</strong></TableCell>
-                  <TableCell sx={{ width: '18%' }}><strong>Address</strong></TableCell>
-                  <TableCell sx={{ width: '20%' }}><strong>Collectible</strong></TableCell>
-                  <TableCell sx={{ width: '10px' }} align="center"><strong>Priority</strong></TableCell>
-                  <TableCell align="center"><strong>Manage</strong></TableCell>
+                  <TableCell sx={{ width: '10%' }}>
+                    <strong>No.</strong>
+                  </TableCell>
+                  <TableCell sx={{ width: '17%' }}>
+                    <strong>Name</strong>
+                  </TableCell>
+                  <TableCell sx={{ width: '10px' }}>
+                    <strong>Image</strong>
+                  </TableCell>
+                  <TableCell sx={{ width: '18%' }}>
+                    <strong>Description</strong>
+                  </TableCell>
+                  <TableCell sx={{ width: '18%' }}>
+                    <strong>Address</strong>
+                  </TableCell>
+                  <TableCell sx={{ width: '18%' }}>
+                    <strong>Collectible</strong>
+                  </TableCell>
+                  <TableCell sx={{ width: '10px' }} align="center">
+                    <strong>Priority</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Manage</strong>
+                  </TableCell>
                 </TableRow>
               </TableHead>
 
@@ -192,7 +245,9 @@ export default function AdminUserPage() {
                   Array.from({ length: rowsPerPage }).map((_, idx) => (
                     <TableRow key={idx}>
                       {[...Array(8)].map((_, colIdx) => (
-                        <TableCell key={colIdx}><Skeleton height={24} /></TableCell>
+                        <TableCell key={colIdx}>
+                          <Skeleton height={24} />
+                        </TableCell>
                       ))}
                     </TableRow>
                   ))
@@ -243,7 +298,9 @@ export default function AdminUserPage() {
                               )}
                             </Box>
 
-                            <Typography variant="body2" fontWeight={600}>{spot.name}</Typography>
+                            <Typography variant="body2" fontWeight={600}>
+                              {spot.name}
+                            </Typography>
                           </Stack>
 
                           {/* ID below the name */}
@@ -309,7 +366,12 @@ export default function AdminUserPage() {
                               onClick={() => toggleDescription(spot.id)}
                               size="small"
                               variant="text"
-                              sx={{ textTransform: 'none', minWidth: 0, fontSize: '0.65rem', ml: 0.5 }}
+                              sx={{
+                                textTransform: 'none',
+                                minWidth: 0,
+                                fontSize: '0.65rem',
+                                ml: 0.5,
+                              }}
                             >
                               {expandedDescriptions[spot.id] ? 'Show less' : 'Read more'}
                             </Button>
@@ -320,7 +382,9 @@ export default function AdminUserPage() {
                       {/* Address with coordinates */}
                       <TableCell>
                         <Stack spacing={1}>
-                          <Typography variant="caption" fontWeight="500">{spot.address}</Typography>
+                          <Typography variant="caption" fontWeight="500">
+                            {spot.address}
+                          </Typography>
 
                           <Stack direction="row" spacing={1} alignItems="center">
                             <LocationOnIcon fontSize="small" sx={{ color: 'brand.main' }} />
@@ -336,12 +400,16 @@ export default function AdminUserPage() {
                         <Stack spacing={2}>
                           <Stack direction="row" spacing={1} alignItems="center">
                             <VerifiedIcon fontSize="small" sx={{ color: 'primary.main' }} />
-                            <Typography variant="caption" fontWeight={"500"}>{spot.collectibleId}</Typography>
+                            <Typography variant="caption" fontWeight={'500'}>
+                              {spot.collectibleId}
+                            </Typography>
                           </Stack>
                           <Stack direction="row" spacing={1} alignItems="flex-start">
                             <TipsAndUpdatesIcon fontSize="small" sx={{ color: 'brand.accent' }} />
                             <Typography variant="caption" color="text.secondary">
-                              {expandedTips[spot.id] || !spot.collectibleTips || spot.collectibleTips.length <= 70
+                              {expandedTips[spot.id] ||
+                              !spot.collectibleTips ||
+                              spot.collectibleTips.length <= 70
                                 ? spot.collectibleTips
                                 : `${spot.collectibleTips.slice(0, 70)}... `}
                               {spot.collectibleTips && spot.collectibleTips.length > 70 && (
@@ -349,7 +417,12 @@ export default function AdminUserPage() {
                                   onClick={() => toggleTip(spot.id)}
                                   size="small"
                                   variant="text"
-                                  sx={{ textTransform: 'none', minWidth: 0, fontSize: '0.65rem', ml: 0.5 }}
+                                  sx={{
+                                    textTransform: 'none',
+                                    minWidth: 0,
+                                    fontSize: '0.65rem',
+                                    ml: 0.5,
+                                  }}
                                 >
                                   {expandedTips[spot.id] ? 'Show less' : 'Read more'}
                                 </Button>
@@ -379,7 +452,7 @@ export default function AdminUserPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={8} align="center">
                       <Typography variant="body2" color="text.secondary">
                         No AR spots found.
                       </Typography>
@@ -387,7 +460,6 @@ export default function AdminUserPage() {
                   </TableRow>
                 )}
               </TableBody>
-
             </Table>
           </TableContainer>
           <Stack direction="row" justifyContent="flex-end" pt={4} pb={2}>
@@ -404,8 +476,10 @@ export default function AdminUserPage() {
 
       <ARSpotModal
         open={openModal}
-        onClose={() => setOpenModal(false)}
-        reloadSpots={loadArSpots} 
+        onClose={handleCloseModal}
+        reloadSpots={loadArSpots}
+        initialData={editingSpot ? getInitialDataForEdit(editingSpot) : undefined}
+        mode={mode}
       />
     </>
   );

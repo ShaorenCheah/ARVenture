@@ -1,8 +1,9 @@
 'use client';
 
+import { getCookie, deleteCookie } from 'cookies-next';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { createContext, useEffect, useState, useContext, ReactNode } from 'react';
-import { getCookie, deleteCookie } from 'cookies-next';
+
 import { auth } from '@/lib/firebase';
 
 interface AuthContextProps {
@@ -39,11 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, role, loading }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, role, loading }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => useContext(AuthContext);
