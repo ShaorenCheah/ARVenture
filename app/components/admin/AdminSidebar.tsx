@@ -1,11 +1,8 @@
 import {
   Dashboard as DashboardIcon,
   People as PeopleIcon,
-  Redeem as RedeemIcon,
-  Store as StoreIcon,
   SportsEsports as SportsIcon,
   CollectionsBookmark as CollectiblesIcon,
-  Inventory as InventoryIcon,
   AccountCircle as AccountCircleIcon,
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
@@ -77,31 +74,13 @@ export default function AdminSidebar({
       text: 'AR Spots',
       icon: <SportsIcon />,
       path: '/admin/ar-spots',
-      roles: ['admin', 'merchant'],
+      roles: ['admin'],
     },
     {
       text: 'Collectibles',
       icon: <CollectiblesIcon />,
       path: '/admin/collectibles',
-      roles: ['admin', 'merchant'],
-    },
-    {
-      text: 'Redemption Items',
-      icon: <RedeemIcon />,
-      path: '/admin/redemption-items',
-      roles: ['merchant', 'admin'],
-    },
-    {
-      text: 'User Collections',
-      icon: <InventoryIcon />,
-      path: '/admin/user-collections',
       roles: ['admin'],
-    },
-    {
-      text: 'My Store',
-      icon: <StoreIcon />,
-      path: '/admin/store',
-      roles: ['merchant'],
     },
   ];
 
