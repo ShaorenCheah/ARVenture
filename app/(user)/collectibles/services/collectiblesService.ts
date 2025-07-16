@@ -7,24 +7,27 @@ export interface Collectible {
   id: string;
   title: string;
   description: string;
-  imageURL?: string; // Optional initially
+  imageURL?: string;
   redemptionCode: string;
   priority: number;
   createdAt: Timestamp;
 }
 
 export interface UserCollectible {
-  collectedDate: string;
+  collectedAt: Timestamp;
+  redemptionCode: string;
+  arSpotId: string;
 }
 
-export const fetchAllCollectibles = async (uid?: string): Promise<Collectible[]> => {
+export const fetchAllCollectibles = async (
+  uid?: string
+): Promise<(Collectible & { collected?: boolean; collectedAt?: string })[]> => {
   const snapshot = await getDocs(collection(db, 'collectibles'));
 
   let userCollected: Record<string, UserCollectible> = {};
 
   if (uid) {
-    const userColRef = collection(db, 'user_collections', uid, 'collected');
-    const userColSnap = await getDocs(userColRef);
+    const userColSnap = await getDocs(collection(db, 'users', uid, 'collected_items'));
     userCollected = {};
     userColSnap.forEach((doc) => {
       userCollected[doc.id] = doc.data() as UserCollectible;
@@ -37,7 +40,7 @@ export const fetchAllCollectibles = async (uid?: string): Promise<Collectible[]>
       const id = docSnap.id;
 
       const isCollected = !!userCollected[id];
-      const collectedDate = userCollected[id]?.collectedDate || '';
+      const collectedAt = userCollected[id]?.collectedAt?.toDate().toISOString() || '';
 
       let imageURL = '';
       if (isCollected) {
@@ -51,11 +54,15 @@ export const fetchAllCollectibles = async (uid?: string): Promise<Collectible[]>
 
       return {
         id,
-        ...data,
+        title: data.title,
+        description: data.description,
+        redemptionCode: data.redemptionCode,
+        priority: data.priority,
+        createdAt: data.createdAt,
         imageURL,
         collected: isCollected,
-        collectedDate,
-      } as Collectible & { collected?: boolean; collectedDate?: string };
+        collectedAt,
+      };
     })
   );
 

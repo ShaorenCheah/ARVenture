@@ -47,7 +47,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot, onSuccess }) 
       if (role === 'admin' || role === 'merchant') {
         router.push('/admin');
       } else {
-        router.push('/home'); // or '/' if that’s your default user dashboard
+        router.push('/');
       }
 
       onSuccess(); // close modal

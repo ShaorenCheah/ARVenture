@@ -25,7 +25,6 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   const Δλ = toRad(lon2 - lon1);
 
   const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c; // in meters
@@ -67,12 +66,10 @@ export const redeemCollectibleWithLocation = async (
     return { success: false, message: 'Collectible is not linked to an AR Spot.' };
   }
 
-  // Check if already redeemed
-  const userCollectibleDoc = await getDoc(
-    doc(db, 'user_collections', uid, 'collected', collectibleId)
-  );
-  if (userCollectibleDoc.exists()) {
-    return { success: false, message: 'You have already redeemed this collectible.' };
+  // Check if already collected
+  const collectedDoc = await getDoc(doc(db, 'users', uid, 'collected_items', collectibleId));
+  if (collectedDoc.exists()) {
+    return { success: false, message: 'You have already collected this item.' };
   }
 
   const arSpotDoc = await getDoc(doc(db, 'ar_spots', arSpotId));
@@ -94,10 +91,13 @@ export const redeemCollectibleWithLocation = async (
     return { success: false, message: `You are too far away. (${Math.round(distance)}m)` };
   }
 
-  await setDoc(doc(db, 'user_collections', uid, 'collected', collectibleId), {
-    collectedDate: new Date().toISOString(),
-    redeemedFrom: code,
-    redeemedAt: serverTimestamp(),
+  // Save collectible under user
+  await setDoc(doc(db, 'users', uid, 'collected_items', collectibleId), {
+    title: collectibleData.title,
+    description: collectibleData.description,
+    collectedAt: serverTimestamp(),
+    arSpotId,
+    redemptionCode: code,
   });
 
   let imageURL = '';

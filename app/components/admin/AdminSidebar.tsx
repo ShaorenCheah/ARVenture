@@ -89,6 +89,12 @@ export default function AdminSidebar({
       path: '/admin/redemption-items',
       roles: ['admin'],
     },
+    {
+      text: 'Redemption',
+      icon: <RedemptionIcon />,
+      path: '/admin/redemption',
+      roles: ['admin'],
+    },
   ];
 
   const filteredItems = menuItems.filter((item) => role && item.roles.includes(role));
