@@ -4,8 +4,6 @@ import { Tabs, Tab, Box } from '@mui/material';
 import dynamic from 'next/dynamic';
 import * as React from 'react';
 
-import EventPanel from './events/EventPanel';
-
 import theme from '@/app/theme';
 
 const ArSpotPanel = dynamic(() => import('./arSpots/ArSpotPanel'), {
@@ -113,7 +111,6 @@ export default function InfoTabs() {
           }}
         >
           <Tab disableRipple label="AR SPOTS" />
-          <Tab disableRipple label="EVENTS" />
         </Tabs>
 
         {/* Panel */}
@@ -132,16 +129,12 @@ export default function InfoTabs() {
             '&::-webkit-scrollbar': { display: 'none' },
           }}
         >
-          {tabIndex === 0 ? (
-            <ArSpotPanel
-              onSpotClick={(spotData) => {
-                setSelectedSpot(spotData);
-                setOpen(true);
-              }}
-            />
-          ) : (
-            <EventPanel />
-          )}
+          <ArSpotPanel
+            onSpotClick={(spotData) => {
+              setSelectedSpot(spotData);
+              setOpen(true);
+            }}
+          />
         </Box>
       </Box>
 

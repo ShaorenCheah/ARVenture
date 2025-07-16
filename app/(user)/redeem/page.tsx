@@ -24,7 +24,7 @@ import { getAuth } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
-import { fetchRedemptionItems, RedemptionItem } from './services/redemptionService';
+import { fetchRedemptionItems, RedemptionItem, redeemItem } from './services/redemptionService';
 
 const StyledCard = styled(Card)(() => ({
   borderRadius: 16,
@@ -89,21 +89,28 @@ export default function RedemptionPage() {
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        setUserUid(user.uid);
-        const data = await fetchRedemptionItems(user.uid);
-        setItems(data);
-      } else {
-        setUserUid(null);
-        const data = await fetchRedemptionItems();
-        setItems(data);
+      try {
+        if (user) {
+          setUserUid(user.uid);
+          const data = await fetchRedemptionItems(user.uid);
+          setItems(data);
+        } else {
+          setUserUid(null);
+          const data = await fetchRedemptionItems();
+          setItems(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch redemption items:', error);
+        toast.error('Failed to load redemption data.');
+        setItems([]);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  const handleRedeem = async (itemId: string, itemTitle: string) => {
+  const handleRedeem = async (itemId: string) => {
     const user = getAuth().currentUser;
 
     if (!user) {
@@ -113,7 +120,13 @@ export default function RedemptionPage() {
     }
 
     try {
-      toast.success(`Successfully redeemed: ${itemTitle}!`);
+      const result = await redeemItem(itemId, user.uid, user.displayName || '');
+      if (result.success && result.code) {
+        toast.success('Redemption code received!');
+      } else {
+        toast.error(result.message);
+        return;
+      }
       const updatedItems = await fetchRedemptionItems(user.uid);
       setItems(updatedItems);
     } catch {
@@ -206,19 +219,31 @@ export default function RedemptionPage() {
                       icon={<InventoryIcon />}
                       size="small"
                     />
-                    {!item.hasCollected && (
+
+                    {/* Show code or redemption status if redeemed */}
+                    {item.hasRedeemed ? (
                       <StatusChip
-                        label="Collectible required"
+                        label={`Code: ${item.code}`}
                         size="small"
-                        sx={{ backgroundColor: '#ffdfe0', color: '#ED1D24' }}
+                        sx={{ backgroundColor: '#E3F2FD', color: '#1976D2' }}
                       />
-                    )}
-                    {item.remaining <= 0 && item.hasCollected && (
-                      <StatusChip
-                        label="Out of stock"
-                        size="small"
-                        sx={{ backgroundColor: '#FFEBEE', color: '#C62828' }}
-                      />
+                    ) : (
+                      <>
+                        {!item.hasCollected && (
+                          <StatusChip
+                            label="Collectible required"
+                            size="small"
+                            sx={{ backgroundColor: '#ffdfe0', color: '#ED1D24' }}
+                          />
+                        )}
+                        {item.remaining <= 0 && item.hasCollected && (
+                          <StatusChip
+                            label="Out of stock"
+                            size="small"
+                            sx={{ backgroundColor: '#FFEBEE', color: '#C62828' }}
+                          />
+                        )}
+                      </>
                     )}
                   </Stack>
                 </Box>
@@ -253,13 +278,19 @@ export default function RedemptionPage() {
 
                 <Box sx={{ textAlign: 'center', mt: 1.5 }}>
                   <RedeemButton
-                    disabled={!!userUid && isDisabled}
+                    disabled={!!userUid && (isDisabled || item.hasRedeemed)}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleRedeem(item.id, item.title);
                     }}
                   >
-                    {!userUid ? 'Login to Redeem' : isDisabled ? 'Unavailable' : 'Redeem Now'}
+                    {!userUid
+                      ? 'Login to Redeem'
+                      : item.hasRedeemed
+                        ? 'Redeemed'
+                        : isDisabled
+                          ? 'Unavailable'
+                          : 'Redeem Now'}
                   </RedeemButton>
                 </Box>
               </Collapse>

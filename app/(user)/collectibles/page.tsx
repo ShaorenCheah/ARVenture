@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 
 import CollectibleSuccessModal from './CollectibleSuccessModal';
@@ -75,14 +75,42 @@ export default function CollectiblesPage() {
     description: string;
   } | null>(null);
 
-  const loadCollectibles = async (user: User | null) => {
-    setIsLoading(true);
+  const loadCollectibles = useCallback(
+    async (user: User | null) => {
+      setIsLoading(true);
 
-    const allCollectibles = await fetchAllCollectibles(user?.uid);
-    setUserUid(user?.uid ?? null);
-    setData(allCollectibles);
-    setIsLoading(false);
-  };
+      try {
+        if (user) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          if (auth.currentUser?.uid !== user.uid) {
+            console.warn('Auth state mismatch, loading without user data');
+            const allCollectibles = await fetchAllCollectibles();
+            setUserUid(null);
+            setData(allCollectibles);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        const allCollectibles = await fetchAllCollectibles(user?.uid);
+        setUserUid(user?.uid ?? null);
+        setData(allCollectibles);
+      } catch (error) {
+        console.error('Error loading collectibles:', error);
+        try {
+          const allCollectibles = await fetchAllCollectibles();
+          setUserUid(null);
+          setData(allCollectibles);
+        } catch (fallbackError) {
+          console.error('Fallback loading failed:', fallbackError);
+          toast.error('Failed to load collectibles. Please try again.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [auth.currentUser]
+  );
 
   const requestLocationAndRedeem = async (code: string) => {
     // Check if we're on HTTPS (required for geolocation)
@@ -167,15 +195,17 @@ export default function CollectiblesPage() {
     if (!successModalOpen) {
       loadCollectibles(auth.currentUser);
     }
-  }, [successModalOpen, auth.currentUser]);
+  }, [successModalOpen, auth.currentUser, loadCollectibles]);
 
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      // Add a small delay to ensure auth state is fully settled
+      await new Promise((resolve) => setTimeout(resolve, 50));
       loadCollectibles(user);
     });
     return () => unsubscribe();
-  }, []);
+  }, [loadCollectibles]);
 
   const handleRedeemSubmit = async (code: string, position: GeolocationPosition | null) => {
     if (!userUid) return;
