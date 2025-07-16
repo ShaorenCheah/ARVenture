@@ -281,11 +281,11 @@ export default function AdminUserPage() {
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                       </TableCell>
                       <TableCell align="center">
-                        {/* {user.role === 'user' && ( */}
-                        <IconButton onClick={() => router.push(`/admin/users/${user.id}`)}>
-                          <VisibilityIcon sx={{ color: 'text.disabled' }} />
-                        </IconButton>
-                        {/* )} */}
+                        {user.role === 'user' && (
+                          <IconButton onClick={() => router.push(`/admin/users/${user.id}`)}>
+                            <VisibilityIcon sx={{ color: 'text.disabled' }} />
+                          </IconButton>
+                        )}
                         <IconButton onClick={() => handleDelete(user.id, user.displayName)}>
                           <DeleteIcon sx={{ color: 'brand.main' }} />
                         </IconButton>

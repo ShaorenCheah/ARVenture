@@ -20,6 +20,7 @@ export interface RedemptionItem {
   remaining: number;
   hasCollected: boolean;
   hasRedeemed: boolean;
+  hasClaimed: boolean;
   code?: string;
   claimedAt?: string;
   redeemedAt?: string;
@@ -71,6 +72,7 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
           remaining: Math.max(0, stock - claimedCount),
           hasCollected: Boolean(false),
           hasRedeemed: Boolean(false),
+          hasClaimed: Boolean(false),
           imageURL,
         } satisfies RedemptionItem;
       })
@@ -132,7 +134,8 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
         stock,
         remaining: Math.max(0, stock - claimedCount),
         hasCollected,
-        hasRedeemed: !!redeemedInfo,
+        hasClaimed: Boolean(redeemedInfo?.claimedAt),
+        hasRedeemed: Boolean(redeemedInfo?.redeemedAt),
         imageURL,
       };
 
@@ -188,6 +191,8 @@ export const redeemItem = async (
 
       // Write to redeemed_items
       transaction.set(redeemedDoc, {
+        title: itemData.title,
+        spotName: itemData.requiredSpotName,
         code: redemptionCode,
         claimedAt,
         status: 'pending',

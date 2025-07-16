@@ -1,81 +1,89 @@
-import { getDoc, getDocs, collection, doc } from 'firebase/firestore';
+import { collection, getDocs, Timestamp } from 'firebase/firestore';
 
 import { db } from '@/lib/firebase';
 
-export interface CollectibleHistory {
-  title?: string;
-  arSpotName?: string;
-  redemptionCode?: string;
-  collectedAt?: Date;
-}
-
-export interface RedemptionHistory {
-  title?: string;
-  couponCode?: string;
-  collectibleTitle?: string;
-  redeemedBy?: string;
-  redeemedAt?: Date;
-}
-
 export interface UserActivityStats {
   totalCollected: number;
+  lastCollectedAt?: Date;
   totalRedeemed: number;
-  lastCollectedAt: Date | null;
-  lastRedeemedAt: Date | null;
+  lastRedeemedAt?: Date;
 }
 
-export const fetchUserActivityData = async (
-  userId: string
-): Promise<{
-  stats: UserActivityStats | null;
-  collected: CollectibleHistory[];
-  redeemed: RedemptionHistory[];
-}> => {
-  try {
-    // Fetch user_activity summary document
-    const activityDoc = await getDoc(doc(db, 'user_activity', userId));
+export interface CollectedItem {
+  title: string;
+  description: string;
+  redemptionCode?: string;
+  arSpotId?: string;
+  collectedAt: Date;
+}
 
-    const stats: UserActivityStats | null = activityDoc.exists()
-      ? {
-          totalCollected: activityDoc.data().totalCollected || 0,
-          totalRedeemed: activityDoc.data().totalRedeemed || 0,
-          lastCollectedAt: activityDoc.data().lastCollectedAt?.toDate() || null,
-          lastRedeemedAt: activityDoc.data().lastRedeemedAt?.toDate() || null,
-        }
-      : null;
+export interface RedeemedItem {
+  title: string;
+  code?: string;
+  status: 'pending' | 'fulfilled';
+  redeemedBy?: string;
+  spotName?: string;
+  redeemedAt?: Date;
+  claimedAt: Date;
+}
 
-    // Fetch collectibles_history
-    const collectedSnap = await getDocs(
-      collection(db, `user_activity/${userId}/collectibles_history`)
-    );
-    const collected: CollectibleHistory[] = collectedSnap.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        title: data.title || '',
-        arSpotName: data.arSpotName || '',
-        redemptionCode: data.redemptionCode || '',
-        collectedAt: data.collectedAt?.toDate() || null,
-      };
+export async function fetchUserActivityData(userId: string): Promise<{
+  stats: UserActivityStats;
+  collected: CollectedItem[];
+  redeemed: RedeemedItem[];
+}> {
+  const collectedRef = collection(db, 'users', userId, 'collected_items');
+  const redeemedRef = collection(db, 'users', userId, 'redeemed_items');
+
+  const collectedSnap = await getDocs(collectedRef);
+  const redeemedSnap = await getDocs(redeemedRef);
+
+  const collected: CollectedItem[] = [];
+  const redeemed: RedeemedItem[] = [];
+
+  collectedSnap.forEach((docSnap) => {
+    const data = docSnap.data();
+    collected.push({
+      title: data.title || 'Unknown',
+      description: data.description || '',
+      redemptionCode: data.redemptionCode || '',
+      arSpotId: data.arSpotId,
+      collectedAt: (data.collectedAt as Timestamp)?.toDate?.() || new Date(0),
     });
+  });
 
-    // Fetch redemptions_history
-    const redeemedSnap = await getDocs(
-      collection(db, `user_activity/${userId}/redemptions_history`)
-    );
-    const redeemed: RedemptionHistory[] = redeemedSnap.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        title: data.title || '',
-        couponCode: data.couponCode || '',
-        collectibleTitle: data.collectibleTitle || '',
-        redeemedBy: data.redeemedBy || '',
-        redeemedAt: data.redeemedAt?.toDate() || null,
-      };
+  redeemedSnap.forEach((docSnap) => {
+    const data = docSnap.data();
+    redeemed.push({
+      title: data.title || 'Unknown',
+      code: data.code,
+      status: data.status || 'pending',
+      redeemedBy: data.redeemedBy,
+      spotName: data.spotName,
+      claimedAt: (data.claimedAt as Timestamp)?.toDate?.() || new Date(0),
+      redeemedAt: data.redeemedAt ? (data.redeemedAt as Timestamp)?.toDate?.() : undefined,
     });
+  });
 
-    return { stats, collected, redeemed };
-  } catch (error) {
-    console.error('Error fetching user activity:', error);
-    return { stats: null, collected: [], redeemed: [] };
-  }
-};
+  const stats: UserActivityStats = {
+    totalCollected: collected.length,
+    lastCollectedAt: collected.length
+      ? collected.reduce(
+          (latest, item) => (item.collectedAt > latest ? item.collectedAt : latest),
+          new Date(0)
+        )
+      : undefined,
+    totalRedeemed: redeemed.length,
+    lastRedeemedAt: redeemed.length
+      ? redeemed.reduce(
+          (latest, item) =>
+            (item.redeemedAt ?? item.claimedAt) > latest
+              ? (item.redeemedAt ?? item.claimedAt)
+              : latest,
+          new Date(0)
+        )
+      : undefined,
+  };
+
+  return { stats, collected, redeemed };
+}

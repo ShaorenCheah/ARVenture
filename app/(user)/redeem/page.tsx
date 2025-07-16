@@ -223,6 +223,12 @@ export default function RedemptionPage() {
                     {/* Show code or redemption status if redeemed */}
                     {item.hasRedeemed ? (
                       <StatusChip
+                        label="REDEEMED"
+                        size="small"
+                        sx={{ backgroundColor: '#E8F5E9', color: '#2E7D32' }}
+                      />
+                    ) : item.hasClaimed ? (
+                      <StatusChip
                         label={`Code: ${item.code}`}
                         size="small"
                         sx={{ backgroundColor: '#E3F2FD', color: '#1976D2' }}
@@ -278,15 +284,15 @@ export default function RedemptionPage() {
 
                 <Box sx={{ textAlign: 'center', mt: 1.5 }}>
                   <RedeemButton
-                    disabled={!!userUid && (isDisabled || item.hasRedeemed)}
+                    disabled={!!userUid && (isDisabled || item.hasClaimed)}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRedeem(item.id, item.title);
+                      handleRedeem(item.id);
                     }}
                   >
                     {!userUid
                       ? 'Login to Redeem'
-                      : item.hasRedeemed
+                      : item.hasClaimed
                         ? 'Redeemed'
                         : isDisabled
                           ? 'Unavailable'
