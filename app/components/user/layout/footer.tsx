@@ -38,7 +38,7 @@ export default function BottomAppBar() {
     {
       title: user ? 'Logout' : 'Login',
       icon: <PersonOutlineOutlinedIcon fontSize="small" />,
-      path: '/', // just for consistency; won't be used
+      path: '/',
       onClick: () => setOpenUserModal(true),
       isModal: true,
     },
@@ -52,7 +52,7 @@ export default function BottomAppBar() {
         sx={{
           top: 'auto',
           bottom: 0,
-          height: { xs: '75px', lg: '80px' },
+          height: '75px',
           backgroundColor: 'white',
           boxShadow: 3,
         }}
@@ -63,7 +63,7 @@ export default function BottomAppBar() {
             justifyContent: 'space-around',
             alignItems: 'center',
             height: '100%',
-            mx: { xl: 50 },
+            mx: { xs: 0, sm: 20, md: 25, xl: 55 },
           }}
         >
           {buttonList.map((item, index) => {

@@ -100,7 +100,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ open, onClose, spot, onSc
           sx={{
             flex: 1,
             overflowY: 'auto',
-            maxHeight: { xs: 'calc(75vh - 56px)', sm: 'calc(85vh - 56px)' },
+            maxHeight: { xs: 'calc(75vh - 56px)', sm: '85vh' },
             display: 'flex',
             flexDirection: 'column',
             scrollbarWidth: 'none',

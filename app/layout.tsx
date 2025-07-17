@@ -1,6 +1,9 @@
 export const metadata = {
-  title: 'Sunway ARventure',
+  title: 'Sunway ARVenture',
   description: 'Explore Bandar Sunway through AR!',
+  icons: {
+    icon: '/favicon.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -13,7 +13,7 @@ export default function Header() {
         onClick={() => setOpenSearch(true)}
         sx={{
           borderRadius: '50px',
-          minHeight: { xs: '40px', lg: '48px', xl: '56px' },
+          minHeight: { xs: '40px', lg: '40px' },
           backgroundColor: 'white',
           boxShadow: 2,
           pl: 2,
@@ -21,7 +21,6 @@ export default function Header() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: { xs: 2, sm: 3, md: 4 },
         }}
       >
         <Typography variant="body2" sx={{ flexGrow: 1, color: 'text.secondary' }}>

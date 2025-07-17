@@ -29,10 +29,13 @@ export default function InfoTabs() {
       <Box
         sx={{
           width: '100%',
-          height: { xs: '375px', md: '475px', lg: '100vh' },
+          height: { xs: '200px', lg: '100%' },
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
+          flex: 1,
+          minHeight: 0,
+          overflow: 'hidden',
         }}
       >
         {/* Floating Tabs */}
@@ -60,7 +63,7 @@ export default function InfoTabs() {
           }}
           sx={{
             position: 'absolute',
-            top: '-0px',
+            top: '0px',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 10,
@@ -120,13 +123,15 @@ export default function InfoTabs() {
             overflowY: 'auto',
             backgroundColor: 'white',
             borderRadius: '12px',
-            paddingTop: '42px',
+            paddingTop: '52px', // Increased padding to account for tabs
             paddingX: '16px',
             paddingBottom: '16px',
             marginTop: '20px',
             boxShadow: 1,
             scrollbarWidth: 'none',
             '&::-webkit-scrollbar': { display: 'none' },
+            height: '100%',
+            minHeight: 0,
           }}
         >
           <ArSpotPanel

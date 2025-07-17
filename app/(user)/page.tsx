@@ -31,13 +31,11 @@ export default function Home() {
       component="main"
       sx={{
         width: '100%',
-        height: {
-          xs: '100%',
-          lg: 'calc(100vh - 72px - 80px - 32px)',
-          xl: 'calc(100vh - 88px - 80px - 32px)',
-        },
+        height: '100%',
+        flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',
+        minHeight: 0, // Allow shrinking
       }}
     >
       <Grid
@@ -45,7 +43,13 @@ export default function Home() {
         flexWrap="nowrap"
         flexDirection={{ xs: 'column', lg: 'row' }}
         spacing={{ xs: 2, md: 2.5 }}
-        sx={{ alignItems: 'start', height: '100%', flex: 1 }}
+        sx={{
+          alignItems: 'stretch',
+          height: { xs: 'auto', lg: '100%' },
+          flex: 1,
+          flexGrow: 1,
+          minHeight: 0, // Allow flex items to shrink below content size
+        }}
       >
         {/* Map Section */}
         <Grid
@@ -54,21 +58,18 @@ export default function Home() {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: {
-              xs: 'auto',
-              sm: '50%',
-              lg: '100%',
-            },
-            maxHeight: { xs: 'unset', sm: '400px', md: '425px', lg: '100%' },
-            aspectRatio: '1/1',
-            flexShrink: { xs: 0, md: 1 },
+            height: '100%',
+            flex: 1,
+            minHeight: 0, // Allow shrinking
           }}
         >
           <Card
             variant="outlined"
             sx={{
-              height: '100%',
-              aspectRatio: '1/1',
+              height: { xs: '300px', sm: '350px', md: '375px', lg: '100%' },
+              width: { xs: '300px', sm: '350px', md: '375px', lg: '100%' },
+              maxWidth: { xs: '100%', md: 'auto', lg: '100%' }, // Ensure it doesn't exceed container
+              maxHeight: '100%', // Prevent overflow
               overflow: 'hidden',
               borderRadius: 2,
               boxShadow: 1,
@@ -95,7 +96,16 @@ export default function Home() {
         </Grid>
 
         {/* Info Section */}
-        <Grid size={{ xs: 12, lg: 6 }} sx={{ height: '100%', flex: { xs: 1, lg: 'unset' } }}>
+        <Grid
+          size={{ xs: 12, lg: 6 }}
+          sx={{
+            height: '100%',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+          }}
+        >
           <Box
             sx={{
               width: '100%',
@@ -103,7 +113,8 @@ export default function Home() {
               borderRadius: 2,
               display: 'flex',
               flexDirection: 'column',
-              minHeight: { xs: 0, lg: 'unset' },
+              flex: 1,
+              minHeight: 0,
             }}
           >
             <InfoTabs />
