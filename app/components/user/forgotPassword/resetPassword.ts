@@ -7,7 +7,9 @@ import { auth } from '@/lib/firebase';
 
 export const resetPassword = async (email: string) => {
   try {
-    await sendPasswordResetEmail(auth, email);
+    await sendPasswordResetEmail(auth, email, {
+      url: 'https://ar-venture.vercel.app/firebase/reset-password',
+    });
   } catch (error: unknown) {
     if (error instanceof FirebaseError) {
       const errorCode = error.code || '';

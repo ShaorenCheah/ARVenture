@@ -3,9 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
+interface UserRecordData {
+  email: string;
+  displayName: string;
+  emailVerified: boolean;
+  role: 'admin' | 'employee';
+  createdAt: FieldValue;
+  delegatedSpot?: string;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, password, role } = await req.json();
+    const { name, email, password, role, delegatedSpot } = await req.json();
 
     if (
       typeof name !== 'string' ||
@@ -15,27 +24,44 @@ export async function POST(req: NextRequest) {
       typeof password !== 'string' ||
       !password.trim() ||
       typeof role !== 'string' ||
-      !['user', 'merchant', 'admin'].includes(role)
+      !['admin', 'employee'].includes(role)
     ) {
       return NextResponse.json({ message: 'Missing or invalid fields' }, { status: 400 });
     }
 
+    // 1. Create Firebase Auth user with emailVerified: true
     const userRecord = await adminAuth.createUser({
       email,
       password,
       displayName: name,
-      emailVerified: false,
+      emailVerified: true,
     });
 
-    await adminDb.collection('users').doc(userRecord.uid).set({
+    // 2. Create Firestore user document
+    const userData: UserRecordData = {
       email,
       displayName: name,
-      emailVerified: false,
-      role,
+      emailVerified: true,
+      role: role as 'admin' | 'employee',
       createdAt: FieldValue.serverTimestamp(),
-    });
+    };
 
-    return NextResponse.json({ message: 'User created successfully', uid: userRecord.uid });
+    if (role === 'employee') {
+      if (typeof delegatedSpot !== 'string' || !delegatedSpot.trim()) {
+        return NextResponse.json(
+          { message: 'Delegated spot is required for employee role' },
+          { status: 400 }
+        );
+      }
+      userData.delegatedSpot = delegatedSpot;
+    }
+
+    await adminDb.collection('users').doc(userRecord.uid).set(userData);
+
+    return NextResponse.json({
+      message: 'User created successfully',
+      uid: userRecord.uid,
+    });
   } catch (error: unknown) {
     console.error('Create user error:', error);
     let message = 'Failed to create user';

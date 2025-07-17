@@ -63,7 +63,7 @@ export default function AdminSidebar({
       text: 'Dashboard',
       icon: <DashboardIcon />,
       path: '/admin',
-      roles: ['admin', 'merchant'],
+      roles: ['admin', 'employee'],
     },
     {
       text: 'Users',

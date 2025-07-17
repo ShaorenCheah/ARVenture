@@ -39,7 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const docSnap = await getDoc(docRef);
         const userRole = docSnap.exists() ? docSnap.data()?.role : null;
 
-        if (userRole === 'admin' || userRole === 'merchant') {
+        if (userRole === 'admin' || userRole === 'employee') {
           setRole(userRole);
         } else {
           router.replace('/');

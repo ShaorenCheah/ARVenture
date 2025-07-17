@@ -13,9 +13,12 @@ import {
   Paper,
   IconButton,
 } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useWatch } from 'react-hook-form';
 import { useForm, Controller } from 'react-hook-form';
 import toast from 'react-hot-toast';
 
+import { fetchARSpots, ARSpotOption } from './services/userServices';
 import { createUserValidationSchema, CreateUserFormInputs } from './userValidation';
 
 interface CreateUserModalProps {
@@ -25,10 +28,8 @@ interface CreateUserModalProps {
 }
 
 export default function CreateUserModal({ open, onClose, reloadUsers }: CreateUserModalProps) {
-  const handleClose = () => {
-    reset(); // Clear form fields
-    onClose(); // Close modal
-  };
+  const [arSpots, setARSpots] = useState<ARSpotOption[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     control,
@@ -42,11 +43,29 @@ export default function CreateUserModal({ open, onClose, reloadUsers }: CreateUs
       email: '',
       password: '',
       confirmPassword: '',
-      role: 'user',
+      role: 'employee',
+      delegatedSpot: '', // Set to empty string instead of undefined
     },
   });
 
+  const role = useWatch({ control, name: 'role' });
+
+  useEffect(() => {
+    if (role === 'employee') {
+      fetchARSpots()
+        .then(setARSpots)
+        .catch(() => toast.error('Failed to load AR spots'));
+    }
+  }, [role]);
+
+  const handleClose = () => {
+    reset(); // Clear form fields
+    onClose(); // Close modal
+  };
+
   const handleFormSubmit = async (data: CreateUserFormInputs) => {
+    setIsLoading(true);
+
     try {
       const res = await fetch('/admin/users/services', {
         method: 'POST',
@@ -56,6 +75,7 @@ export default function CreateUserModal({ open, onClose, reloadUsers }: CreateUs
           email: data.email,
           password: data.password,
           role: data.role,
+          delegatedSpot: data.delegatedSpot,
         }),
       });
 
@@ -71,6 +91,8 @@ export default function CreateUserModal({ open, onClose, reloadUsers }: CreateUs
       let message = 'Failed to create user';
       if (error instanceof Error) message = error.message;
       toast.error(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -131,6 +153,7 @@ export default function CreateUserModal({ open, onClose, reloadUsers }: CreateUs
                     fullWidth
                     error={!!errors.name}
                     helperText={errors.name?.message}
+                    disabled={isLoading}
                   />
                 )}
               />
@@ -145,6 +168,7 @@ export default function CreateUserModal({ open, onClose, reloadUsers }: CreateUs
                     fullWidth
                     error={!!errors.email}
                     helperText={errors.email?.message}
+                    disabled={isLoading}
                   />
                 )}
               />
@@ -160,6 +184,7 @@ export default function CreateUserModal({ open, onClose, reloadUsers }: CreateUs
                     fullWidth
                     error={!!errors.password}
                     helperText={errors.password?.message}
+                    disabled={isLoading}
                   />
                 )}
               />
@@ -175,6 +200,7 @@ export default function CreateUserModal({ open, onClose, reloadUsers }: CreateUs
                     fullWidth
                     error={!!errors.confirmPassword}
                     helperText={errors.confirmPassword?.message}
+                    disabled={isLoading}
                   />
                 )}
               />
@@ -190,20 +216,45 @@ export default function CreateUserModal({ open, onClose, reloadUsers }: CreateUs
                     fullWidth
                     error={!!errors.role}
                     helperText={errors.role?.message}
+                    disabled={isLoading}
                   >
-                    <MenuItem value="user">User</MenuItem>
-                    <MenuItem value="merchant">Merchant</MenuItem>
+                    <MenuItem value="employee">Employee</MenuItem>
                     <MenuItem value="admin">Admin</MenuItem>
                   </TextField>
                 )}
               />
 
+              {role === 'employee' && (
+                <Controller
+                  name="delegatedSpot"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      value={field.value || ''} // Ensure value is never undefined
+                      label="Delegated AR Spot"
+                      select
+                      fullWidth
+                      error={!!errors.delegatedSpot}
+                      helperText={errors.delegatedSpot?.message}
+                      disabled={isLoading}
+                    >
+                      {arSpots.map((spot) => (
+                        <MenuItem key={spot.id} value={spot.id}>
+                          {spot.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+              )}
+
               <Stack direction="row" justifyContent="flex-end" spacing={2} pt={2.5}>
-                <Button onClick={handleClose} variant="outlined">
+                <Button onClick={handleClose} variant="outlined" disabled={isLoading}>
                   Cancel
                 </Button>
-                <Button type="submit" variant="contained">
-                  Create
+                <Button type="submit" variant="contained" disabled={isLoading}>
+                  {isLoading ? 'Creating...' : 'Create'}
                 </Button>
               </Stack>
             </Stack>

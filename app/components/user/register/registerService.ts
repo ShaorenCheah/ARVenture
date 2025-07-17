@@ -5,9 +5,8 @@ import {
   updateProfile,
   signOut,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-import { auth, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 
 export const registerWithEmail = async (name: string, email: string, password: string) => {
   try {
@@ -15,22 +14,12 @@ export const registerWithEmail = async (name: string, email: string, password: s
     const user = userCredential.user;
 
     if (user) {
-      // 1. Set display name in Firebase Auth
       await updateProfile(user, { displayName: name });
 
-      // 2. Create Firestore user document with displayName and emailVerified
-      await setDoc(doc(db, 'users', user.uid), {
-        email,
-        displayName: name,
-        emailVerified: false,
-        role: 'user',
-        createdAt: serverTimestamp(),
+      await sendEmailVerification(user, {
+        url: 'https://ar-venture.vercel.app/firebase/verify-email',
       });
 
-      // 3. Send verification email
-      await sendEmailVerification(user);
-
-      // 4. Sign out
       await signOut(auth);
     }
 

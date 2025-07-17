@@ -44,7 +44,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitch, onForgot, onSuccess }) 
       const { role } = await loginWithEmail(data.email, data.password);
 
       // Redirect based on role
-      if (role === 'admin' || role === 'merchant') {
+      if (role === 'admin' || role === 'employee') {
         router.push('/admin');
       } else {
         router.push('/');

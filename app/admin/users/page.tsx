@@ -155,7 +155,7 @@ export default function AdminUserPage() {
             >
               <MenuItem value="">All</MenuItem>
               <MenuItem value="Admin">Admin</MenuItem>
-              <MenuItem value="Merchant">Merchant</MenuItem>
+              <MenuItem value="employee">Employee</MenuItem>
               <MenuItem value="User">User</MenuItem>
             </TextField>
           </Stack>
@@ -189,13 +189,16 @@ export default function AdminUserPage() {
                     <strong>Name</strong>
                   </TableCell>
                   <TableCell>
-                    <strong>Email</strong>
+                    <strong>Information</strong>
                   </TableCell>
                   <TableCell align="center">
                     <strong>Status</strong>
                   </TableCell>
                   <TableCell align="center">
                     <strong>Role</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Delegated Spot</strong>
                   </TableCell>
                   <TableCell align="center" sx={{ width: '200px' }}>
                     <strong>Manage</strong>
@@ -206,24 +209,11 @@ export default function AdminUserPage() {
                 {loading ? (
                   Array.from({ length: rowsPerPage }).map((_, idx) => (
                     <TableRow key={idx}>
-                      <TableCell>
-                        <Skeleton width={60} height={24} />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton width="80%" height={24} />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton width="90%" height={24} />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Skeleton width="20%" height={24} />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Skeleton width="20%" height={24} />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Skeleton variant="rectangular" width="100%" height={32} />
-                      </TableCell>
+                      {[...Array(7)].map((_, colIdx) => (
+                        <TableCell key={colIdx}>
+                          <Skeleton height={24} />
+                        </TableCell>
+                      ))}
                     </TableRow>
                   ))
                 ) : paginatedUsers.length > 0 ? (
@@ -281,6 +271,16 @@ export default function AdminUserPage() {
                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                       </TableCell>
                       <TableCell align="center">
+                        {user.role === 'employee' &&
+                        typeof user.delegatedSpot === 'string' &&
+                        user.delegatedSpot.trim()
+                          ? user.delegatedSpot
+                              .split('_')
+                              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                              .join(' ')
+                          : 'N/A'}
+                      </TableCell>
+                      <TableCell align="center">
                         {user.role === 'user' && (
                           <IconButton onClick={() => router.push(`/admin/users/${user.id}`)}>
                             <VisibilityIcon sx={{ color: 'text.disabled' }} />
@@ -294,7 +294,7 @@ export default function AdminUserPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
+                    <TableCell colSpan={7} align="center">
                       <Typography variant="body2" color="text.secondary">
                         No users found.
                       </Typography>

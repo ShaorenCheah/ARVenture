@@ -5,17 +5,17 @@ export function middleware(req: NextRequest) {
   const role = req.cookies.get('role')?.value;
   const pathname = req.nextUrl.pathname;
 
-  const isAdminOrMerchant = role === 'admin' || role === 'merchant';
+  const isAdminOrEmployee = role === 'admin' || role === 'employee';
 
-  // Redirect admin/merchant away from / or /user routes
-  if (isAdminOrMerchant && (pathname === '/' || pathname.startsWith('/user'))) {
+  // Redirect admin/employee away from / or /user routes
+  if (isAdminOrEmployee && (pathname === '/' || pathname.startsWith('/user'))) {
     const adminUrl = req.nextUrl.clone();
     adminUrl.pathname = '/admin';
     return NextResponse.redirect(adminUrl);
   }
 
-  // Block access to /admin if not admin/merchant
-  if (pathname.startsWith('/admin') && !isAdminOrMerchant) {
+  // Block access to /admin if not admin/employee
+  if (pathname.startsWith('/admin') && !isAdminOrEmployee) {
     return NextResponse.rewrite(new URL('/404', req.url));
   }
 
