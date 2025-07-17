@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@auth/AuthContext';
+import { useSplash } from '@components/providers/SplashContext';
 import { Card } from '@mui/material';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -13,18 +14,21 @@ export default function Home() {
 
   const { user } = useAuth();
 
-  useEffect(() => {
-    const hasShownGuide = sessionStorage.getItem('guideShown');
+  const { showSplash } = useSplash();
 
+  useEffect(() => {
+    if (showSplash) return; // do nothing while splash is showing
+
+    const hasShownGuide = sessionStorage.getItem('guideShown');
     if (!user && !hasShownGuide) {
       const timer = setTimeout(() => {
         setOpenGuideModal(true);
         sessionStorage.setItem('guideShown', 'true');
-      }, 1000);
+      }, 500);
 
       return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, [user, showSplash]);
 
   return (
     <Box

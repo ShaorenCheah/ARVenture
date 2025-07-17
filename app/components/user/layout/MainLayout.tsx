@@ -41,13 +41,15 @@ export default function MainLayout({
         backgroundAttachment: 'scroll',
         display: 'flex',
         flexDirection: 'column',
-        px: { xs: 2.5, sm: 10, md: 25, xl: 45 },
+        px: { xs: 2.5, sm: 10, md: 25, xl: 40 },
         pt: { xs: 3, md: 3, xl: 6 },
-        pb: { xs: '99px', xl: 15.375 },
+        pb: { xs: '99px', xl: 14 },
       }}
     >
       {showHeader && (
-        <Box sx={{ flexShrink: 0, mb: 3 }}>{isLanding ? <SearchBar /> : <Header />}</Box>
+        <Box marginBottom={isLanding ? 1 : 2.5} sx={{ flexShrink: 0 }}>
+          {isLanding ? <SearchBar /> : <Header />}
+        </Box>
       )}
 
       <Box

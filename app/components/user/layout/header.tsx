@@ -21,7 +21,7 @@ export default function Header() {
             src="/icons/ARVentureLogo.png"
             alt="ARVenture Logo"
             sx={{
-              height: { xs: '40px', lg: '40px' },
+              height: '50px',
               width: { xs: '100px', lg: '105px', xl: '120px' },
               objectFit: 'contain',
             }}

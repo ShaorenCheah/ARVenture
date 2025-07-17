@@ -122,7 +122,7 @@ export default function InfoTabs() {
             flex: 1,
             overflowY: 'auto',
             backgroundColor: 'white',
-            borderRadius: '12px',
+            borderRadius: 2,
             paddingTop: '52px', // Increased padding to account for tabs
             paddingX: '16px',
             paddingBottom: '16px',
