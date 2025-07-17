@@ -36,6 +36,7 @@ export default function Home() {
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0, // Allow shrinking
+        mt: { xs: 0, lg: 3 },
       }}
     >
       <Grid

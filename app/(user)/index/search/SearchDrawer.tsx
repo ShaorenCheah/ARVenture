@@ -28,8 +28,6 @@ import {
   TextField,
   Chip,
   IconButton,
-  useMediaQuery,
-  useTheme,
   InputAdornment,
   CircularProgress,
   alpha,
@@ -88,8 +86,6 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Consolidated location and search state
@@ -435,12 +431,15 @@ export default function SearchDrawer({ open, onClose }: SearchDrawerProps) {
       onClose={onClose}
       PaperProps={{
         sx: {
-          height: '100vh',
-          borderRadius: { xs: 0, md: 2 },
+          height: { xs: '100vh', sm: '90%' },
+          borderRadius: { xs: 0, sm: 2 },
           bgcolor: '#FAFAFA',
-          maxWidth: isDesktop ? '600px' : '100%',
+          maxWidth: { xs: '100%', sm: '600px' },
           mx: 'auto',
+          my: { xs: 0, sm: 4 },
           border: 'none',
+          display: 'flex',
+          flexDirection: 'column',
         },
       }}
     >

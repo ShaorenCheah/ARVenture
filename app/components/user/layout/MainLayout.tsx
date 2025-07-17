@@ -26,18 +26,24 @@ export default function MainLayout({
   return (
     <Box
       sx={{
-        minHeight: { xs: 'auto', lg: '100vh' },
-        height: { xs: 'auto', lg: '100vh' },
-        display: 'flex',
-        flexDirection: 'column',
+        ...(isLanding
+          ? {
+              minHeight: { xs: 'auto', lg: '100vh' },
+              height: { xs: 'auto', lg: '100vh' },
+            }
+          : {
+              minHeight: '100vh',
+            }),
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'scroll',
-        px: { xs: 2.5, sm: 20, md: 30, xl: 45 },
+        display: 'flex',
+        flexDirection: 'column',
+        px: { xs: 2.5, sm: 10, md: 25, xl: 45 },
         pt: { xs: 3, md: 3, xl: 6 },
-        pb: { xs: '99px', xl: 15.375 }, // Space for the footer
+        pb: { xs: '99px', xl: 15.375 },
       }}
     >
       {showHeader && (
@@ -48,8 +54,8 @@ export default function MainLayout({
         component="main"
         sx={{
           flex: 1,
-          minHeight: 0, // Allow shrinking
-          overflow: 'hidden', // Prevent overflow
+          minHeight: 0,
+          overflow: isLanding ? 'hidden' : 'auto',
           display: 'flex',
           flexDirection: 'column',
         }}

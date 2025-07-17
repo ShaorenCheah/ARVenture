@@ -114,7 +114,7 @@ const UserModal: React.FC<UserModalProps> = ({ open, onClose, sx = {} }) => {
           }}
         >
           <Box sx={modalStyle} key={view}>
-            <Box display="flex" justifyContent="space-between" mb={6}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={6}>
               {/* Logo */}
               <Box>
                 <Box
@@ -132,6 +132,7 @@ const UserModal: React.FC<UserModalProps> = ({ open, onClose, sx = {} }) => {
                 sx={{
                   borderRadius: '50%',
                   backgroundColor: 'brand.main',
+                  height: 'auto',
                 }}
               >
                 <IconButton onClick={onClose} sx={{ color: 'white' }}>

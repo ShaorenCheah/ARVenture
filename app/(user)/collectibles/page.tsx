@@ -358,7 +358,6 @@ export default function CollectiblesPage() {
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
-          maxHeight: '800px',
         }}
       >
         {/* Title */}

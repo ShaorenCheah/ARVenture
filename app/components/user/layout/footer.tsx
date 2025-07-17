@@ -63,7 +63,7 @@ export default function BottomAppBar() {
             justifyContent: 'space-around',
             alignItems: 'center',
             height: '100%',
-            mx: { xs: 0, sm: 20, md: 25, xl: 55 },
+            mx: { xs: 0, sm: 10, md: 25, xl: 55 },
           }}
         >
           {buttonList.map((item, index) => {
