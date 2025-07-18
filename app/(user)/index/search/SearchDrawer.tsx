@@ -1,9 +1,7 @@
 'use client';
 
 import AttractionsIcon from '@mui/icons-material/Attractions';
-import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import ClearIcon from '@mui/icons-material/Clear';
-import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import HotelIcon from '@mui/icons-material/Hotel';
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
@@ -11,15 +9,12 @@ import LocalCafeIcon from '@mui/icons-material/LocalCafe';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import MovieIcon from '@mui/icons-material/Movie';
-import MuseumIcon from '@mui/icons-material/Museum';
 import NightlifeIcon from '@mui/icons-material/Nightlife';
 import ParkIcon from '@mui/icons-material/Park';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import StarIcon from '@mui/icons-material/Star';
-import TempleBuddhistIcon from '@mui/icons-material/TempleBuddhist';
 import WaterIcon from '@mui/icons-material/Water';
 import {
   Drawer,
@@ -43,17 +38,12 @@ export const categories = [
   { label: 'Shopping', type: 'shopping_mall', icon: <LocalMallIcon fontSize="small" /> },
   { label: 'Cafes', type: 'cafe', icon: <LocalCafeIcon fontSize="small" /> },
   { label: 'Parks', type: 'park', icon: <ParkIcon fontSize="small" /> },
-  { label: 'Entertainment', type: 'movie_theater', icon: <MovieIcon fontSize="small" /> },
   { label: 'Fitness', type: 'gym', icon: <FitnessCenterIcon fontSize="small" /> },
   { label: 'Nightlife', type: 'bar', icon: <NightlifeIcon fontSize="small" /> },
   { label: 'Hotels', type: 'lodging', icon: <HotelIcon fontSize="small" /> },
-  { label: 'Museums', type: 'museum', icon: <MuseumIcon fontSize="small" /> },
-  { label: 'Temples', type: 'place_of_worship', icon: <TempleBuddhistIcon fontSize="small" /> },
   { label: 'Water Parks', type: 'amusement_park', icon: <WaterIcon fontSize="small" /> },
-  { label: 'Transport', type: 'transit_station', icon: <DirectionsBusIcon fontSize="small" /> },
   { label: 'Souvenirs', type: 'store', icon: <ShoppingBagIcon fontSize="small" /> },
   { label: 'Clinics', type: 'hospital', icon: <LocalHospitalIcon fontSize="small" /> },
-  { label: 'Photo Spots', type: 'point_of_interest', icon: <CameraAltIcon fontSize="small" /> },
 ];
 
 interface SearchDrawerProps {

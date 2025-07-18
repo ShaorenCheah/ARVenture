@@ -11,7 +11,7 @@ interface SplashScreenProps {
   duration?: number; // in milliseconds
 }
 
-export default function SplashScreen({ duration = 3000 }: SplashScreenProps) {
+export default function SplashScreen({ duration = 5000 }: SplashScreenProps) {
   const [visible, setVisible] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
 

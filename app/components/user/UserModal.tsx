@@ -63,6 +63,15 @@ const UserModal: React.FC<UserModalProps> = ({ open, onClose, sx = {} }) => {
     overflowY: 'auto',
     mx: 'auto',
     ...sx,
+    '&::-webkit-scrollbar': {
+      display: 'none', 
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: 'transparent', 
+    },
+    '&::-webkit-scrollbar-track': {
+      background: 'transparent',
+    },
   };
 
   const renderContent = () => {

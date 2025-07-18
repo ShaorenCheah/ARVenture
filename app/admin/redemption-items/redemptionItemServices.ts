@@ -135,7 +135,7 @@ export async function createRedemptionItem(
       const ext = data.imageFile.name.split('.').pop();
       imgURL = await uploadImage(
         data.imageFile,
-        `redemption_items/redemption_${requiredSpotName.toLowerCase().replace(/\s+/g, '_')}.${ext}`
+        `redemption_items/${id}.${ext}`
       );
     }
 

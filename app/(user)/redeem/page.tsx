@@ -40,6 +40,7 @@ const ItemImage = styled(Avatar)(({ theme }) => ({
   backgroundColor: 'transparent',
   boxShadow: '0 4px 16px #ffdfe0',
   border: '1px solid rgba(255, 255, 255, 0.8)',
+  padding:10,
   [theme.breakpoints.up('sm')]: {
     width: 84,
     height: 84,
@@ -196,8 +197,8 @@ export default function RedemptionPage() {
                 sx={{ alignItems: 'center', cursor: 'pointer' }}
                 onClick={() => handleCardClick(item.id)}
               >
-                <ItemImage src={item.imageURL} variant="rounded">
-                  {!item.imageURL && <RedeemIcon sx={{ color: 'white' }} />}
+                <ItemImage src={item.imgURL} variant="rounded">
+                  {!item.imgURL && <RedeemIcon sx={{ color: 'white' }} />}
                 </ItemImage>
 
                 <Typography

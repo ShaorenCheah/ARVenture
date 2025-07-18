@@ -26,13 +26,13 @@ export default function MainLayout({
   return (
     <Box
       sx={{
+        minHeight:'100vh',
         ...(isLanding
           ? {
-              minHeight: { xs: 'auto', lg: '100vh' },
               height: { xs: 'auto', lg: '100vh' },
             }
           : {
-              minHeight: '100vh',
+              
             }),
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: 'cover',

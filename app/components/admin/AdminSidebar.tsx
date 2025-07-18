@@ -174,7 +174,7 @@ export default function AdminSidebar({
             <Image
               width={150}
               height={35}
-              src="/icons/ARVenturelogo.png"
+              src="/icons/ARVentureLogo.png"
               alt="ARVenture Logo"
               style={{ cursor: 'pointer' }}
               onClick={() => handleNavigation('/admin')}
