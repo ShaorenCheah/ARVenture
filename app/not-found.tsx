@@ -38,7 +38,7 @@ export default function NotFound() {
         {/* Logo */}
         <Box
           component="img"
-          src="/icons/arVentureLogo.png"
+          src="/icons/ARVentureLogo.png"
           alt="ARVenture Logo"
           sx={{
             width: { xs: '140px', sm: '180px', md: '200px' },

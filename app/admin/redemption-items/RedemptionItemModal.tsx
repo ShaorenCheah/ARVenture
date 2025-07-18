@@ -151,7 +151,7 @@ export default function RedemptionItemModal({
   const handleFormSubmit: SubmitHandler<RedemptionItemFormInputs> = async (data) => {
     try {
       if (isEdit && initialData?.id) {
-        await updateRedemptionItem(initialData.id, data, initialData.imgURL);
+        await updateRedemptionItem(initialData.id, data, initialData.resolvedImgURL);
       } else {
         await createRedemptionItem(data);
       }
@@ -166,8 +166,29 @@ export default function RedemptionItemModal({
     }
   };
 
+  const handleClose = () => {
+    // Reset form fields to default values
+    reset({
+      title: '',
+      description: '',
+      priority: 0,
+      stock: 0,
+      requiredCollectibleId: '',
+      imageFile: null,
+      isEdit: isEdit,
+      imageRemoved: false,
+    });
+
+    // Reset image preview states
+    setExistingImage('');
+    setNewImagePreview('');
+
+    // Close the modal
+    onClose();
+  };
+
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={handleClose}>
       <Box
         sx={{
           position: 'fixed',
@@ -184,7 +205,7 @@ export default function RedemptionItemModal({
         }}
       >
         <Paper sx={{ width: '100%', maxWidth: 500, p: 3, borderRadius: 2, position: 'relative' }}>
-          <IconButton onClick={onClose} sx={{ position: 'absolute', top: 12, right: 12 }}>
+          <IconButton onClick={handleClose} sx={{ position: 'absolute', top: 12, right: 12 }}>
             <CloseIcon />
           </IconButton>
 
@@ -330,7 +351,7 @@ export default function RedemptionItemModal({
                 )}
               />
               <Stack direction="row" justifyContent="flex-end" spacing={2} pt={2}>
-                <Button onClick={onClose} variant="outlined">
+                <Button onClick={handleClose} variant="outlined">
                   Cancel
                 </Button>
                 <Button type="submit" variant="contained">

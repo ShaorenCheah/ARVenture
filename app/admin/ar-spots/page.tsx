@@ -401,7 +401,7 @@ export default function AdminUserPage() {
                           <Stack direction="row" spacing={1} alignItems="center">
                             <VerifiedIcon fontSize="small" sx={{ color: 'primary.main' }} />
                             <Typography variant="caption" fontWeight={'500'}>
-                              {spot.collectibleId}
+                              {spot.collectibleId ? spot.collectibleId : 'None'}
                             </Typography>
                           </Stack>
                           <Stack direction="row" spacing={1} alignItems="flex-start">

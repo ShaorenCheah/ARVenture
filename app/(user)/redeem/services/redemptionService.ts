@@ -26,7 +26,7 @@ export interface RedemptionItem {
   redeemedAt?: string;
   redeemedBy?: string;
   status?: 'pending' | 'fulfilled';
-  imageURL: string;
+  imgURL: string;
   isExpired?: boolean;
 }
 
@@ -38,9 +38,10 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
   const snapshot = await getDocs(collection(db, 'redemption_items'));
   const now = new Date();
 
-  const getImageURL = async (id: string): Promise<string> => {
+  const getImgURL = async (imgURL: string): Promise<string> => {
     try {
-      const imgRef = ref(storage, `redemption_items/${id}.png`);
+      const imgRef = ref(storage, `${imgURL}`);
+      console.log('Fetching image URL:', imgRef.fullPath);
       return await getDownloadURL(imgRef);
     } catch {
       return '';
@@ -57,7 +58,7 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
         const expiration = data.expiredAt?.toDate?.();
         if (expiration && expiration < now) return null;
 
-        const imageURL = await getImageURL(id);
+        const imgURL = await getImgURL(data.imgURL || '');
         const stock = Number(data.stock) || 0;
         const claimedSnap = await getDocs(collection(db, 'redemption_items', id, 'history'));
         const claimedCount = claimedSnap.size;
@@ -73,7 +74,7 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
           hasCollected: Boolean(false),
           hasRedeemed: Boolean(false),
           hasClaimed: Boolean(false),
-          imageURL,
+          imgURL,
         } satisfies RedemptionItem;
       })
     );
@@ -117,7 +118,7 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
       const expiration = data.expiredAt?.toDate?.();
       if (expiration && expiration < now) return null;
 
-      const imageURL = await getImageURL(id);
+      const imgURL = await getImgURL(id);
       const stock = Number(data.stock) || 0;
       const claimedSnap = await getDocs(collection(db, 'redemption_items', id, 'history'));
       const claimedCount = claimedSnap.size;
@@ -136,7 +137,7 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
         hasCollected,
         hasClaimed: Boolean(redeemedInfo?.claimedAt),
         hasRedeemed: Boolean(redeemedInfo?.redeemedAt),
-        imageURL,
+        imgURL,
       };
 
       if (redeemedInfo) {

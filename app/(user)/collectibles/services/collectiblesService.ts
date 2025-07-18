@@ -45,7 +45,7 @@ export const fetchAllCollectibles = async (
       let imageURL = '';
       if (isCollected) {
         try {
-          const imageRef = ref(storage, `collectibles/${id}.png`);
+          const imageRef = ref(storage, `collectibles/${data.imageURL}`);
           imageURL = await getDownloadURL(imageRef);
         } catch {
           console.warn(`Image not found for ${id}`);

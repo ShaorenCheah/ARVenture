@@ -29,7 +29,8 @@ export default function InfoTabs() {
       <Box
         sx={{
           width: '100%',
-          height: { xs: '200px', lg: '100%' },
+          height: { xs: 'auto', lg: '100%' },
+          maxHeight: { xs: 'unset', lg: '100%' },
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',

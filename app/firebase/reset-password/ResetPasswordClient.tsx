@@ -108,7 +108,7 @@ export default function FirebaseResetPasswordPage() {
               <Button
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3 }}
+                sx={{ mt: 5, width: '100px', backgroundColor: '#ED1D24' }}
                 disabled={!password}
                 onClick={handleSubmit}
               >
@@ -126,8 +126,8 @@ export default function FirebaseResetPasswordPage() {
               <Button
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3 }}
-                onClick={() => router.push('/login')}
+                sx={{ mt: 5, width: '100px', backgroundColor: '#ED1D24' }}
+                onClick={() => router.push('/')}
               >
                 Go to Login
               </Button>

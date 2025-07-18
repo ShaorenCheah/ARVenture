@@ -73,7 +73,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               role={role}
               userName={user?.displayName || 'Admin'}
               userRole={role ?? undefined}
-              currentPath={location.pathname}
               onNavigate={router.push}
               onLogout={handleLogout}
             />

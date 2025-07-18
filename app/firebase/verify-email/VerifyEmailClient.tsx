@@ -1,13 +1,12 @@
 'use client';
 
 import { Box, Card, CardContent, Typography, CircularProgress, Button } from '@mui/material';
-import { applyActionCode } from 'firebase/auth';
-import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { applyActionCode, checkActionCode } from 'firebase/auth';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { auth, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 
 export default function FirebaseEmailVerificationPage() {
   const searchParams = useSearchParams();
@@ -20,42 +19,44 @@ export default function FirebaseEmailVerificationPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    if (mode !== 'verifyEmail' || !oobCode) {
-      setStatus('error');
-      setErrorMessage('Invalid verification link.');
-      return;
-    }
-
-    applyActionCode(auth, oobCode)
-      .then(async () => {
-        setStatus('success');
-
-        const user = auth.currentUser;
-        if (user) {
-          const userRef = doc(db, 'users', user.uid);
-          const userSnap = await getDoc(userRef);
-
-          if (userSnap.exists()) {
-            // Admin-created user, update verification status
-            await updateDoc(userRef, {
-              emailVerified: true,
-            });
-          } else {
-            // Self-registered user, create full record
-            await setDoc(userRef, {
-              email: user.email,
-              displayName: user.displayName || '',
-              emailVerified: true,
-              role: 'user', // default role
-              createdAt: serverTimestamp(),
-            });
-          }
-        }
-      })
-      .catch((error) => {
+    const verifyEmail = async () => {
+      if (mode !== 'verifyEmail' || !oobCode) {
         setStatus('error');
-        setErrorMessage(error.message || 'Verification failed.');
-      });
+        setErrorMessage('Invalid verification link.');
+        return;
+      }
+
+      try {
+        // Apply the verification code
+        await applyActionCode(auth, oobCode);
+
+        // Get the email from the code
+        const result = await checkActionCode(auth, oobCode);
+        const email = result.data.email;
+
+        // Send it to API route to create the Firestore document
+        await fetch('/api/firebase', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        setStatus('success');
+      } catch (error: unknown) {
+        let message = 'Verification failed.';
+
+        if (error instanceof Error) {
+          message = error.message;
+        }
+
+        setStatus('error');
+        setErrorMessage(message);
+      }
+    };
+
+    verifyEmail();
   }, [mode, oobCode]);
 
   return (
@@ -110,8 +111,8 @@ export default function FirebaseEmailVerificationPage() {
               <Button
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3 }}
-                onClick={() => router.push('/login')}
+                sx={{ mt: 5, width: '100px', backgroundColor: '#ED1D24' }}
+                onClick={() => router.push('/')}
               >
                 Go to Login
               </Button>
@@ -128,7 +129,7 @@ export default function FirebaseEmailVerificationPage() {
               </Typography>
               <Button
                 variant="contained"
-                sx={{ mt: 5, width: '1o0px', backgroundColor: '#ED1D24' }}
+                sx={{ mt: 5, width: '100px', backgroundColor: '#ED1D24' }}
                 onClick={() => router.push('/')}
               >
                 Try Again
