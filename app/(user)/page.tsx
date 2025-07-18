@@ -50,10 +50,10 @@ export default function Home() {
         spacing={{ xs: 2, md: 2.5 }}
         sx={{
           alignItems: 'stretch',
-          height: { xs: 'auto', lg: '100%' },
+          height: '100%',
+          minHeight: { xs: 'auto', lg: '0' },
           flex: 1,
           flexGrow: 1,
-          minHeight: 0, // Allow flex items to shrink below content size
         }}
       >
         {/* Map Section */}
