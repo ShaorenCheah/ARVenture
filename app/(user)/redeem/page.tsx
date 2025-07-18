@@ -40,7 +40,7 @@ const ItemImage = styled(Avatar)(({ theme }) => ({
   backgroundColor: 'transparent',
   boxShadow: '0 4px 16px #ffdfe0',
   border: '1px solid rgba(255, 255, 255, 0.8)',
-  padding:10,
+  padding: 10,
   [theme.breakpoints.up('sm')]: {
     width: 84,
     height: 84,

@@ -8,6 +8,7 @@ import {
   ChevronLeft as ChevronLeftIcon,
   Logout as LogoutIcon,
   Redeem as RedemptionIcon,
+  Input as InputIcon,
 } from '@mui/icons-material';
 import {
   Drawer,
@@ -25,6 +26,8 @@ import {
   Tooltip,
 } from '@mui/material';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 
 interface SidebarItem {
@@ -39,7 +42,6 @@ interface AdminSidebarProps {
   role: string | null;
   userName?: string;
   userRole?: string;
-  currentPath?: string;
   onNavigate?: (path: string) => void;
   onLogout?: () => void;
 }
@@ -51,12 +53,12 @@ export default function AdminSidebar({
   role,
   userName = 'Admin User',
   userRole = 'Administrator',
-  currentPath = '/admin',
   onNavigate = () => {},
   onLogout = () => {},
 }: AdminSidebarProps) {
-  // const [isCollapsed, setIsCollapsed] = useState(innerWidth < 768); // Collapse on small screens
-  const [isCollapsed, setIsCollapsed] = useState(true); // Default to expanded for desktop view
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const menuItems: SidebarItem[] = [
     {
@@ -91,8 +93,8 @@ export default function AdminSidebar({
     },
     {
       text: 'Redemption',
-      icon: <RedemptionIcon />,
-      path: '/admin/redemption',
+      icon: <InputIcon />,
+      path: '/admin/redeem-code',
       roles: ['admin'],
     },
   ];
@@ -101,6 +103,7 @@ export default function AdminSidebar({
 
   const handleNavigation = (path: string) => {
     onNavigate(path);
+    router.push(path);
   };
 
   const handleToggleCollapse = () => {
@@ -112,6 +115,29 @@ export default function AdminSidebar({
       return `${(num / 1000).toFixed(1)}k`;
     }
     return num.toString();
+  };
+
+  // Helper function to check if a path is active
+  const isActivePath = (itemPath: string) => {
+    const currentPath = pathname;
+
+    // Exact match for most routes
+    if (currentPath === itemPath) {
+      return true;
+    }
+
+    // Special handling for dashboard - only match exact path
+    if (itemPath === '/admin' && currentPath === '/admin') {
+      return true;
+    }
+
+    // For other admin routes, check if current path starts with the item path
+    // but make sure it's not the dashboard route
+    if (itemPath !== '/admin' && currentPath.startsWith(itemPath)) {
+      return true;
+    }
+
+    return false;
   };
 
   const drawerWidth = isCollapsed ? drawerWidthCollapsed : drawerWidthExpanded;
@@ -220,7 +246,7 @@ export default function AdminSidebar({
       {/* Navigation Menu */}
       <List sx={{ flexGrow: 1, px: isCollapsed ? 0.5 : 1, pt: 2 }}>
         {filteredItems.map(({ text, icon, path, badge }) => {
-          const isActive = currentPath === path;
+          const isActive = isActivePath(path);
 
           return (
             <ListItem disablePadding key={text} sx={{ mb: 1.5 }}>

@@ -1,4 +1,3 @@
-// CollectibleModal.tsx
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -96,19 +95,21 @@ export default function CollectibleModal({
   });
 
   useEffect(() => {
-    if (initialData && open) {
-      reset({
-        ...initialData,
-        imageFile: null,
-        isEdit: true,
-        imageRemoved: !initialData.imageURL,
-      });
-      setExistingImage(initialData.imageURL || '');
-      setNewImagePreview('');
-    } else if (open && !initialData) {
-      reset();
-      setExistingImage('');
-      setNewImagePreview('');
+    if (open) {
+      if (initialData) {
+        reset({
+          ...initialData,
+          imageFile: null,
+          isEdit: true,
+          imageRemoved: !initialData.imageURL,
+        });
+        setExistingImage(initialData.imageURL || '');
+        setNewImagePreview('');
+      } else {
+        reset();
+        setExistingImage('');
+        setNewImagePreview('');
+      }
     }
   }, [initialData, open, reset]);
 
@@ -144,15 +145,37 @@ export default function CollectibleModal({
       toast.success(`Collectible ${isEdit ? 'updated' : 'created'} successfully!`);
       reset();
       reloadCollectibles();
-      onClose();
+      onClose(); // Close the modal after successful submission
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save collectible';
       toast.error(message);
     }
   };
 
+  const handleClose = () => {
+    // Reset form fields to default values
+    reset({
+      title: '',
+      description: '',
+      redemptionCode: '',
+      priority: 0,
+      tips: '',
+      arSpotId: '',
+      imageFile: null,
+      isEdit: isEdit,
+      imageRemoved: false,
+    });
+
+    // Reset image preview states
+    setExistingImage('');
+    setNewImagePreview('');
+
+    // Close the modal
+    onClose();
+  };
+
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={handleClose}>
       <Box
         sx={{
           position: 'fixed',
@@ -169,7 +192,7 @@ export default function CollectibleModal({
         }}
       >
         <Paper sx={{ width: '100%', maxWidth: 500, p: 3, borderRadius: 2, position: 'relative' }}>
-          <IconButton onClick={onClose} sx={{ position: 'absolute', top: 12, right: 12 }}>
+          <IconButton onClick={handleClose} sx={{ position: 'absolute', top: 12, right: 12 }}>
             <CloseIcon />
           </IconButton>
 
@@ -273,7 +296,7 @@ export default function CollectibleModal({
               />
 
               <Stack direction="row" justifyContent="flex-end" spacing={2} pt={2}>
-                <Button onClick={onClose} variant="outlined">
+                <Button onClick={handleClose} variant="outlined">
                   Cancel
                 </Button>
                 <Button type="submit" variant="contained">

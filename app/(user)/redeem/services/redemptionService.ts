@@ -38,7 +38,6 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
   const snapshot = await getDocs(collection(db, 'redemption_items'));
   const now = new Date();
 
-  
   const getImgURL = async (imgURL: string): Promise<string> => {
     try {
       const imgRef = ref(storage, `${imgURL}`);

@@ -133,10 +133,7 @@ export async function createRedemptionItem(
     // Upload image
     if (data.imageFile) {
       const ext = data.imageFile.name.split('.').pop();
-      imgURL = await uploadImage(
-        data.imageFile,
-        `redemption_items/${id}.${ext}`
-      );
+      imgURL = await uploadImage(data.imageFile, `redemption_items/${id}.${ext}`);
     }
 
     // Save to Firestore

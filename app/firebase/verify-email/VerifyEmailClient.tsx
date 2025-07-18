@@ -110,8 +110,8 @@ export default function FirebaseEmailVerificationPage() {
               <Button
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3 }}
-                onClick={() => router.push('/login')}
+                sx={{ mt: 5, width: '100px', backgroundColor: '#ED1D24' }}
+                onClick={() => router.push('/')}
               >
                 Go to Login
               </Button>
@@ -128,7 +128,7 @@ export default function FirebaseEmailVerificationPage() {
               </Typography>
               <Button
                 variant="contained"
-                sx={{ mt: 5, width: '1o0px', backgroundColor: '#ED1D24' }}
+                sx={{ mt: 5, width: '100px', backgroundColor: '#ED1D24' }}
                 onClick={() => router.push('/')}
               >
                 Try Again

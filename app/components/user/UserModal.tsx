@@ -64,10 +64,10 @@ const UserModal: React.FC<UserModalProps> = ({ open, onClose, sx = {} }) => {
     mx: 'auto',
     ...sx,
     '&::-webkit-scrollbar': {
-      display: 'none', 
+      display: 'none',
     },
     '&::-webkit-scrollbar-thumb': {
-      backgroundColor: 'transparent', 
+      backgroundColor: 'transparent',
     },
     '&::-webkit-scrollbar-track': {
       background: 'transparent',

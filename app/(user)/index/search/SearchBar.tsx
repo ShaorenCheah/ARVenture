@@ -18,11 +18,10 @@ export default function Header() {
           boxShadow: 2,
           pl: 2,
           pr: 1.5,
-          mb:2,
+          mb: 2,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-
         }}
       >
         <Typography variant="body2" sx={{ flexGrow: 1, color: 'text.secondary' }}>

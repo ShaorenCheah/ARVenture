@@ -71,7 +71,7 @@ const ARGuideModal: React.FC<ARGuideModalProps> = ({ open, onClose, onFinish, sx
   const modalStyle: SxProps<Theme> = {
     width: { xs: '350px', sm: '450px', md: '500px', lg: '550px' },
     maxWidth: '100%',
-    maxHeight: {xs:'450px',sm:'500px',md:'600px'},
+    maxHeight: { xs: '450px', sm: '500px', md: '600px' },
     height: '100%',
     bgcolor: 'background.paper',
     borderRadius: 3,
