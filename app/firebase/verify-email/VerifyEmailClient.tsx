@@ -1,9 +1,12 @@
 'use client';
 
 import { Box, Card, CardContent, Typography, CircularProgress, Button } from '@mui/material';
+import { applyActionCode } from 'firebase/auth';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+import { auth } from '@/lib/firebase';
 
 export default function FirebaseEmailVerificationPage() {
   const searchParams = useSearchParams();
@@ -13,45 +16,79 @@ export default function FirebaseEmailVerificationPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    const checkVerificationAndCreateUser = async () => {
+    const verifyEmailAndCreateUser = async () => {
       const email = searchParams.get('email');
+      const oobCode = searchParams.get('oobCode');
 
-      if (!email) {
+      if (!email || !oobCode) {
         setStatus('error');
-        setErrorMessage('Missing email in verification link.');
+        setErrorMessage('Missing email or verification code in the link.');
         return;
       }
 
       setStatus('verifying');
 
       try {
-        // Call your API to check verification status and create user record
-        const response = await fetch('/api/firebase', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            action: 'verify-email',
-          }),
-        });
+        // First, verify the email using Firebase
+        await applyActionCode(auth, oobCode);
+        
+        // Wait a moment for Firebase to propagate the verification status
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Retry logic for API call in case verification status hasn't propagated yet
+        let retryCount = 0;
+        const maxRetries = 3;
+        
+        while (retryCount < maxRetries) {
+          try {
+            const response = await fetch('/api/firebase', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email }),
+            });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Verification failed');
+            if (response.ok) {
+              setStatus('success');
+              return;
+            }
+
+            const errorData = await response.json();
+            
+            // If it's a verification error, wait and retry
+            if (errorData.error === 'Email has not been verified yet.' && retryCount < maxRetries - 1) {
+              retryCount++;
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              continue;
+            }
+            
+            throw new Error(errorData.error || 'Failed to create user record');
+          } catch (apiError) {
+            if (retryCount === maxRetries - 1) {
+              throw apiError;
+            }
+            retryCount++;
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
         }
-
-        setStatus('success');
+        
       } catch (error: unknown) {
         setStatus('error');
         if (error instanceof Error) {
-          setErrorMessage(error.message || 'Email verification failed. Please try again.');
+          // Handle specific Firebase errors
+          if (error.message.includes('auth/invalid-action-code')) {
+            setErrorMessage('Invalid or expired verification link. Please request a new verification email.');
+          } else if (error.message.includes('auth/expired-action-code')) {
+            setErrorMessage('Verification link has expired. Please request a new verification email.');
+          } else {
+            setErrorMessage(error.message || 'Email verification failed. Please try again.');
+          }
         } else {
           setErrorMessage('Email verification failed. Please try again.');
         }
       }
     };
 
-    checkVerificationAndCreateUser();
+    verifyEmailAndCreateUser();
   }, [searchParams]);
 
   return (
