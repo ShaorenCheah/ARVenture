@@ -1,7 +1,7 @@
 import { FieldValue } from 'firebase-admin/firestore';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { auth, db } from '@/lib/firebase-admin';
 
 interface UserRecordData {
   email: string;
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Create Firebase Auth user with emailVerified: true
-    const userRecord = await adminAuth.createUser({
+    const userRecord = await auth.createUser({
       email,
       password,
       displayName: name,
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       userData.delegatedSpot = delegatedSpot;
     }
 
-    await adminDb.collection('users').doc(userRecord.uid).set(userData);
+    await db.collection('users').doc(userRecord.uid).set(userData);
 
     return NextResponse.json({
       message: 'User created successfully',
@@ -87,10 +87,10 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Delete user from Firebase Auth
-    await adminAuth.deleteUser(uid);
+    await auth.deleteUser(uid);
 
     // Delete user from Firestore
-    await adminDb.collection('users').doc(uid).delete();
+    await db.collection('users').doc(uid).delete();
 
     return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error: unknown) {

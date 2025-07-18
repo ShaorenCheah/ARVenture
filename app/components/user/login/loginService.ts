@@ -2,7 +2,7 @@
 import { setCookie } from 'cookies-next';
 import { FirebaseError } from 'firebase/app';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { auth, db } from '@/lib/firebase';
 
@@ -16,10 +16,11 @@ const firebaseLoginErrorMessages: Record<string, string> = {
 
 export const loginWithEmail = async (email: string, password: string) => {
   try {
+    // 1. Sign in via Firebase Auth
     const res = await signInWithEmailAndPassword(auth, email, password);
+    await res.user.reload(); // make sure we have latest info
 
-    await res.user.reload();
-
+    // 2. Check email verification status directly from Auth
     if (!res.user.emailVerified) {
       await signOut(auth);
       throw new Error(
@@ -27,27 +28,36 @@ export const loginWithEmail = async (email: string, password: string) => {
       );
     }
 
+    // 3. Fetch role from Firestore (optional enhancement: create doc if missing)
     const userRef = doc(db, 'users', res.user.uid);
     const userSnap = await getDoc(userRef);
 
-    await updateDoc(userRef, {
-      emailVerified: true,
-    });
+    let role = 'user';
 
-    const role = userSnap.exists() ? userSnap.data()?.role || 'user' : 'user';
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+      role = data?.role || 'user';
+    } else {
+      // Optionally create the user doc here if it doesn't exist
+      await setDoc(userRef, {
+        email: res.user.email,
+        displayName: res.user.displayName || '',
+        emailVerified: true,
+        role: 'user',
+        createdAt: new Date(),
+      });
+    }
 
-    // Set cookie for middleware to use
+    // 4. Set role cookie
     setCookie('role', role, {
       path: '/',
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 86400,
+      maxAge: 86400, // 1 day
     });
 
     return { user: res.user, role };
   } catch (error: unknown) {
     if (error instanceof FirebaseError) {
-      if (error.message?.includes('Please verify your email')) throw error;
-
       const errorCode = error.code || '';
       const errorMessage =
         firebaseLoginErrorMessages[errorCode] || 'Login failed. Check your credentials.';
