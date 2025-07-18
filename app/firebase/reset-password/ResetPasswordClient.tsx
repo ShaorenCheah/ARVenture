@@ -25,6 +25,7 @@ export default function FirebaseResetPasswordPage() {
   const [status, setStatus] = useState<'verifying' | 'form' | 'success' | 'error'>('verifying');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     if (!oobCode) {
@@ -42,7 +43,7 @@ export default function FirebaseResetPasswordPage() {
   }, [oobCode]);
 
   const handleSubmit = async () => {
-    if (!password || !oobCode) return;
+    if (!password || password.length < 8 || !oobCode) return;
 
     try {
       await confirmPasswordReset(auth, oobCode, password);
@@ -50,6 +51,16 @@ export default function FirebaseResetPasswordPage() {
     } catch {
       setStatus('error');
       setErrorMessage('Password reset failed.');
+    }
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPassword(value);
+    if (value.length < 8) {
+      setPasswordError('Password must be at least 8 characters.');
+    } else {
+      setPasswordError('');
     }
   };
 
@@ -102,14 +113,16 @@ export default function FirebaseResetPasswordPage() {
                 type="password"
                 fullWidth
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
+                error={!!passwordError}
+                helperText={passwordError}
                 sx={{ mt: 3 }}
               />
               <Button
                 fullWidth
                 variant="contained"
-                sx={{ mt: 5, width: '100px', backgroundColor: '#ED1D24' }}
-                disabled={!password}
+                sx={{ mt: 5, width: '120px', backgroundColor: '#ED1D24' }}
+                disabled={!password || password.length < 8}
                 onClick={handleSubmit}
               >
                 Confirm Reset
@@ -126,7 +139,7 @@ export default function FirebaseResetPasswordPage() {
               <Button
                 fullWidth
                 variant="contained"
-                sx={{ mt: 5, width: '100px', backgroundColor: '#ED1D24' }}
+                sx={{ mt: 5, width: '120px', backgroundColor: '#ED1D24' }}
                 onClick={() => router.push('/')}
               >
                 Go to Login
@@ -144,7 +157,7 @@ export default function FirebaseResetPasswordPage() {
               </Typography>
               <Button
                 variant="contained"
-                sx={{ mt: 5, width: '100px', backgroundColor: '#ED1D24' }}
+                sx={{ mt: 5, width: '120px', backgroundColor: '#ED1D24' }}
                 onClick={() => router.push('/forgot-password')}
               >
                 Try Again
