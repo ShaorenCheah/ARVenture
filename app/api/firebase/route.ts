@@ -1,4 +1,4 @@
-// To create user record in firebase after authentication
+// app/api/firebase/route.ts
 
 import { FieldValue } from 'firebase-admin/firestore';
 import { NextRequest, NextResponse } from 'next/server';
@@ -16,22 +16,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get user UID by email
+    // Get user record by email
     const userRecord = await auth.getUserByEmail(email);
-    const uid = userRecord.uid;
 
-    // Write to Firestore
+    if (!userRecord.emailVerified) {
+      return NextResponse.json({ error: 'Email has not been verified yet.' }, { status: 403 });
+    }
+
+    const uid = userRecord.uid;
     const userRef = db.doc(`users/${uid}`);
-    await userRef.set(
-      {
-        email: userRecord.email,
-        displayName: userRecord.displayName || '',
-        emailVerified: userRecord.emailVerified,
-        role: 'user',
-        createdAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    );
+    const existingDoc = await userRef.get();
+
+    if (!existingDoc.exists) {
+      await userRef.set(
+        {
+          email: userRecord.email,
+          displayName: userRecord.displayName || '',
+          emailVerified: true,
+          role: 'user',
+          createdAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
@@ -43,7 +50,6 @@ export async function POST(req: NextRequest) {
     if (err instanceof Error) {
       message = err.message;
 
-      // Optional: narrow further if using Firebase AuthError types
       if ('code' in err && typeof err.code === 'string') {
         if (err.code === 'auth/user-not-found') {
           status = 404;

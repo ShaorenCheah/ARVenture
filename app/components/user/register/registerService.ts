@@ -17,7 +17,7 @@ export const registerWithEmail = async (name: string, email: string, password: s
       await updateProfile(user, { displayName: name });
 
       await sendEmailVerification(user, {
-        url: 'https://ar-venture.vercel.app/firebase/verify-email',
+        url: `https://ar-venture.vercel.app/firebase/verify-email?email=${encodeURIComponent(email)}`,
       });
 
       await signOut(auth);

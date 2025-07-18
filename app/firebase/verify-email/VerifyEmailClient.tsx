@@ -1,63 +1,58 @@
 'use client';
 
 import { Box, Card, CardContent, Typography, CircularProgress, Button } from '@mui/material';
-import { applyActionCode, checkActionCode } from 'firebase/auth';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-import { auth } from '@/lib/firebase';
 
 export default function FirebaseEmailVerificationPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const mode = searchParams.get('mode');
-  const oobCode = searchParams.get('oobCode');
-
-  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
+  const [status, setStatus] = useState<'loading' | 'verifying' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    const verifyEmail = async () => {
-      if (mode !== 'verifyEmail' || !oobCode) {
+    const checkVerificationAndCreateUser = async () => {
+      const email = searchParams.get('email');
+
+      if (!email) {
         setStatus('error');
-        setErrorMessage('Invalid verification link.');
+        setErrorMessage('Missing email in verification link.');
         return;
       }
 
+      setStatus('verifying');
+
       try {
-        // Apply the verification code
-        await applyActionCode(auth, oobCode);
-
-        // Get the email from the code
-        const result = await checkActionCode(auth, oobCode);
-        const email = result.data.email;
-
-        // Send it to API route to create the Firestore document
-        await fetch('/api/firebase', {
+        // Call your API to check verification status and create user record
+        const response = await fetch('/api/firebase', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            action: 'verify-email',
+          }),
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Verification failed');
+        }
 
         setStatus('success');
       } catch (error: unknown) {
-        let message = 'Verification failed.';
-
-        if (error instanceof Error) {
-          message = error.message;
-        }
-
         setStatus('error');
-        setErrorMessage(message);
+        if (error instanceof Error) {
+          setErrorMessage(error.message || 'Email verification failed. Please try again.');
+        } else {
+          setErrorMessage('Email verification failed. Please try again.');
+        }
       }
     };
 
-    verifyEmail();
-  }, [mode, oobCode]);
+    checkVerificationAndCreateUser();
+  }, [searchParams]);
 
   return (
     <Box
@@ -91,27 +86,28 @@ export default function FirebaseEmailVerificationPage() {
             />
           </Box>
 
-          {status === 'verifying' && (
+          {(status === 'loading' || status === 'verifying') && (
             <>
               <CircularProgress sx={{ color: '#ED1D24' }} />
-              <Typography mt={2} textAlign="center">
-                Verifying your email...
+              <Typography mt={2}>
+                {status === 'loading' ? 'Loading...' : 'Verifying your email...'}
+              </Typography>
+              <Typography variant="body2" mt={1} color="text.secondary">
+                Please wait while we verify your email address.
               </Typography>
             </>
           )}
 
           {status === 'success' && (
             <>
-              <Typography variant="h5" fontWeight="bold" color="success.main" textAlign="center">
+              <Typography variant="h5" fontWeight="bold" color="success.main">
                 Email Verified!
               </Typography>
-              <Typography mt={1} textAlign="center">
-                You can now log in to your account.
-              </Typography>
+              <Typography mt={1}>You can now log in to your account.</Typography>
               <Button
                 fullWidth
                 variant="contained"
-                sx={{ mt: 5, width: '100px', backgroundColor: '#ED1D24' }}
+                sx={{ mt: 5, width: '120px', backgroundColor: '#ED1D24' }}
                 onClick={() => router.push('/')}
               >
                 Go to Login
@@ -121,15 +117,13 @@ export default function FirebaseEmailVerificationPage() {
 
           {status === 'error' && (
             <>
-              <Typography variant="h5" fontWeight="bold" color="error.main" textAlign="center">
+              <Typography variant="h5" fontWeight="bold" color="error.main">
                 Verification Failed
               </Typography>
-              <Typography mt={1} textAlign="center">
-                {errorMessage || 'The verification link is invalid or expired.'}
-              </Typography>
+              <Typography mt={1}>{errorMessage}</Typography>
               <Button
                 variant="contained"
-                sx={{ mt: 5, width: '100px', backgroundColor: '#ED1D24' }}
+                sx={{ mt: 5, width: '120px', backgroundColor: '#ED1D24' }}
                 onClick={() => router.push('/')}
               >
                 Try Again
