@@ -27,7 +27,12 @@ if (!admin.apps.length) {
     }
 
     // Format the private key properly
-    const privateKey = requiredEnvVars.private_key!.replace(/\\n/g, '\n');
+    const privateKeyRaw = requiredEnvVars.private_key!;
+
+    // Only replace \\n if it's actually escaped
+    const privateKey = privateKeyRaw.includes('\\n')
+      ? privateKeyRaw.replace(/\\n/g, '\n')
+      : privateKeyRaw;
 
     const serviceAccount = {
       ...requiredEnvVars,
