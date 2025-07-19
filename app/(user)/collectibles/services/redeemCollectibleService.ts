@@ -14,7 +14,7 @@ import { ref, getDownloadURL } from 'firebase/storage';
 
 import { db, storage } from '@/lib/firebase';
 
-const RADIUS_METERS = 5000;
+const RADIUS_METERS = 100;
 
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const toRad = (x: number) => (x * Math.PI) / 180;
@@ -102,7 +102,7 @@ export const redeemCollectibleWithLocation = async (
 
   let imageURL = '';
   try {
-    const imageRef = ref(storage, `collectibles/${collectibleId}.png`);
+    const imageRef = ref(storage, `${collectibleData.imageURL}`);
     imageURL = await getDownloadURL(imageRef);
   } catch {
     console.warn(`No image found for collectible ${collectibleId}`);

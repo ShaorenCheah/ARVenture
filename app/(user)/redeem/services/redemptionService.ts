@@ -41,7 +41,7 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
   const getImgURL = async (imgURL: string): Promise<string> => {
     try {
       const imgRef = ref(storage, `${imgURL}`);
-      console.log('Fetching image URL:', imgRef.fullPath);
+      console.log('Fetching image URL:', imgURL);
       return await getDownloadURL(imgRef);
     } catch {
       return '';
@@ -118,7 +118,7 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
       const expiration = data.expiredAt?.toDate?.();
       if (expiration && expiration < now) return null;
 
-      const imgURL = await getImgURL(id);
+      const imgURL = await getImgURL(data.imgURL || '');
       const stock = Number(data.stock) || 0;
       const claimedSnap = await getDocs(collection(db, 'redemption_items', id, 'history'));
       const claimedCount = claimedSnap.size;

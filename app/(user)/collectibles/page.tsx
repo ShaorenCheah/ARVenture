@@ -54,7 +54,7 @@ const CollectedAvatar = styled(Box)(() => ({
 
 interface Collectible extends CollectibleType {
   collected?: boolean;
-  collectedDate?: string;
+  collectedAt?: string;
 }
 
 export default function CollectiblesPage() {
@@ -217,7 +217,7 @@ export default function CollectiblesPage() {
       setSuccessData({
         imageURL: result.data.imageURL ?? '',
         title: result.data.title,
-        description: `You've found ${result.data.description} at ${result.data.title}!`,
+        description: `You've found ${result.data.title}! ${result.data.description}`,
       });
       setSuccessModalOpen(true);
     } else {
@@ -309,7 +309,7 @@ export default function CollectiblesPage() {
             )}
 
             <Typography
-              variant="h5"
+              variant="body2"
               sx={{
                 fontWeight: collectible.collected ? 'bold' : 'normal',
                 color: collectible.collected ? '#FF4444' : '#999',
@@ -327,8 +327,8 @@ export default function CollectiblesPage() {
                 variant="outlined"
                 sx={{ mt: 0.5 }}
                 label={
-                  collectible.collectedDate
-                    ? `Collected on ${new Date(collectible.collectedDate).toLocaleDateString()}`
+                  collectible.collectedAt
+                    ? `Collected on ${new Date(collectible.collectedAt).toLocaleDateString()}`
                     : 'Collection date unavailable'
                 }
               />

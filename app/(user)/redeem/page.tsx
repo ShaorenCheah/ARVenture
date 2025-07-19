@@ -31,6 +31,7 @@ const StyledCard = styled(Card)(() => ({
   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
   display: 'flex',
   flexDirection: 'column',
+  alignSelf: 'start',
 }));
 
 const ItemImage = styled(Avatar)(({ theme }) => ({
@@ -454,6 +455,7 @@ export default function RedemptionPage() {
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
             gap: 2,
+            alignItems: 'start', 
           }}
         >
           {isLoading ? renderSkeletonCards() : renderRedemptionCards()}
