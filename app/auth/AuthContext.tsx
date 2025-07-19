@@ -10,26 +10,27 @@ interface AuthContextProps {
   user: User | null;
   role: string | null;
   loading: boolean;
+  delegatedSpotName?: string | null;
 }
 
 const AuthContext = createContext<AuthContextProps>({
   user: null,
   role: null,
+  delegatedSpotName: null,
   loading: true,
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
+  const [delegatedSpotName, setDelegatedSpotName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log('[Auth] onAuthStateChanged triggered');
       setUser(firebaseUser);
 
       if (!firebaseUser) {
-        console.log('[Auth] No user found');
         setRole(null);
         setLoading(false);
         return;
@@ -38,21 +39,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
         const roleValue = userDoc.exists() ? userDoc.data().role || 'user' : 'user';
-        console.log('[Auth] Role loaded:', roleValue);
         setRole(roleValue);
-      } catch (error) {
-        console.error('[Auth] Failed to load role:', error);
+
+        if (roleValue === 'employee') {
+          const userData = userDoc.data();
+          const delegatedSpotId = userData?.delegatedSpot;
+          if (delegatedSpotId) {
+            const spotQuery = await getDoc(doc(db, 'ar_spots', delegatedSpotId));
+            if (spotQuery.exists()) {
+              setDelegatedSpotName(spotQuery.data().name || null);
+            }
+          }
+        }
+      } catch {
         setRole('user');
       } finally {
         setLoading(false);
-        console.log('[Auth] Finished loading');
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-  return <AuthContext.Provider value={{ user, role, loading }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, role, delegatedSpotName, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => useContext(AuthContext);

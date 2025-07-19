@@ -1,576 +1,310 @@
 'use client';
 
-// import {
-//   People as PeopleIcon,
-//   Redeem as RedeemIcon,
-//   Store as StoreIcon,
-//   SportsEsports as SportsIcon,
-//   CollectionsBookmark as CollectiblesIcon,
-//   Person as PersonIcon,
-//   TrendingUp as TrendingUpIcon,
-//   Warning as WarningIcon,
-//   CheckCircle as CheckCircleIcon,
-//   MoreVert,
-//   Notifications,
-//   Settings,
-// } from '@mui/icons-material';
-// import {
-//   Box,
-//   Typography,
-//   Card,
-//   CardContent,
-//   Grid,
-//   Chip,
-//   Button,
-//   List,
-//   ListItem,
-//   ListItemIcon,
-//   ListItemText,
-//   Avatar,
-//   Divider,
-//   IconButton,
-//   Menu,
-//   MenuItem,
-// } from '@mui/material';
-// import React, { useState } from 'react';
+import { fetchArSpots } from '@admin/ar-spots/arSpotServices';
+import { fetchAllCollectibles } from '@admin/collectibles/collectibleServices';
+import {
+  RedemptionItemRecord,
+  fetchRedemptionHistoriesByRole,
+} from '@admin/redeem-code/redemptionServices';
+import { fetchAllRedemptionItems } from '@admin/redemption-items/redemptionItemServices';
+import { fetchUsers } from '@admin/users/services/userServices';
+import { useAuth } from '@auth/AuthContext';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import {
+  Box,
+  Grid,
+  Typography,
+  Card,
+  CardContent,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Paper,
+  Pagination,
+  Chip,
+  Tabs,
+  Tab,
+  CircularProgress,
+  Stack,
+} from '@mui/material';
+import { Timestamp } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
-// // Mock data for dashboard
-// const mockStats = {
-//   totalUsers: 1247,
-//   activeArSpots: 23,
-//   totalCollectibles: 156,
-//   redemptionItems: 42,
-//   todayRedemptions: 18,
-//   weeklyGrowth: 12.5,
-//   merchantStores: 8,
-//   pendingReviews: 3,
-// };
+type AdminStats = {
+  totalUsers: number;
+  totalSpots: number;
+  totalCollectibles: number;
+  totalItems: number;
+  todaysRedemptions: number;
+};
+type EmployeeStats = {
+  assignedSpot: string;
+  todaysRedemptions: number;
+};
+type DashboardStats = AdminStats | EmployeeStats;
 
-// const mockRecentActivity = [
-//   {
-//     id: 1,
-//     user: 'John Doe',
-//     action: 'Collected AR item',
-//     location: 'Sunway Pyramid',
-//     time: '2 min ago',
-//     type: 'collect',
-//   },
-//   {
-//     id: 2,
-//     user: 'Jane Smith',
-//     action: 'Redeemed voucher',
-//     location: 'Sunway Lagoon',
-//     time: '5 min ago',
-//     type: 'redeem',
-//   },
-//   {
-//     id: 3,
-//     user: 'Mike Johnson',
-//     action: 'Discovered new AR spot',
-//     location: 'Sunway University',
-//     time: '12 min ago',
-//     type: 'discover',
-//   },
-//   {
-//     id: 4,
-//     user: 'Sarah Wilson',
-//     action: 'Completed collection',
-//     location: 'Sunway Medical Centre',
-//     time: '18 min ago',
-//     type: 'complete',
-//   },
-//   {
-//     id: 5,
-//     user: 'David Chen',
-//     action: 'Registered new account',
-//     location: 'Sunway Geo',
-//     time: '25 min ago',
-//     type: 'register',
-//   },
-// ];
+export default function DashboardPage() {
+  const rowsPerPage = 10;
+  const { user, role, delegatedSpotName, loading: authLoading } = useAuth();
 
-// const mockMerchantStats = {
-//   totalSales: 2450,
-//   activeVouchers: 15,
-//   redemptionsToday: 8,
-//   storeViews: 342,
-// };
+  const [tab, setTab] = useState(0);
+  const [page, setPage] = useState(1);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [historyData, setHistoryData] = useState<RedemptionItemRecord[]>([]);
+  const [loading, setLoading] = useState(true);
 
-// interface AdminDashboardProps {
-//   role?: string;
-// }
+  const isAdminStats = (stats: DashboardStats): stats is AdminStats => 'totalUsers' in stats;
 
-// export default function AdminDashboard({ role }: AdminDashboardProps) {
-export default function AdminDashboard() {
-  //   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  //   const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
+  useEffect(() => {
+    async function loadDashboard() {
+      if (!user || !role) return;
 
-  //   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-  //     setAnchorEl(event.currentTarget);
-  //   };
+      const histories = await fetchRedemptionHistoriesByRole(
+        role as 'admin' | 'employee',
+        user.uid
+      );
+      setHistoryData(histories);
 
-  //   const handleMenuClose = () => {
-  //     setAnchorEl(null);
-  //   };
+      const todaysRedemptions = histories
+        .flatMap((item) => item.histories)
+        .filter(
+          (h) =>
+            h.status === 'fulfilled' &&
+            h.redeemedAt?.toDate().toDateString() === new Date().toDateString()
+        ).length;
 
-  //   const getActivityIcon = (type: string) => {
-  //     switch (type) {
-  //       case 'collect':
-  //         return <CollectiblesIcon sx={{ color: 'primary.main' }} />;
-  //       case 'redeem':
-  //         return <RedeemIcon sx={{ color: 'success.main' }} />;
-  //       case 'discover':
-  //         return <SportsIcon sx={{ color: 'secondary.main' }} />;
-  //       case 'complete':
-  //         return <CheckCircleIcon sx={{ color: 'success.main' }} />;
-  //       case 'register':
-  //         return <PersonIcon sx={{ color: 'info.main' }} />;
-  //       default:
-  //         return <PersonIcon />;
-  //     }
-  //   };
+      if (role === 'admin') {
+        const [users, arSpots, collectibles, redemptionItems] = await Promise.all([
+          fetchUsers(),
+          fetchArSpots(),
+          fetchAllCollectibles(),
+          fetchAllRedemptionItems(),
+        ]);
 
-  //   const renderAdminStats = () => (
-  //     <Grid container spacing={3} sx={{ mb: 4 }}>
-  //       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-  //         <Card
-  //           sx={{
-  //             background: 'linear-gradient(135deg, #ED1D24 0%, #c70e14 100%)',
-  //             color: 'white',
-  //             transition: 'transform 0.2s ease-in-out',
-  //             '&:hover': { transform: 'translateY(-4px)' },
-  //           }}
-  //         >
-  //           <CardContent>
-  //             <Box display="flex" alignItems="center" justifyContent="space-between">
-  //               <Box>
-  //                 <Typography variant="h3" fontWeight="bold">
-  //                   {mockStats.totalUsers.toLocaleString()}
-  //                 </Typography>
-  //                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
-  //                   Total Users
-  //                 </Typography>
-  //               </Box>
-  //               <PeopleIcon sx={{ fontSize: 48, opacity: 0.8 }} />
-  //             </Box>
-  //             <Box mt={2}>
-  //               <Typography variant="caption" sx={{ opacity: 0.8 }}>
-  //                 +12% from last week
-  //               </Typography>
-  //             </Box>
-  //           </CardContent>
-  //         </Card>
-  //       </Grid>
+        setStats({
+          totalUsers: users.length,
+          totalSpots: arSpots.length,
+          totalCollectibles: collectibles.length,
+          totalItems: redemptionItems.length,
+          todaysRedemptions,
+        });
+      } else {
+        setStats({
+          assignedSpot: delegatedSpotName || 'Not Assigned',
+          todaysRedemptions,
+        });
+      }
 
-  //       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-  //         <Card
-  //           sx={{
-  //             background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-  //             color: 'white',
-  //             transition: 'transform 0.2s ease-in-out',
-  //             '&:hover': { transform: 'translateY(-4px)' },
-  //           }}
-  //         >
-  //           <CardContent>
-  //             <Box display="flex" alignItems="center" justifyContent="space-between">
-  //               <Box>
-  //                 <Typography variant="h3" fontWeight="bold">
-  //                   {mockStats.activeArSpots}
-  //                 </Typography>
-  //                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
-  //                   Active AR Spots
-  //                 </Typography>
-  //               </Box>
-  //               <SportsIcon sx={{ fontSize: 48, opacity: 0.8 }} />
-  //             </Box>
-  //             <Box mt={2}>
-  //               <Typography variant="caption" sx={{ opacity: 0.8 }}>
-  //                 Across Bandar Sunway
-  //               </Typography>
-  //             </Box>
-  //           </CardContent>
-  //         </Card>
-  //       </Grid>
+      setLoading(false);
+    }
 
-  //       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-  //         <Card
-  //           sx={{
-  //             background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
-  //             color: 'white',
-  //             transition: 'transform 0.2s ease-in-out',
-  //             '&:hover': { transform: 'translateY(-4px)' },
-  //           }}
-  //         >
-  //           <CardContent>
-  //             <Box display="flex" alignItems="center" justifyContent="space-between">
-  //               <Box>
-  //                 <Typography variant="h3" fontWeight="bold">
-  //                   {mockStats.totalCollectibles}
-  //                 </Typography>
-  //                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
-  //                   Total Collectibles
-  //                 </Typography>
-  //               </Box>
-  //               <CollectiblesIcon sx={{ fontSize: 48, opacity: 0.8 }} />
-  //             </Box>
-  //             <Box mt={2}>
-  //               <Typography variant="caption" sx={{ opacity: 0.8 }}>
-  //                 Available for discovery
-  //               </Typography>
-  //             </Box>
-  //           </CardContent>
-  //         </Card>
-  //       </Grid>
+    if (!authLoading) {
+      loadDashboard();
+    }
+  }, [authLoading, user, role, delegatedSpotName]);
 
-  //       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-  //         <Card
-  //           sx={{
-  //             background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-  //             color: 'white',
-  //             transition: 'transform 0.2s ease-in-out',
-  //             '&:hover': { transform: 'translateY(-4px)' },
-  //           }}
-  //         >
-  //           <CardContent>
-  //             <Box display="flex" alignItems="center" justifyContent="space-between">
-  //               <Box>
-  //                 <Typography variant="h3" fontWeight="bold">
-  //                   {mockStats.todayRedemptions}
-  //                 </Typography>
-  //                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
-  //                   Today&apos;s Redemptions
-  //                 </Typography>
-  //               </Box>
-  //               <RedeemIcon sx={{ fontSize: 48, opacity: 0.8 }} />
-  //             </Box>
-  //             <Box mt={2}>
-  //               <Typography variant="caption" sx={{ opacity: 0.8 }}>
-  //                 +5 from yesterday
-  //               </Typography>
-  //             </Box>
-  //           </CardContent>
-  //         </Card>
-  //       </Grid>
-  //     </Grid>
-  //   );
+  const formatDateTime = (ts?: Timestamp | null): string =>
+    ts?.toDate().toLocaleString('en-MY', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }) ?? '-';
 
-  //   const renderMerchantStats = () => (
-  //     <Grid container spacing={3} sx={{ mb: 4 }}>
-  //       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-  //         <Card
-  //           sx={{
-  //             background: 'linear-gradient(135deg, #ED1D24 0%, #c70e14 100%)',
-  //             color: 'white',
-  //             transition: 'transform 0.2s ease-in-out',
-  //             '&:hover': { transform: 'translateY(-4px)' },
-  //           }}
-  //         >
-  //           <CardContent>
-  //             <Box display="flex" alignItems="center" justifyContent="space-between">
-  //               <Box>
-  //                 <Typography variant="h3" fontWeight="bold">
-  //                   RM {mockMerchantStats.totalSales.toLocaleString()}
-  //                 </Typography>
-  //                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
-  //                   Total Sales
-  //                 </Typography>
-  //               </Box>
-  //               <TrendingUpIcon sx={{ fontSize: 48, opacity: 0.8 }} />
-  //             </Box>
-  //           </CardContent>
-  //         </Card>
-  //       </Grid>
+  const getStatusLabel = (status: string) => status.charAt(0).toUpperCase() + status.slice(1);
 
-  //       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-  //         <Card
-  //           sx={{
-  //             background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-  //             color: 'white',
-  //             transition: 'transform 0.2s ease-in-out',
-  //             '&:hover': { transform: 'translateY(-4px)' },
-  //           }}
-  //         >
-  //           <CardContent>
-  //             <Box display="flex" alignItems="center" justifyContent="space-between">
-  //               <Box>
-  //                 <Typography variant="h3" fontWeight="bold">
-  //                   {mockMerchantStats.activeVouchers}
-  //                 </Typography>
-  //                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
-  //                   Active Vouchers
-  //                 </Typography>
-  //               </Box>
-  //               <RedeemIcon sx={{ fontSize: 48, opacity: 0.8 }} />
-  //             </Box>
-  //           </CardContent>
-  //         </Card>
-  //       </Grid>
+  const renderCard = (label: string, value: string | number, color: string) => (
+    <Grid size={{ xs: 12, sm: 6, md: 2.4 }}>
+      <Card sx={{ backgroundColor: `${color}.main`, color: 'white' }}>
+        <CardContent>
+          <Typography variant="subtitle2" gutterBottom>
+            {label}
+          </Typography>
+          <Typography variant="h4" fontWeight="bold">
+            {value}
+          </Typography>
+          <Typography variant="caption">
+            As of{' '}
+            {new Date().toLocaleDateString('en-MY', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            })}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Grid>
+  );
 
-  //       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-  //         <Card
-  //           sx={{
-  //             background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
-  //             color: 'white',
-  //             transition: 'transform 0.2s ease-in-out',
-  //             '&:hover': { transform: 'translateY(-4px)' },
-  //           }}
-  //         >
-  //           <CardContent>
-  //             <Box display="flex" alignItems="center" justifyContent="space-between">
-  //               <Box>
-  //                 <Typography variant="h3" fontWeight="bold">
-  //                   {mockMerchantStats.redemptionsToday}
-  //                 </Typography>
-  //                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
-  //                   Today&apos;s Redemptions
-  //                 </Typography>
-  //               </Box>
-  //               <CheckCircleIcon sx={{ fontSize: 48, opacity: 0.8 }} />
-  //             </Box>
-  //           </CardContent>
-  //         </Card>
-  //       </Grid>
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // Sunday = 0, Monday = 1
+  const offset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // shift to Monday
+  const startOfWeek = new Date(now);
+  startOfWeek.setHours(0, 0, 0, 0);
+  startOfWeek.setDate(now.getDate() + offset);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  //       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-  //         <Card
-  //           sx={{
-  //             background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
-  //             color: 'white',
-  //             transition: 'transform 0.2s ease-in-out',
-  //             '&:hover': { transform: 'translateY(-4px)' },
-  //           }}
-  //         >
-  //           <CardContent>
-  //             <Box display="flex" alignItems="center" justifyContent="space-between">
-  //               <Box>
-  //                 <Typography variant="h3" fontWeight="bold">
-  //                   {mockMerchantStats.storeViews}
-  //                 </Typography>
-  //                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
-  //                   Store Views
-  //                 </Typography>
-  //               </Box>
-  //               <StoreIcon sx={{ fontSize: 48, opacity: 0.8 }} />
-  //             </Box>
-  //           </CardContent>
-  //         </Card>
-  //       </Grid>
-  //     </Grid>
-  //   );
+  const rows = historyData.flatMap((item) =>
+    item.histories.map((h) => ({
+      itemTitle: item.title,
+      userName: h.userName,
+      code: h.code,
+      claimedAt: h.claimedAt,
+      redeemedAt: h.redeemedAt,
+      redeemedBy: h.redeemedBy,
+      status: h.status,
+    }))
+  );
 
-  //   const welcomeText =
-  //     role === 'admin'
-  //       ? 'Welcome, Admin! You have full access to manage users, vouchers, and content.'
-  //       : role === 'merchant'
-  //         ? 'Welcome, Merchant! You can manage your store and vouchers here.'
-  //         : 'Welcome!';
+  const filteredRows = rows.filter((r) => {
+    const date = r.redeemedAt?.toDate?.();
+    if (!date) return false;
+
+    if (tab === 0) return date.toDateString() === now.toDateString(); // Today
+    if (tab === 1) return date >= startOfWeek && date <= now; // This Week
+    return date >= startOfMonth && date <= now; // This Month
+  });
+
+  const paginated = filteredRows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
+  if (authLoading || loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    //     <Box>
-    //       {/* Header Section */}
-    //       <Box sx={{ mb: 4 }}>
-    //         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-    //           <Box>
-    //             <Typography variant="h2" fontWeight="bold" sx={{ color: 'brand.main' }}>
-    //               ARVenture Dashboard
-    //             </Typography>
-    //             <Typography variant="h6" sx={{ color: 'text.secondary', mt: 1 }}>
-    //               {welcomeText}
-    //             </Typography>
-    //           </Box>
-    //           <Box display="flex" alignItems="center" gap={1}>
-    //             <Button
-    //               variant={selectedTimeRange === '7d' ? 'contained' : 'outlined'}
-    //               size="small"
-    //               onClick={() => setSelectedTimeRange('7d')}
-    //             >
-    //               7 Days
-    //             </Button>
-    //             <Button
-    //               variant={selectedTimeRange === '30d' ? 'contained' : 'outlined'}
-    //               size="small"
-    //               onClick={() => setSelectedTimeRange('30d')}
-    //             >
-    //               30 Days
-    //             </Button>
-    //             <IconButton onClick={handleMenuOpen}>
-    //               <MoreVert />
-    //             </IconButton>
-    //           </Box>
-    //         </Box>
-    //       </Box>
+    <Box px={3} py={4}>
+      <Typography variant="h4" fontWeight="bold" mb={3}>
+        Admin Dashboard
+      </Typography>
 
-    //       {/* Stats Cards */}
-    //       {role === 'admin' ? renderAdminStats() : renderMerchantStats()}
+      {stats && (
+        <Grid container spacing={3} mb={4}>
+          {isAdminStats(stats) ? (
+            <>
+              {renderCard('Total Users', stats.totalUsers, 'info')}
+              {renderCard('AR Spots', stats.totalSpots, 'secondary')}
+              {renderCard('Collectibles', stats.totalCollectibles, 'success')}
+              {renderCard('Redemption Items', stats.totalItems, 'warning')}
+              {renderCard("Today's Redemptions", stats.todaysRedemptions, 'error')}
+            </>
+          ) : (
+            <>
+              {renderCard('Assigned Spot', stats.assignedSpot, 'secondary')}
+              {renderCard("Today's Redemptions", stats.todaysRedemptions, 'primary')}
+            </>
+          )}
+        </Grid>
+      )}
 
-    //       {/* Content Grid */}
-    //       <Grid container spacing={3}>
-    //         {/* Recent Activity */}
-    //         <Grid size={{ xs: 12, md: 8 }}>
-    //           <Card sx={{ height: '100%' }}>
-    //             <CardContent>
-    //               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-    //                 <Typography variant="h5" fontWeight="bold" sx={{ color: 'brand.main' }}>
-    //                   Recent Activity
-    //                 </Typography>
-    //                 <Button size="small" variant="text">
-    //                   View All
-    //                 </Button>
-    //               </Box>
-    //               <List>
-    //                 {mockRecentActivity.map((activity, index) => (
-    //                   <React.Fragment key={activity.id}>
-    //                     <ListItem sx={{ px: 0 }}>
-    //                       <ListItemIcon>
-    //                         <Avatar sx={{ bgcolor: 'brand.light', width: 40, height: 40 }}>
-    //                           {getActivityIcon(activity.type)}
-    //                         </Avatar>
-    //                       </ListItemIcon>
-    //                       <ListItemText
-    //                         primary={
-    //                           <Box display="flex" alignItems="center" gap={1}>
-    //                             <Typography variant="body1" fontWeight="600">
-    //                               {activity.user}
-    //                             </Typography>
-    //                             <Typography variant="body1" color="text.secondary">
-    //                               {activity.action}
-    //                             </Typography>
-    //                           </Box>
-    //                         }
-    //                         secondary={
-    //                           <Box display="flex" alignItems="center" gap={1} mt={0.5}>
-    //                             <Typography variant="body2" color="text.secondary">
-    //                               {activity.location}
-    //                             </Typography>
-    //                             <Typography variant="body2" sx={{ color: 'brand.main' }}>
-    //                               • {activity.time}
-    //                             </Typography>
-    //                           </Box>
-    //                         }
-    //                       />
-    //                     </ListItem>
-    //                     {index < mockRecentActivity.length - 1 && <Divider />}
-    //                   </React.Fragment>
-    //                 ))}
-    //               </List>
-    //             </CardContent>
-    //           </Card>
-    //         </Grid>
+      <Typography variant="h4" fontWeight="bold" mt={3} mb={2}>
+        Redemptions
+      </Typography>
 
-    //         {/* Quick Stats & Actions */}
-    //         <Grid size={{ xs: 12, md: 4 }}>
-    //           <Grid container spacing={3}>
-    //             {/* System Health */}
-    //             <Grid size={{ xs: 12 }}>
-    //               <Card>
-    //                 <CardContent>
-    //                   <Typography
-    //                     variant="h6"
-    //                     fontWeight="bold"
-    //                     gutterBottom
-    //                     sx={{ color: 'brand.main' }}
-    //                   >
-    //                     System Health
-    //                   </Typography>
-    //                   <Box display="flex" flexDirection="column" gap={2}>
-    //                     <Box display="flex" alignItems="center" justifyContent="space-between">
-    //                       <Typography variant="body2">Server Status</Typography>
-    //                       <Chip
-    //                         label="Online"
-    //                         color="success"
-    //                         size="small"
-    //                         icon={<CheckCircleIcon />}
-    //                       />
-    //                     </Box>
-    //                     <Box display="flex" alignItems="center" justifyContent="space-between">
-    //                       <Typography variant="body2">Database</Typography>
-    //                       <Chip
-    //                         label="Healthy"
-    //                         color="success"
-    //                         size="small"
-    //                         icon={<CheckCircleIcon />}
-    //                       />
-    //                     </Box>
-    //                     <Box display="flex" alignItems="center" justifyContent="space-between">
-    //                       <Typography variant="body2">API Response</Typography>
-    //                       <Typography variant="body2" fontWeight="bold" color="success.main">
-    //                         45ms
-    //                       </Typography>
-    //                     </Box>
-    //                     {role === 'admin' && (
-    //                       <Box display="flex" alignItems="center" justifyContent="space-between">
-    //                         <Typography variant="body2">Pending Reviews</Typography>
-    //                         <Chip
-    //                           label={mockStats.pendingReviews}
-    //                           color="warning"
-    //                           size="small"
-    //                           icon={<WarningIcon />}
-    //                         />
-    //                       </Box>
-    //                     )}
-    //                   </Box>
-    //                 </CardContent>
-    //               </Card>
-    //             </Grid>
+      <Tabs
+        value={tab}
+        onChange={(e, v) => {
+          setTab(v);
+          setPage(1);
+        }}
+        sx={{ mb: 2 }}
+      >
+        <Tab label="Today" />
+        <Tab label="This Week" />
+        <Tab label="This Month" />
+      </Tabs>
 
-    //             {/* Quick Actions */}
-    //             <Grid size={{ xs: 12 }}>
-    //               <Card>
-    //                 <CardContent>
-    //                   <Typography
-    //                     variant="h6"
-    //                     fontWeight="bold"
-    //                     gutterBottom
-    //                     sx={{ color: 'brand.main' }}
-    //                   >
-    //                     Quick Actions
-    //                   </Typography>
-    //                   <Box display="flex" flexDirection="column" gap={2}>
-    //                     {role === 'admin' ? (
-    //                       <>
-    //                         <Button variant="outlined" fullWidth startIcon={<PeopleIcon />}>
-    //                           Add New User
-    //                         </Button>
-    //                         <Button variant="outlined" fullWidth startIcon={<SportsIcon />}>
-    //                           Create AR Spot
-    //                         </Button>
-    //                         <Button variant="outlined" fullWidth startIcon={<CollectiblesIcon />}>
-    //                           Add Collectible
-    //                         </Button>
-    //                       </>
-    //                     ) : (
-    //                       <>
-    //                         <Button variant="outlined" fullWidth startIcon={<RedeemIcon />}>
-    //                           Create Voucher
-    //                         </Button>
-    //                         <Button variant="outlined" fullWidth startIcon={<StoreIcon />}>
-    //                           Update Store
-    //                         </Button>
-    //                         <Button variant="outlined" fullWidth startIcon={<TrendingUpIcon />}>
-    //                           View Analytics
-    //                         </Button>
-    //                       </>
-    //                     )}
-    //                   </Box>
-    //                 </CardContent>
-    //               </Card>
-    //             </Grid>
-    //           </Grid>
-    //         </Grid>
-    //       </Grid>
+      <Paper variant="outlined">
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>
+                  <strong>No.</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Item</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>User</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Code</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Claimed At</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Redeemed At</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Redeemed By</strong>
+                </TableCell>
+                <TableCell>
+                  <strong>Status</strong>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginated.length > 0 ? (
+                paginated.map((row, index) => (
+                  <TableRow key={`${row.code}_${index}`}>
+                    <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
+                    <TableCell>{row.itemTitle}</TableCell>
+                    <TableCell>{row.userName}</TableCell>
 
-    //       {/* Menu */}
-    //       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-    //         <MenuItem onClick={handleMenuClose}>
-    //           <Settings sx={{ mr: 2 }} />
-    //           Settings
-    //         </MenuItem>
-    //         <MenuItem onClick={handleMenuClose}>
-    //           <Notifications sx={{ mr: 2 }} />
-    //           Notifications
-    //         </MenuItem>
-    //       </Menu>
-    //     </Box>
-    <></>
+                    <TableCell>{row.code}</TableCell>
+                    <TableCell>{formatDateTime(row.claimedAt)}</TableCell>
+                    <TableCell>{formatDateTime(row.redeemedAt)}</TableCell>
+                    <TableCell>{row.redeemedBy || '-'}</TableCell>
+                    <TableCell>
+                      <Chip
+                        size="small"
+                        icon={
+                          row.status === 'fulfilled' ? (
+                            <VerifiedIcon fontSize="small" />
+                          ) : (
+                            <AccessTimeIcon fontSize="small" />
+                          )
+                        }
+                        label={getStatusLabel(row.status)}
+                        color={row.status === 'fulfilled' ? 'success' : 'warning'}
+                        variant="outlined"
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={role === 'admin' ? 9 : 8} align="center">
+                    <Typography variant="body2" color="text.secondary">
+                      No redemptions found.
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <Stack direction="row" justifyContent="flex-end" p={2}>
+          <Pagination
+            count={Math.ceil(filteredRows.length / rowsPerPage)}
+            page={page}
+            onChange={(e, value) => setPage(value)}
+            shape="rounded"
+            color="primary"
+          />
+        </Stack>
+      </Paper>
+    </Box>
   );
 }

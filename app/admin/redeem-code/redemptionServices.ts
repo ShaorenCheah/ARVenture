@@ -118,7 +118,7 @@ export async function fetchRedemptionHistoriesByRole(
         histories.push({
           ...hist,
           historyId: h.id,
-          userName: censorText(hist.userName, isRedeemed),
+          userName: hist.userName,
           userEmail: hist.userEmail ? censorText(hist.userEmail, isRedeemed) : undefined,
           code: censorText(hist.code, isRedeemed),
           status: hist.status === 'pending' ? 'pending' : hist.status,

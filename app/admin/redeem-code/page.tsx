@@ -19,6 +19,11 @@ import {
   Pagination,
   Skeleton,
   Chip,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Grid,
 } from '@mui/material';
 import { Timestamp } from 'firebase/firestore';
 import { useState, useEffect, useCallback } from 'react';
@@ -30,6 +35,9 @@ import { RedemptionItemRecord, fetchRedemptionHistoriesByRole } from './redempti
 export default function RedemptionHistoryPage() {
   const { user, role, loading: authLoading } = useAuth();
 
+  const [filterTitle, setFilterTitle] = useState('');
+  const [filterUser, setFilterUser] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [claimedFrom, setClaimedFrom] = useState('');
   const [claimedTo, setClaimedTo] = useState('');
   const [redeemedFrom, setRedeemedFrom] = useState('');
@@ -37,8 +45,7 @@ export default function RedemptionHistoryPage() {
 
   const [openModal, setOpenModal] = useState(false);
   const [page, setPage] = useState(1);
-  const [filterTitle, setFilterTitle] = useState('');
-  const [filterUser, setFilterUser] = useState('');
+
   const [histories, setHistories] = useState<RedemptionItemRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,7 +75,6 @@ export default function RedemptionHistoryPage() {
     item.histories.map((h) => ({
       itemTitle: item.title,
       userName: h.userName,
-      userEmail: h.userEmail,
       code: h.code,
       claimedAt: h.claimedAt,
       redeemedAt: h.redeemedAt,
@@ -99,9 +105,12 @@ export default function RedemptionHistoryPage() {
       ? redeemedAtDate && redeemedAtDate <= new Date(redeemedTo + 'T23:59:59')
       : true;
 
+    const matchesStatus = filterStatus ? row.status === filterStatus : true;
+
     return (
       matchesTitle &&
       matchesUser &&
+      matchesStatus &&
       withinClaimedFrom &&
       withinClaimedTo &&
       withinRedeemedFrom &&
@@ -163,85 +172,112 @@ export default function RedemptionHistoryPage() {
             Filter Redemptions
           </Typography>
 
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 2,
-              alignItems: 'flex-end',
-            }}
-          >
-            <TextField
-              label="Redemption Item Title"
-              size="small"
-              value={filterTitle}
-              onChange={(e) => setFilterTitle(e.target.value)}
-              sx={{ minWidth: 200, flex: 1 }}
-            />
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <TextField
+                label="Redemption Item Title"
+                size="small"
+                fullWidth
+                value={filterTitle}
+                onChange={(e) => setFilterTitle(e.target.value)}
+              />
+            </Grid>
 
             {userRole === 'admin' && (
-              <TextField
-                label="User Name"
-                size="small"
-                value={filterUser}
-                onChange={(e) => setFilterUser(e.target.value)}
-                sx={{ minWidth: 200, flex: 1 }}
-              />
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <TextField
+                  label="User Name"
+                  size="small"
+                  fullWidth
+                  value={filterUser}
+                  onChange={(e) => setFilterUser(e.target.value)}
+                />
+              </Grid>
             )}
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                >
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="pending">Pending</MenuItem>
+                  <MenuItem value="fulfilled">Fulfilled</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
 
-            <TextField
-              label="Claimed From"
-              type="date"
-              size="small"
-              value={claimedFrom}
-              onChange={(e) => setClaimedFrom(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 180 }}
-            />
-            <TextField
-              label="Claimed To"
-              type="date"
-              size="small"
-              value={claimedTo}
-              onChange={(e) => setClaimedTo(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 180 }}
-            />
-            <TextField
-              label="Redeemed From"
-              type="date"
-              size="small"
-              value={redeemedFrom}
-              onChange={(e) => setRedeemedFrom(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 180 }}
-            />
-            <TextField
-              label="Redeemed To"
-              type="date"
-              size="small"
-              value={redeemedTo}
-              onChange={(e) => setRedeemedTo(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 180 }}
-            />
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <TextField
+                label="Claimed From"
+                type="date"
+                size="small"
+                fullWidth
+                value={claimedFrom}
+                onChange={(e) => setClaimedFrom(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
 
-            <Button
-              onClick={() => {
-                setFilterTitle('');
-                setFilterUser('');
-                setClaimedFrom('');
-                setClaimedTo('');
-                setRedeemedFrom('');
-                setRedeemedTo('');
-              }}
-              variant="outlined"
-              color="error"
-              sx={{ height: 40, px: 3, borderRadius: 2 }}
-            >
-              Clear
-            </Button>
-          </Box>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <TextField
+                label="Claimed To"
+                type="date"
+                size="small"
+                fullWidth
+                value={claimedTo}
+                onChange={(e) => setClaimedTo(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <TextField
+                label="Redeemed From"
+                type="date"
+                size="small"
+                fullWidth
+                value={redeemedFrom}
+                onChange={(e) => setRedeemedFrom(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <TextField
+                label="Redeemed To"
+                type="date"
+                size="small"
+                fullWidth
+                value={redeemedTo}
+                onChange={(e) => setRedeemedTo(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <Box>
+                <Button
+                  onClick={() => {
+                    setFilterTitle('');
+                    setFilterUser('');
+                    setClaimedFrom('');
+                    setClaimedTo('');
+                    setRedeemedFrom('');
+                    setRedeemedTo('');
+                    setFilterStatus('');
+                  }}
+                  variant="outlined"
+                  color="error"
+                  sx={{ px: 3, borderRadius: 2 }}
+                >
+                  Clear
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
         </Paper>
 
         <TableContainer component={Paper} variant="outlined">
@@ -257,11 +293,6 @@ export default function RedemptionHistoryPage() {
                 <TableCell>
                   <strong>User Name</strong>
                 </TableCell>
-                {userRole === 'admin' && (
-                  <TableCell>
-                    <strong>User Email</strong>
-                  </TableCell>
-                )}
                 <TableCell>
                   <strong>Code</strong>
                 </TableCell>
@@ -296,7 +327,6 @@ export default function RedemptionHistoryPage() {
                     <TableCell>{(page - 1) * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{row.itemTitle}</TableCell>
                     <TableCell>{row.userName}</TableCell>
-                    {userRole === 'admin' && <TableCell>{row.userEmail || '-'}</TableCell>}
                     <TableCell>{row.code}</TableCell>
                     <TableCell>{formatDateTime(row.claimedAt)}</TableCell>
                     <TableCell>{formatDateTime(row.redeemedAt)}</TableCell>

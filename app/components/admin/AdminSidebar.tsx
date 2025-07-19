@@ -42,6 +42,7 @@ interface AdminSidebarProps {
   role: string | null;
   userName?: string;
   userRole?: string;
+  delegatedSpotName?: string;
   onNavigate?: (path: string) => void;
   onLogout?: () => void;
 }
@@ -53,6 +54,7 @@ export default function AdminSidebar({
   role,
   userName = 'Admin User',
   userRole = 'Administrator',
+  delegatedSpotName,
   onNavigate = () => {},
   onLogout = () => {},
 }: AdminSidebarProps) {
@@ -236,7 +238,11 @@ export default function AdminSidebar({
             <Typography variant="h5" fontWeight={'bold'}>
               {userName}
             </Typography>
-            <Typography variant="caption">{userRole}</Typography>
+            <Typography variant="caption">
+              {role === 'employee'
+                ? `Employee: ${delegatedSpotName ?? 'Unknown Spot'}`
+                : userRole?.charAt(0).toUpperCase() + userRole?.slice(1)}
+            </Typography>
           </Box>
         )}
       </Box>

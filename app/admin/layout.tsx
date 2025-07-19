@@ -14,7 +14,7 @@ export default function AdminLayoutWrapper({ children }: { children: React.React
 }
 
 function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, role, loading } = useAuth();
+  const { user, role, delegatedSpotName, loading } = useAuth();
   const isAuthorized = role === 'admin' || role === 'employee';
 
   console.log('[Layout] Ready to render:', { user, role, loading });
@@ -40,6 +40,7 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
         userName={user.displayName || user.email || 'User'}
         userRole={role}
         onNavigate={(path) => window.location.assign(path)}
+        delegatedSpotName={role === 'employee' ? (delegatedSpotName ?? undefined) : undefined}
         onLogout={async () => {
           const { signOut } = await import('firebase/auth');
           const { auth } = await import('@/lib/firebase');

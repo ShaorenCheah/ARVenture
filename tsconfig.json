@@ -20,7 +20,8 @@
       "@/*": ["./*"],
       "@components/*": ["app/components/*"],
       "@auth/*": ["app/auth/*"],
-      "@user/*": ["app/(user)/*"]
+      "@user/*": ["app/(user)/*"],
+      "@admin/*": ["app/admin/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
