@@ -18,9 +18,19 @@ interface RedeemCodeModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  userRole: 'admin' | 'employee';
+  currentUserId: string;
+  currentUserName: string;
 }
 
-export default function RedeemCodeModal({ open, onClose, onSuccess }: RedeemCodeModalProps) {
+export default function RedeemCodeModal({
+  open,
+  onClose,
+  onSuccess,
+  userRole,
+  currentUserId,
+  currentUserName,
+}: RedeemCodeModalProps) {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -32,11 +42,12 @@ export default function RedeemCodeModal({ open, onClose, onSuccess }: RedeemCode
 
     setLoading(true);
     try {
-      // TODO: Replace with actual user details from context or session
-      const currentUserId = 'admin_manual';
-      const currentUserName = 'Admin Portal';
-
-      const result = await redeemCode(code.trim().toUpperCase(), currentUserId, currentUserName);
+      const result = await redeemCode(
+        code.trim().toUpperCase(),
+        currentUserId,
+        currentUserName,
+        userRole
+      );
 
       if (result.success) {
         toast.success(result.message);

@@ -31,14 +31,14 @@ export default function FirebaseEmailVerificationPage() {
       try {
         // First, verify the email using Firebase
         await applyActionCode(auth, oobCode);
-        
+
         // Wait a moment for Firebase to propagate the verification status
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
         // Retry logic for API call in case verification status hasn't propagated yet
         let retryCount = 0;
         const maxRetries = 3;
-        
+
         while (retryCount < maxRetries) {
           try {
             const response = await fetch('/api/firebase', {
@@ -53,32 +53,38 @@ export default function FirebaseEmailVerificationPage() {
             }
 
             const errorData = await response.json();
-            
+
             // If it's a verification error, wait and retry
-            if (errorData.error === 'Email has not been verified yet.' && retryCount < maxRetries - 1) {
+            if (
+              errorData.error === 'Email has not been verified yet.' &&
+              retryCount < maxRetries - 1
+            ) {
               retryCount++;
-              await new Promise(resolve => setTimeout(resolve, 2000));
+              await new Promise((resolve) => setTimeout(resolve, 2000));
               continue;
             }
-            
+
             throw new Error(errorData.error || 'Failed to create user record');
           } catch (apiError) {
             if (retryCount === maxRetries - 1) {
               throw apiError;
             }
             retryCount++;
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise((resolve) => setTimeout(resolve, 2000));
           }
         }
-        
       } catch (error: unknown) {
         setStatus('error');
         if (error instanceof Error) {
           // Handle specific Firebase errors
           if (error.message.includes('auth/invalid-action-code')) {
-            setErrorMessage('Invalid or expired verification link. Please request a new verification email.');
+            setErrorMessage(
+              'Invalid or expired verification link. Please request a new verification email.'
+            );
           } else if (error.message.includes('auth/expired-action-code')) {
-            setErrorMessage('Verification link has expired. Please request a new verification email.');
+            setErrorMessage(
+              'Verification link has expired. Please request a new verification email.'
+            );
           } else {
             setErrorMessage(error.message || 'Email verification failed. Please try again.');
           }

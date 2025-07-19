@@ -95,7 +95,7 @@ export default function AdminSidebar({
       text: 'Redemption',
       icon: <InputIcon />,
       path: '/admin/redeem-code',
-      roles: ['admin'],
+      roles: ['admin', 'employee'],
     },
   ];
 

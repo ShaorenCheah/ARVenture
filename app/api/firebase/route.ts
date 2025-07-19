@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       email: userRecord.email,
       emailVerified: userRecord.emailVerified,
       creationTime: userRecord.metadata.creationTime,
-      lastSignInTime: userRecord.metadata.lastSignInTime
+      lastSignInTime: userRecord.metadata.lastSignInTime,
     });
 
     if (!userRecord.emailVerified) {
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     console.log('Existing document check:', {
       exists: existingDoc.exists,
-      uid: uid
+      uid: uid,
     });
 
     if (!existingDoc.exists) {

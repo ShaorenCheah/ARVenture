@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@auth/AuthContext';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import {
@@ -18,62 +19,95 @@ import {
   Pagination,
   Skeleton,
   Chip,
-  useTheme,
-  useMediaQuery,
 } from '@mui/material';
 import { Timestamp } from 'firebase/firestore';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 
 import RedeemCodeModal from './RedeemCodeModal';
 import { RedemptionItemRecord, fetchRedemptionHistoriesByRole } from './redemptionServices';
 
 export default function RedemptionHistoryPage() {
+  const { user, role, loading: authLoading } = useAuth();
+
+  const [claimedFrom, setClaimedFrom] = useState('');
+  const [claimedTo, setClaimedTo] = useState('');
+  const [redeemedFrom, setRedeemedFrom] = useState('');
+  const [redeemedTo, setRedeemedTo] = useState('');
+
   const [openModal, setOpenModal] = useState(false);
   const [page, setPage] = useState(1);
   const [filterTitle, setFilterTitle] = useState('');
   const [filterUser, setFilterUser] = useState('');
   const [histories, setHistories] = useState<RedemptionItemRecord[]>([]);
   const [loading, setLoading] = useState(true);
+
   const rowsPerPage = 10;
 
-  const userRole: 'admin' | 'employee' = 'admin';
-  const assignedCollectibleIds = useMemo(() => [], []);
-
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const userRole = (role as 'admin' | 'employee') || 'employee';
 
   const loadHistories = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      const result = await fetchRedemptionHistoriesByRole(userRole, assignedCollectibleIds);
+      const result = await fetchRedemptionHistoriesByRole(userRole, user.uid);
       setHistories(result);
     } catch {
       toast.error('Failed to load redemption history');
     }
     setLoading(false);
-  }, [userRole, assignedCollectibleIds]);
+  }, [userRole, user]);
 
   useEffect(() => {
-    loadHistories();
-  }, [loadHistories]);
+    if (user && role) {
+      loadHistories();
+    }
+  }, [loadHistories, user, role]);
 
   const flatRows = histories.flatMap((item) =>
     item.histories.map((h) => ({
       itemTitle: item.title,
       userName: h.userName,
+      userEmail: h.userEmail,
       code: h.code,
       claimedAt: h.claimedAt,
       redeemedAt: h.redeemedAt,
+      redeemedBy: h.redeemedBy,
       status: h.status,
     }))
   );
 
-  const filtered = flatRows.filter(
-    (row) =>
-      row.itemTitle.toLowerCase().includes(filterTitle.toLowerCase()) &&
-      row.userName.toLowerCase().includes(filterUser.toLowerCase())
-  );
+  const filtered = flatRows.filter((row) => {
+    const matchesTitle = row.itemTitle.toLowerCase().includes(filterTitle.toLowerCase());
+    const matchesUser =
+      userRole === 'admin' ? row.userName.toLowerCase().includes(filterUser.toLowerCase()) : true;
+
+    const claimedAtDate = row.claimedAt?.toDate?.();
+    const redeemedAtDate = row.redeemedAt?.toDate?.();
+
+    const withinClaimedFrom = claimedFrom
+      ? claimedAtDate && claimedAtDate >= new Date(claimedFrom)
+      : true;
+    const withinClaimedTo = claimedTo
+      ? claimedAtDate && claimedAtDate <= new Date(claimedTo + 'T23:59:59')
+      : true;
+
+    const withinRedeemedFrom = redeemedFrom
+      ? redeemedAtDate && redeemedAtDate >= new Date(redeemedFrom)
+      : true;
+    const withinRedeemedTo = redeemedTo
+      ? redeemedAtDate && redeemedAtDate <= new Date(redeemedTo + 'T23:59:59')
+      : true;
+
+    return (
+      matchesTitle &&
+      matchesUser &&
+      withinClaimedFrom &&
+      withinClaimedTo &&
+      withinRedeemedFrom &&
+      withinRedeemedTo
+    );
+  });
 
   const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
@@ -89,6 +123,29 @@ export default function RedemptionHistoryPage() {
     );
   };
 
+  function getStatusLabel(status: string): string {
+    if (!status) return '';
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  }
+
+  if (authLoading) {
+    return (
+      <Box sx={{ height: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Typography variant="body1">Loading session...</Typography>
+      </Box>
+    );
+  }
+
+  if (!user || !role) {
+    return (
+      <Box sx={{ height: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Typography variant="body1" color="error">
+          You must be logged in to view this page.
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, px: 3, py: 3 }}>
@@ -102,39 +159,89 @@ export default function RedemptionHistoryPage() {
         </Stack>
 
         <Paper variant="outlined" sx={{ p: 3, backgroundColor: 'white' }}>
-          <Typography variant="h6" fontWeight={500} mb={1}>
+          <Typography variant="h6" fontWeight={500} mb={2}>
             Filter Redemptions
           </Typography>
-          <Stack
-            spacing={isMobile ? 1 : 2}
-            direction={isMobile ? 'column' : 'row'}
-            alignItems={isMobile ? 'stretch' : 'center'}
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 2,
+              alignItems: 'flex-end',
+            }}
           >
             <TextField
               label="Redemption Item Title"
               size="small"
               value={filterTitle}
               onChange={(e) => setFilterTitle(e.target.value)}
-              sx={{ width: { xs: '100%', md: 300 } }}
+              sx={{ minWidth: 200, flex: 1 }}
+            />
+
+            {userRole === 'admin' && (
+              <TextField
+                label="User Name"
+                size="small"
+                value={filterUser}
+                onChange={(e) => setFilterUser(e.target.value)}
+                sx={{ minWidth: 200, flex: 1 }}
+              />
+            )}
+
+            <TextField
+              label="Claimed From"
+              type="date"
+              size="small"
+              value={claimedFrom}
+              onChange={(e) => setClaimedFrom(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              sx={{ minWidth: 180 }}
             />
             <TextField
-              label="User Name"
+              label="Claimed To"
+              type="date"
               size="small"
-              value={filterUser}
-              onChange={(e) => setFilterUser(e.target.value)}
-              sx={{ width: { xs: '100%', md: 300 } }}
+              value={claimedTo}
+              onChange={(e) => setClaimedTo(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              sx={{ minWidth: 180 }}
             />
+            <TextField
+              label="Redeemed From"
+              type="date"
+              size="small"
+              value={redeemedFrom}
+              onChange={(e) => setRedeemedFrom(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              sx={{ minWidth: 180 }}
+            />
+            <TextField
+              label="Redeemed To"
+              type="date"
+              size="small"
+              value={redeemedTo}
+              onChange={(e) => setRedeemedTo(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              sx={{ minWidth: 180 }}
+            />
+
             <Button
               onClick={() => {
                 setFilterTitle('');
                 setFilterUser('');
+                setClaimedFrom('');
+                setClaimedTo('');
+                setRedeemedFrom('');
+                setRedeemedTo('');
               }}
               variant="outlined"
-              sx={{ borderRadius: 2 }}
+              color="error"
+              sx={{ height: 40, px: 3, borderRadius: 2 }}
             >
               Clear
             </Button>
-          </Stack>
+          </Box>
         </Paper>
 
         <TableContainer component={Paper} variant="outlined">
@@ -150,6 +257,11 @@ export default function RedemptionHistoryPage() {
                 <TableCell>
                   <strong>User Name</strong>
                 </TableCell>
+                {userRole === 'admin' && (
+                  <TableCell>
+                    <strong>User Email</strong>
+                  </TableCell>
+                )}
                 <TableCell>
                   <strong>Code</strong>
                 </TableCell>
@@ -160,6 +272,9 @@ export default function RedemptionHistoryPage() {
                   <strong>Redeemed At</strong>
                 </TableCell>
                 <TableCell>
+                  <strong>Redeemed By</strong>
+                </TableCell>
+                <TableCell>
                   <strong>Status</strong>
                 </TableCell>
               </TableRow>
@@ -168,7 +283,7 @@ export default function RedemptionHistoryPage() {
               {loading ? (
                 Array.from({ length: rowsPerPage }).map((_, idx) => (
                   <TableRow key={idx}>
-                    {[...Array(7)].map((_, colIdx) => (
+                    {[...Array(userRole === 'admin' ? 9 : 8)].map((_, colIdx) => (
                       <TableCell key={colIdx}>
                         <Skeleton height={24} />
                       </TableCell>
@@ -181,9 +296,11 @@ export default function RedemptionHistoryPage() {
                     <TableCell>{(page - 1) * rowsPerPage + idx + 1}</TableCell>
                     <TableCell>{row.itemTitle}</TableCell>
                     <TableCell>{row.userName}</TableCell>
+                    {userRole === 'admin' && <TableCell>{row.userEmail || '-'}</TableCell>}
                     <TableCell>{row.code}</TableCell>
                     <TableCell>{formatDateTime(row.claimedAt)}</TableCell>
                     <TableCell>{formatDateTime(row.redeemedAt)}</TableCell>
+                    <TableCell>{row.redeemedBy || '-'}</TableCell>
                     <TableCell>
                       <Chip
                         size="small"
@@ -194,7 +311,7 @@ export default function RedemptionHistoryPage() {
                             <AccessTimeIcon fontSize="small" />
                           )
                         }
-                        label={row.status}
+                        label={getStatusLabel(row.status)}
                         color={row.status === 'fulfilled' ? 'success' : 'warning'}
                         variant="outlined"
                       />
@@ -203,7 +320,7 @@ export default function RedemptionHistoryPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
+                  <TableCell colSpan={userRole === 'admin' ? 9 : 8} align="center">
                     <Typography variant="body2" color="text.secondary">
                       No matching redemption history found.
                     </Typography>
@@ -229,6 +346,9 @@ export default function RedemptionHistoryPage() {
         open={openModal}
         onClose={() => setOpenModal(false)}
         onSuccess={loadHistories}
+        userRole={userRole}
+        currentUserId={user.uid}
+        currentUserName={user.displayName || user.email || 'User'}
       />
     </>
   );

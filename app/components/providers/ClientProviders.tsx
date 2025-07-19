@@ -1,5 +1,6 @@
 'use client';
 
+import { AuthProvider } from '@auth/AuthContext';
 import SplashScreen from '@components/user/SplashScreen';
 import { Box, CircularProgress } from '@mui/material';
 import { usePathname } from 'next/navigation';
@@ -16,10 +17,9 @@ interface ClientProvidersProps {
 export default function ClientProviders({ children }: ClientProvidersProps) {
   const pathname = usePathname();
   const hasMountedOnce = useRef(false);
-  const { showSplash } = useSplash(); // now controlled fully by context
+  const { showSplash } = useSplash();
   const [routeLoading, setRouteLoading] = useState(false);
 
-  // Route spinner — only after splash is done
   useEffect(() => {
     if (!showSplash) {
       if (hasMountedOnce.current) {
@@ -33,31 +33,31 @@ export default function ClientProviders({ children }: ClientProvidersProps) {
   }, [pathname, showSplash]);
 
   return (
-    <UserModalProvider>
-      <ToasterClient />
+    <AuthProvider>
+      <UserModalProvider>
+        <ToasterClient />
 
-      {/* Splash screen — handled fully by SplashContext */}
-      {showSplash && <SplashScreen duration={5000} />}
+        {showSplash && <SplashScreen duration={5000} />}
 
-      {/* Page transition spinner */}
-      {!showSplash && routeLoading && (
-        <Box
-          sx={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1300,
-            backgroundColor: 'rgba(255,255,255,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            pointerEvents: 'none',
-          }}
-        >
-          <CircularProgress sx={{ color: '#ED1D24' }} />
-        </Box>
-      )}
+        {!showSplash && routeLoading && (
+          <Box
+            sx={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 1300,
+              backgroundColor: 'rgba(255,255,255,0.5)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            <CircularProgress sx={{ color: '#ED1D24' }} />
+          </Box>
+        )}
 
-      {children}
-    </UserModalProvider>
+        {children}
+      </UserModalProvider>
+    </AuthProvider>
   );
 }

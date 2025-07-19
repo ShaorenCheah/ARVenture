@@ -1,4 +1,13 @@
-import { getDocs, doc, collection, query, where, Timestamp, writeBatch } from 'firebase/firestore';
+import {
+  getDocs,
+  doc,
+  collection,
+  query,
+  where,
+  Timestamp,
+  writeBatch,
+  getDoc,
+} from 'firebase/firestore';
 
 import { db } from '@/lib/firebase';
 
@@ -10,6 +19,7 @@ export interface RedemptionHistory {
   status: 'pending' | 'fulfilled';
   userId: string;
   userName: string;
+  userEmail?: string;
 }
 
 export interface RedemptionItemRecord {
@@ -20,39 +30,111 @@ export interface RedemptionItemRecord {
   histories: (RedemptionHistory & { historyId: string })[];
 }
 
+// Helper function to censor text for employees
+function censorText(text: string, isRedeemed: boolean = false): string {
+  if (!text || isRedeemed) return text;
+
+  if (text.includes('@')) {
+    // Email censoring
+    const [username, domain] = text.split('@');
+    if (username.length <= 2) return text;
+    return `${username.slice(0, 2)}${'*'.repeat(username.length - 2)}@${domain}`;
+  } else {
+    // Name/code censoring
+    if (text.length <= 2) return text;
+    return `${text.slice(0, 2)}${'*'.repeat(text.length - 2)}`;
+  }
+}
+
+// Get user's delegated spot and corresponding collectible/redemption item
+async function getUserDelegatedInfo(userId: string): Promise<{
+  delegatedSpot: string;
+  collectibleId: string;
+  redemptionItemId: string;
+} | null> {
+  try {
+    const userDoc = await getDoc(doc(db, 'users', userId));
+    if (!userDoc.exists()) return null;
+
+    const userData = userDoc.data();
+    const delegatedSpot = userData.delegatedSpot;
+
+    if (!delegatedSpot) return null;
+
+    const spotDoc = await getDoc(doc(db, 'ar_spots', delegatedSpot));
+    if (!spotDoc.exists()) return null;
+
+    const spotData = spotDoc.data();
+    return {
+      delegatedSpot,
+      collectibleId: spotData.collectibleId,
+      redemptionItemId: spotData.redemptionItemId,
+    };
+  } catch (error) {
+    console.error('Error fetching user delegated info:', error);
+    return null;
+  }
+}
+
 export async function fetchRedemptionHistoriesByRole(
   role: 'admin' | 'employee',
-  assignedCollectibleIds: string[]
+  currentUserId?: string
 ): Promise<RedemptionItemRecord[]> {
-  const snapshot = await getDocs(collection(db, 'redemption_items'));
   const results: RedemptionItemRecord[] = [];
+
+  if (role === 'employee' && !currentUserId) {
+    return results;
+  }
+
+  let allowedRedemptionItemIds: string[] = [];
+
+  if (role === 'employee') {
+    const delegatedInfo = await getUserDelegatedInfo(currentUserId!);
+    if (!delegatedInfo) return results;
+    allowedRedemptionItemIds = [delegatedInfo.redemptionItemId];
+  }
+
+  const snapshot = await getDocs(collection(db, 'redemption_items'));
 
   for (const itemDoc of snapshot.docs) {
     const data = itemDoc.data();
     const itemId = itemDoc.id;
 
-    // Only allow items if admin or assigned to the employee
-    if (
-      role === 'admin' ||
-      (role === 'employee' && assignedCollectibleIds.includes(data.requiredCollectibleId))
-    ) {
-      const historyCol = collection(db, 'redemption_items', itemId, 'history');
-      const historySnap = await getDocs(historyCol);
-      const histories: (RedemptionHistory & { historyId: string })[] = [];
-
-      historySnap.forEach((h) => {
-        const hist = h.data() as RedemptionHistory;
-        histories.push({ ...hist, historyId: h.id });
-      });
-
-      results.push({
-        id: itemId,
-        title: data.title,
-        requiredCollectibleId: data.requiredCollectibleId,
-        requiredSpotName: data.requiredSpotName,
-        histories,
-      });
+    // Filter items based on role
+    if (role === 'employee' && !allowedRedemptionItemIds.includes(itemId)) {
+      continue;
     }
+
+    const historyCol = collection(db, 'redemption_items', itemId, 'history');
+    const historySnap = await getDocs(historyCol);
+    const histories: (RedemptionHistory & { historyId: string })[] = [];
+
+    historySnap.forEach((h) => {
+      const hist = h.data() as RedemptionHistory;
+      const isRedeemed = hist.status === 'fulfilled';
+
+      // Apply censoring for employees
+      if (role === 'employee') {
+        histories.push({
+          ...hist,
+          historyId: h.id,
+          userName: censorText(hist.userName, isRedeemed),
+          userEmail: hist.userEmail ? censorText(hist.userEmail, isRedeemed) : undefined,
+          code: censorText(hist.code, isRedeemed),
+          status: hist.status === 'pending' ? 'pending' : hist.status,
+        });
+      } else {
+        histories.push({ ...hist, historyId: h.id });
+      }
+    });
+
+    results.push({
+      id: itemId,
+      title: data.title,
+      requiredCollectibleId: data.requiredCollectibleId,
+      requiredSpotName: data.requiredSpotName,
+      histories,
+    });
   }
 
   return results;
@@ -61,45 +143,79 @@ export async function fetchRedemptionHistoriesByRole(
 export async function redeemCode(
   code: string,
   currentUserId: string,
-  currentUserName: string
+  currentUserName: string,
+  userRole: 'admin' | 'employee'
 ): Promise<{ success: boolean; message: string }> {
-  const itemSnap = await getDocs(collection(db, 'redemption_items'));
+  try {
+    let allowedRedemptionItemIds: string[] = [];
 
-  for (const item of itemSnap.docs) {
-    const itemId = item.id;
-    const historyRef = collection(db, 'redemption_items', itemId, 'history');
-    const historyQuery = query(historyRef, where('code', '==', code));
-    const result = await getDocs(historyQuery);
+    if (userRole === 'employee') {
+      const delegatedInfo = await getUserDelegatedInfo(currentUserId);
+      if (!delegatedInfo) {
+        return { success: false, message: 'Employee delegation not found.' };
+      }
+      allowedRedemptionItemIds = [delegatedInfo.redemptionItemId];
+    }
 
-    if (!result.empty) {
-      const docRef = result.docs[0].ref;
-      const record = result.docs[0].data() as RedemptionHistory;
+    const itemSnap = await getDocs(collection(db, 'redemption_items'));
 
-      if (record.status !== 'pending') {
-        return { success: false, message: 'Code has already been redeemed.' };
+    for (const item of itemSnap.docs) {
+      const itemId = item.id;
+
+      if (userRole === 'employee' && !allowedRedemptionItemIds.includes(itemId)) {
+        continue;
       }
 
-      const userRedeemedRef = doc(db, 'users', record.userId, 'redeemed_items', itemId);
+      const historyRef = collection(db, 'redemption_items', itemId, 'history');
+      const historyQuery = query(historyRef, where('code', '==', code));
+      const result = await getDocs(historyQuery);
 
-      const batch = writeBatch(db);
+      if (!result.empty) {
+        const docRef = result.docs[0].ref;
+        const record = result.docs[0].data() as RedemptionHistory;
+        const itemData = item.data();
 
-      batch.update(docRef, {
-        redeemedAt: Timestamp.now(),
-        redeemedBy: currentUserName,
-        status: 'fulfilled',
-      });
+        if (record.status !== 'pending') {
+          return { success: false, message: 'Code has already been redeemed.' };
+        }
 
-      batch.update(userRedeemedRef, {
-        redeemedAt: Timestamp.now(),
-        redeemedBy: currentUserName,
-        status: 'fulfilled',
-      });
+        const userRedeemedRef = doc(db, 'users', record.userId, 'redeemed_items', itemId);
+        const userRedeemedSnap = await getDoc(userRedeemedRef);
 
-      await batch.commit();
+        const batch = writeBatch(db);
 
-      return { success: true, message: 'Code redeemed successfully.' };
+        batch.update(docRef, {
+          redeemedAt: Timestamp.now(),
+          redeemedBy: currentUserName,
+          status: 'fulfilled',
+        });
+
+        if (userRedeemedSnap.exists()) {
+          batch.update(userRedeemedRef, {
+            redeemedAt: Timestamp.now(),
+            redeemedBy: currentUserName,
+            status: 'fulfilled',
+          });
+        } else {
+          batch.set(userRedeemedRef, {
+            redeemedAt: Timestamp.now(),
+            redeemedBy: currentUserName,
+            status: 'fulfilled',
+            code,
+            claimedAt: record.claimedAt,
+            title: itemData.title,
+          });
+        }
+
+        await batch.commit();
+
+        return { success: true, message: 'Code redeemed successfully.' };
+      }
     }
-  }
 
-  return { success: false, message: 'Code not found.' };
+    return { success: false, message: 'Code not found or not authorized for redemption.' };
+  } catch (error) {
+    console.error('[redeemCode] Error:', error);
+    return { success: false, message: 'Something went wrong during redemption.' };
+  }
 }
