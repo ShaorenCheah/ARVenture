@@ -19,15 +19,6 @@ export async function POST(req: NextRequest) {
     // Get user record by email
     const userRecord = await auth.getUserByEmail(email);
 
-    // Add logging here to debug
-    console.log('User record:', {
-      uid: userRecord.uid,
-      email: userRecord.email,
-      emailVerified: userRecord.emailVerified,
-      creationTime: userRecord.metadata.creationTime,
-      lastSignInTime: userRecord.metadata.lastSignInTime,
-    });
-
     if (!userRecord.emailVerified) {
       console.log('Email verification check failed for:', email);
       return NextResponse.json({ error: 'Email has not been verified yet.' }, { status: 403 });
@@ -37,13 +28,7 @@ export async function POST(req: NextRequest) {
     const userRef = db.doc(`users/${uid}`);
     const existingDoc = await userRef.get();
 
-    console.log('Existing document check:', {
-      exists: existingDoc.exists,
-      uid: uid,
-    });
-
     if (!existingDoc.exists) {
-      console.log('Creating new user document for:', email);
       await userRef.set(
         {
           email: userRecord.email,
@@ -54,15 +39,9 @@ export async function POST(req: NextRequest) {
         },
         { merge: true }
       );
-      console.log('User document created successfully');
-    } else {
-      console.log('User document already exists, skipping creation');
-    }
-
+    } 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
-    console.error('[API Error - Create User Record]', err);
-
     let status = 500;
     let message = 'Internal server error';
 

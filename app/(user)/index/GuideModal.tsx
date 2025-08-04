@@ -51,8 +51,6 @@ const GuideModal: React.FC<GuideModalProps> = ({ open, onClose, sx = {} }) => {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           console.log('User location granted:', pos.coords);
-          // Store location data as needed
-          // localStorage.setItem('userLocation', JSON.stringify(pos.coords));
         },
         (err) => {
           console.log('User denied location or error occurred:', err.message);

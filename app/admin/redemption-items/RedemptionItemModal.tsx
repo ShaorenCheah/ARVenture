@@ -15,6 +15,7 @@ import {
   Button,
   MenuItem,
   Avatar,
+  Chip,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
@@ -42,11 +43,11 @@ interface RedemptionItemModalProps {
 
 const ImagePreview = ({
   imageUrl,
-  label,
+  isExisting,
   onRemove,
 }: {
   imageUrl?: string;
-  label: string;
+  isExisting?: boolean;
   onRemove?: () => void;
 }) => {
   if (!imageUrl) return null;
@@ -57,9 +58,12 @@ const ImagePreview = ({
         <PhotoIcon />
       </Avatar>
       <Box sx={{ flex: 1 }}>
-        <Typography variant="body2" fontWeight={500}>
-          {label}
-        </Typography>
+        <Chip
+          label={isExisting ? 'Current Image' : 'New Image'}
+          size="small"
+          color={isExisting ? 'primary' : 'success'}
+          variant="outlined"
+        />
       </Box>
       {onRemove && (
         <IconButton size="small" onClick={onRemove} color="error">
@@ -279,14 +283,25 @@ export default function RedemptionItemModal({
                       label="Collectible & AR Spot"
                       select
                       fullWidth
+                      disabled={dropdownOptions.length === 0}
                       error={!!errors.requiredCollectibleId}
-                      helperText={errors.requiredCollectibleId?.message}
+                      helperText={
+                        dropdownOptions.length === 0
+                          ? 'No AR Spots with collectibles available'
+                          : errors.requiredCollectibleId?.message
+                      }
                     >
-                      {dropdownOptions.map((opt) => (
-                        <MenuItem key={opt.collectibleId} value={opt.collectibleId}>
-                          {opt.label}
+                      {dropdownOptions.length > 0 ? (
+                        dropdownOptions.map((opt) => (
+                          <MenuItem key={opt.collectibleId} value={opt.collectibleId}>
+                            {opt.label}
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem value="" disabled>
+                          No available AR Spot + Collectible pairs
                         </MenuItem>
-                      ))}
+                      )}
                     </TextField>
                   )}
                 />
@@ -302,13 +317,11 @@ export default function RedemptionItemModal({
 
                     <ImagePreview
                       imageUrl={newImagePreview || existingImage || undefined}
-                      label={
-                        newImagePreview ? 'New Image' : existingImage ? 'Current Image' : 'No image'
-                      }
                       onRemove={() => {
                         if (newImagePreview) handleRemoveNewImage();
                         else if (existingImage) handleRemoveExistingImage();
                       }}
+                      isExisting={!newImagePreview && !!existingImage}
                     />
 
                     <Box

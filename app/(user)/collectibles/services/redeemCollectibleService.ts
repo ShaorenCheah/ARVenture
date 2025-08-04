@@ -14,7 +14,7 @@ import { ref, getDownloadURL } from 'firebase/storage';
 
 import { db, storage } from '@/lib/firebase';
 
-const RADIUS_METERS = 100;
+const RADIUS_METERS = 300;
 
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const toRad = (x: number) => (x * Math.PI) / 180;

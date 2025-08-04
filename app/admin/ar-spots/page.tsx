@@ -213,10 +213,10 @@ export default function AdminUserPage() {
             <Table size="medium">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ width: '10%' }}>
+                  <TableCell sx={{ width: '120px' }}>
                     <strong>No.</strong>
                   </TableCell>
-                  <TableCell sx={{ width: '17%' }}>
+                  <TableCell sx={{ width: '15%' }}>
                     <strong>Name</strong>
                   </TableCell>
                   <TableCell sx={{ width: '10px' }}>
@@ -407,11 +407,11 @@ export default function AdminUserPage() {
                           <Stack direction="row" spacing={1} alignItems="flex-start">
                             <TipsAndUpdatesIcon fontSize="small" sx={{ color: 'brand.accent' }} />
                             <Typography variant="caption" color="text.secondary">
-                              {expandedTips[spot.id] ||
-                              !spot.collectibleTips ||
-                              spot.collectibleTips.length <= 70
-                                ? spot.collectibleTips
-                                : `${spot.collectibleTips.slice(0, 70)}... `}
+                              {spot.collectibleTips
+                                ? expandedTips[spot.id] || spot.collectibleTips.length <= 70
+                                  ? spot.collectibleTips
+                                  : `${spot.collectibleTips.slice(0, 70)}... `
+                                : 'N/A'}
                               {spot.collectibleTips && spot.collectibleTips.length > 70 && (
                                 <Button
                                   onClick={() => toggleTip(spot.id)}

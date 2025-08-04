@@ -17,8 +17,6 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, role, delegatedSpotName, loading } = useAuth();
   const isAuthorized = role === 'admin' || role === 'employee';
 
-  console.log('[Layout] Ready to render:', { user, role, loading });
-
   if (loading) {
     return (
       <Box
@@ -34,7 +32,7 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', height: '100%' }}>
       <AdminSidebar
         role={role}
         userName={user.displayName || user.email || 'User'}
@@ -55,7 +53,8 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
           display: 'flex',
           flexDirection: 'column',
           width: '100%',
-          height: '100vh',
+          minHeight: '100vh',
+          height: '100%',
           p: { xs: 2, md: 4 },
           gap: 3,
           bgcolor: '#f9fafb',

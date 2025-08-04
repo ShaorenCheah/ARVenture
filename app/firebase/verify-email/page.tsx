@@ -14,7 +14,6 @@ export default function VerifyEmailPage() {
           flexDirection="column"
           justifyContent="center"
           alignItems="center"
-          bgcolor="#f9f9f9"
         >
           <CircularProgress sx={{ color: '#ED1D24' }} />
           <Typography mt={2} textAlign="center">

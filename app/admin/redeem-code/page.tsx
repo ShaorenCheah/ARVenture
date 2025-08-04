@@ -284,7 +284,7 @@ export default function RedemptionHistoryPage() {
           <Table size="medium">
             <TableHead>
               <TableRow>
-                <TableCell>
+                <TableCell sx={{ width: '120px' }}>
                   <strong>No.</strong>
                 </TableCell>
                 <TableCell>
@@ -293,19 +293,19 @@ export default function RedemptionHistoryPage() {
                 <TableCell>
                   <strong>User Name</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>Code</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>Claimed At</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>Redeemed At</strong>
                 </TableCell>
                 <TableCell>
                   <strong>Redeemed By</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>Status</strong>
                 </TableCell>
               </TableRow>
@@ -324,14 +324,18 @@ export default function RedemptionHistoryPage() {
               ) : paginated.length > 0 ? (
                 paginated.map((row, idx) => (
                   <TableRow key={idx}>
-                    <TableCell>{(page - 1) * rowsPerPage + idx + 1}</TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={600} mb={1}>
+                        #{(page - 1) * rowsPerPage + idx + 1}
+                      </Typography>
+                    </TableCell>
                     <TableCell>{row.itemTitle}</TableCell>
                     <TableCell>{row.userName}</TableCell>
-                    <TableCell>{row.code}</TableCell>
-                    <TableCell>{formatDateTime(row.claimedAt)}</TableCell>
-                    <TableCell>{formatDateTime(row.redeemedAt)}</TableCell>
+                    <TableCell align="center">{row.code}</TableCell>
+                    <TableCell align="center">{formatDateTime(row.claimedAt)}</TableCell>
+                    <TableCell align="center">{formatDateTime(row.redeemedAt)}</TableCell>
                     <TableCell>{row.redeemedBy || '-'}</TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       <Chip
                         size="small"
                         icon={

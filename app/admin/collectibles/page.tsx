@@ -148,7 +148,7 @@ export default function AdminCollectiblePage() {
           <Table size="medium">
             <TableHead>
               <TableRow>
-                <TableCell>
+                <TableCell sx={{ width: '120px' }}>
                   <strong>No.</strong>
                 </TableCell>
                 <TableCell>
@@ -160,7 +160,7 @@ export default function AdminCollectiblePage() {
                 <TableCell>
                   <strong>Description</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>Redemption Code</strong>
                 </TableCell>
                 <TableCell>
@@ -169,7 +169,7 @@ export default function AdminCollectiblePage() {
                 <TableCell>
                   <strong>Priority</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>AR Spot</strong>
                 </TableCell>
                 <TableCell align="center">
@@ -191,14 +191,29 @@ export default function AdminCollectiblePage() {
               ) : paginated.length > 0 ? (
                 paginated.map((item, index) => (
                   <TableRow key={item.id}>
-                    <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
                     <TableCell>
-                      <Stack direction="row" alignItems="center" spacing={1}>
+                      <Typography variant="body2" fontWeight={600} mb={1}>
+                        #{(page - 1) * rowsPerPage + index + 1}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(item.createdAt).toLocaleString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true,
+                        })}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Stack direction="row" alignItems="center" spacing={1} pb={1}>
                         <EmojiEventsIcon fontSize="small" />
                         <Typography variant="body2" fontWeight={600}>
                           {item.title}
                         </Typography>
                       </Stack>
+
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <FingerprintIcon fontSize="small" sx={{ color: 'brand.main' }} />
                         <Typography variant="caption" color="text.secondary">
@@ -230,7 +245,7 @@ export default function AdminCollectiblePage() {
                     <TableCell>
                       <Typography variant="body2">{item.description}</Typography>
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       <Typography variant="caption">{item.redemptionCode}</Typography>
                     </TableCell>
                     <TableCell>
@@ -250,7 +265,7 @@ export default function AdminCollectiblePage() {
                       </Typography>
                     </TableCell>
                     <TableCell align="center">{item.priority}</TableCell>
-                    <TableCell>{item.arSpotName || '-'}</TableCell>
+                    <TableCell align="center">{item.arSpotName || '-'}</TableCell>
                     <TableCell align="center">
                       <Stack direction="row" spacing={1} justifyContent="center">
                         <IconButton onClick={() => handleEdit(item.id)}>

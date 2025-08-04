@@ -154,31 +154,31 @@ export default function RedemptionItemAdminPage() {
           <Table size="medium">
             <TableHead>
               <TableRow>
-                <TableCell>
+                <TableCell sx={{ width: '120px' }}>
                   <strong>No.</strong>
                 </TableCell>
                 <TableCell>
                   <strong>Title</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>Image</strong>
                 </TableCell>
                 <TableCell>
                   <strong>Description</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>Priority</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>Stock</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>Required Spot</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>Collectible ID</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <strong>Status</strong>
                 </TableCell>
                 <TableCell align="center">
@@ -200,7 +200,21 @@ export default function RedemptionItemAdminPage() {
               ) : paginated.length > 0 ? (
                 paginated.map((item, index) => (
                   <TableRow key={item.id}>
-                    <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={600} mb={1}>
+                        #{(page - 1) * rowsPerPage + index + 1}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(item.createdAt).toLocaleString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true,
+                        })}
+                      </Typography>
+                    </TableCell>
                     <TableCell>{item.title}</TableCell>
                     <TableCell align="center">
                       {item.resolvedImgURL ? (
@@ -224,10 +238,10 @@ export default function RedemptionItemAdminPage() {
                       )}
                     </TableCell>
                     <TableCell>{item.description}</TableCell>
-                    <TableCell>{item.priority}</TableCell>
-                    <TableCell>{item.stock}</TableCell>
-                    <TableCell>{item.requiredSpotName}</TableCell>
-                    <TableCell>{item.requiredCollectibleId}</TableCell>
+                    <TableCell align="center">{item.priority}</TableCell>
+                    <TableCell align="center">{item.stock}</TableCell>
+                    <TableCell align="center">{item.requiredSpotName}</TableCell>
+                    <TableCell align="center">{item.requiredCollectibleId}</TableCell>
                     <TableCell>
                       <Chip
                         label={item.isExpired ? 'Expired' : 'Active'}

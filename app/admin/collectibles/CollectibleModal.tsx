@@ -14,6 +14,7 @@ import {
   TextField,
   Button,
   Avatar,
+  Chip,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
@@ -33,13 +34,12 @@ interface CollectibleModalProps {
 
 const ImagePreview = ({
   imageUrl,
-  label,
+  isExisting,
   onRemove,
 }: {
   imageUrl?: string;
-  label: string;
-  onRemove?: () => void;
   isExisting?: boolean;
+  onRemove?: () => void;
 }) => {
   if (!imageUrl) return null;
 
@@ -49,9 +49,12 @@ const ImagePreview = ({
         <PhotoIcon />
       </Avatar>
       <Box sx={{ flex: 1 }}>
-        <Typography variant="body2" fontWeight={500}>
-          {label}
-        </Typography>
+        <Chip
+          label={isExisting ? 'Current Image' : 'New Image'}
+          size="small"
+          color={isExisting ? 'primary' : 'success'}
+          variant="outlined"
+        />
       </Box>
       {onRemove && (
         <IconButton size="small" onClick={onRemove} color="error">
@@ -245,9 +248,6 @@ export default function CollectibleModal({
 
                     <ImagePreview
                       imageUrl={newImagePreview || existingImage || undefined}
-                      label={
-                        newImagePreview ? 'New Image' : existingImage ? 'Current Image' : 'No image'
-                      }
                       onRemove={() => {
                         if (newImagePreview) handleRemoveNewImage();
                         else if (existingImage) handleRemoveExistingImage();

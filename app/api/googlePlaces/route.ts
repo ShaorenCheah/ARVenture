@@ -6,12 +6,11 @@ const LOCATION = '3.0725,101.607';
 const RADIUS = 1500;
 
 const BOUNDING_BOX = {
-  north: 3.082,
-  south: 3.063,
-  east: 101.615,
-  west: 101.595,
+  north: 3.085,
+  south: 3.06,
+  east: 101.62,
+  west: 101.59,
 };
-
 function isWithinBoundingBox(lat: number, lng: number): boolean {
   return (
     lat >= BOUNDING_BOX.south &&

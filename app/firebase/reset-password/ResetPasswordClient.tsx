@@ -65,14 +65,7 @@ export default function FirebaseResetPasswordPage() {
   };
 
   return (
-    <Box
-      minHeight="100vh"
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      bgcolor="#f9f9f9"
-      px={2}
-    >
+    <Box minHeight="100vh" display="flex" justifyContent="center" alignItems="center" px={2}>
       <Card
         sx={{
           maxWidth: 420,

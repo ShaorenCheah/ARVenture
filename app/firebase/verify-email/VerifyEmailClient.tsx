@@ -29,7 +29,7 @@ export default function FirebaseEmailVerificationPage() {
       setStatus('verifying');
 
       try {
-        // First, verify the email using Firebase
+        // Verify the email using Firebase
         await applyActionCode(auth, oobCode);
 
         // Wait a moment for Firebase to propagate the verification status
@@ -103,8 +103,8 @@ export default function FirebaseEmailVerificationPage() {
       display="flex"
       justifyContent="center"
       alignItems="center"
-      bgcolor="#f9f9f9"
       px={2}
+      margin={0}
     >
       <Card
         sx={{
@@ -150,7 +150,7 @@ export default function FirebaseEmailVerificationPage() {
               <Button
                 fullWidth
                 variant="contained"
-                sx={{ mt: 5, width: '120px', backgroundColor: '#ED1D24' }}
+                sx={{ mt: 5, width: '150px', backgroundColor: '#ED1D24' }}
                 onClick={() => router.push('/')}
               >
                 Go to Login
@@ -166,7 +166,7 @@ export default function FirebaseEmailVerificationPage() {
               <Typography mt={1}>{errorMessage}</Typography>
               <Button
                 variant="contained"
-                sx={{ mt: 5, width: '120px', backgroundColor: '#ED1D24' }}
+                sx={{ mt: 5, width: '150px', backgroundColor: '#ED1D24' }}
                 onClick={() => router.push('/')}
               >
                 Try Again

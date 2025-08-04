@@ -52,9 +52,13 @@ export default function AdminUserPage() {
 
   async function loadUsers() {
     setLoading(true);
-    const result = await fetchUsers();
-    setUsers(result);
-    setLoading(false);
+    try {
+      const result = await fetchUsers();
+      setUsers(result);
+    } catch {
+      toast.error('Failed to load users');
+      setLoading(false);
+    }
   }
 
   useEffect(() => {

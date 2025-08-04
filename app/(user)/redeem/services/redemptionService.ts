@@ -41,7 +41,6 @@ export const fetchRedemptionItems = async (uid?: string): Promise<RedemptionItem
   const getImgURL = async (imgURL: string): Promise<string> => {
     try {
       const imgRef = ref(storage, `${imgURL}`);
-      console.log('Fetching image URL:', imgURL);
       return await getDownloadURL(imgRef);
     } catch {
       return '';

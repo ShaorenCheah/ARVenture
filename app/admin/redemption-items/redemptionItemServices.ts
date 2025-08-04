@@ -25,7 +25,7 @@ export interface RedemptionItem {
   stock: number;
   requiredCollectibleId: string;
   requiredSpotName: string;
-  createdAt?: import('firebase/firestore').Timestamp;
+  createdAt: string;
   imgURL?: string;
   resolvedImgURL?: string;
   isExpired: boolean;
@@ -101,7 +101,11 @@ export async function fetchAllRedemptionItems(): Promise<RedemptionItem[]> {
         stock: data.stock,
         requiredCollectibleId: data.requiredCollectibleId,
         requiredSpotName: data.requiredSpotName,
-        createdAt: data.createdAt,
+        createdAt:
+          data.createdAt?.toDate().toLocaleString('en-MY', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          }) || '',
         imgURL: data.imgURL,
         resolvedImgURL,
         isExpired: data.isExpired ?? false,

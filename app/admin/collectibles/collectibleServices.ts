@@ -27,9 +27,10 @@ export interface Collectible {
   description: string;
   redemptionCode: string;
   priority: number;
-  imageURL?: string; // Resolved image URL for display
+  imageURL?: string;
   tips: string;
   arSpotId?: string;
+  createdAt: string;
 }
 
 export interface CollectibleWithARSpot extends Collectible {
@@ -95,6 +96,11 @@ export const fetchAllCollectibles = async (): Promise<CollectibleWithARSpot[]> =
           tips: data.tips || '',
           arSpotId: data.arSpotId || undefined,
           arSpotName,
+          createdAt:
+            data.createdAt?.toDate().toLocaleString('en-MY', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            }) || '',
         };
 
         return collectible;
@@ -128,6 +134,7 @@ export const createCollectible = async (data: CollectibleFormInputs): Promise<vo
       priority: data.priority,
       imageURL,
       arSpotId: data.arSpotId || '',
+      createdAt: new Date(),
     });
   } catch (error) {
     if (imageURL) await deleteImage(imageURL);
@@ -162,6 +169,7 @@ export const updateCollectible = async (
       priority: data.priority,
       imageURL,
       arSpotId: data.arSpotId || '',
+      createdAt: new Date(),
     });
   } catch (err) {
     console.error('Error updating collectible:', err);
