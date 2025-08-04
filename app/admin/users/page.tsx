@@ -55,6 +55,7 @@ export default function AdminUserPage() {
     try {
       const result = await fetchUsers();
       setUsers(result);
+      setLoading(false);
     } catch {
       toast.error('Failed to load users');
       setLoading(false);

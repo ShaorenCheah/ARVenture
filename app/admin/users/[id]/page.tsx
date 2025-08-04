@@ -85,7 +85,7 @@ export default function AdminUserActivityPage() {
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
       {/* Header */}
-      <Box mb={6}>
+      <Box mb={3}>
         <Typography variant="h4" fontWeight={600} color="text.primary" gutterBottom>
           User Activity
         </Typography>
@@ -108,6 +108,10 @@ export default function AdminUserActivityPage() {
                 borderColor: 'primary.main',
                 transform: 'translateY(-2px)',
               },
+              height: '100%',
+              flexGrow: 1,
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
             <CardContent sx={{ p: 3 }}>
@@ -133,6 +137,10 @@ export default function AdminUserActivityPage() {
                 borderColor: 'secondary.main',
                 transform: 'translateY(-2px)',
               },
+              height: '100%',
+              flexGrow: 1,
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
             <CardContent sx={{ p: 3 }}>
@@ -330,7 +338,7 @@ export default function AdminUserActivityPage() {
                 }}
               >
                 <CardContent sx={{ p: 4 }}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="start" mb={3}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="start" mb={1}>
                     <Typography variant="h6" fontWeight={600} color="text.primary">
                       {item.title}
                     </Typography>
@@ -385,7 +393,7 @@ export default function AdminUserActivityPage() {
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     {item.spotName && (
                       <Typography variant="body2" color="text.secondary">
-                        📍 {item.spotName}
+                        {item.spotName}
                       </Typography>
                     )}
                     <Typography variant="caption" color="text.secondary">
