@@ -125,7 +125,16 @@ export default function RedemptionItemModal({
       setExistingImage(initialData.resolvedImgURL || '');
       setNewImagePreview('');
     } else if (open && !initialData) {
-      reset();
+      reset({
+        title: '',
+        description: '',
+        priority: 0,
+        stock: 0,
+        requiredCollectibleId: '',
+        imageFile: null,
+        isEdit: false,
+        imageRemoved: false,
+      });
       setExistingImage('');
       setNewImagePreview('');
     }

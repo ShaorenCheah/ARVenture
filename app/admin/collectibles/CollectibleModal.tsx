@@ -109,7 +109,17 @@ export default function CollectibleModal({
         setExistingImage(initialData.imageURL || '');
         setNewImagePreview('');
       } else {
-        reset();
+        reset({
+          title: '',
+          description: '',
+          redemptionCode: '',
+          priority: 0,
+          tips: '',
+          arSpotId: '',
+          imageFile: null,
+          isEdit: false,
+          imageRemoved: false,
+        });
         setExistingImage('');
         setNewImagePreview('');
       }

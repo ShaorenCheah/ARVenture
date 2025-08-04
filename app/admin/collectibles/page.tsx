@@ -163,7 +163,7 @@ export default function AdminCollectiblePage() {
                 <TableCell align="center">
                   <strong>Redemption Code</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ width: '15%' }}>
                   <strong>Tips</strong>
                 </TableCell>
                 <TableCell>

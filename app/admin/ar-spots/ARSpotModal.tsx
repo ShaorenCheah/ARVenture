@@ -153,6 +153,37 @@ export default function ARSpotModal({
     }
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    if (!isEdit) {
+      reset({
+        name: '',
+        description: '',
+        address: '',
+        arURL: '',
+        priority: 0,
+        coordinates: { lat: 0, lng: 0 },
+        collectibleId: '',
+        hasCollectible: false,
+        imageFile: null,
+        iconFile: null,
+        isEdit: false,
+        mainImageRemoved: false,
+        iconImageRemoved: false,
+      });
+      setExistingImages({
+        mainImage: '',
+        iconImage: '',
+      });
+      setNewImagePreviews({
+        mainImage: '',
+        iconImage: '',
+      });
+      setSelectedCollectible(null);
+    }
+  }, [open, isEdit, reset]);
+
   const loadCollectibles = async () => {
     setLoadingCollectibles(true);
     try {
