@@ -1,3 +1,10 @@
+## Description
+
+<img src="/public/readMe/CP2 Sunway AR Venture.jpg" style="width:500px;" alt="Introduction">
+
+<img src="/public/readMe/CP2 Development Tools.jpg" style="width:500px;" alt="Tech Stack">
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
